@@ -1,14 +1,7 @@
 FROM node:23
-
 WORKDIR /app
-
-COPY ./src/package.json .
-
-RUN yarn
-
-COPY ./src .
+COPY ./app .
 COPY ./entrypoint.sh /entrypoint.sh
-
+RUN yarn
 EXPOSE 3000
-
-CMD ["sh", "/entrypoint.sh"]
+ENTRYPOINT [ "sh", "/entrypoint.sh" ]
