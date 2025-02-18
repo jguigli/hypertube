@@ -3,9 +3,11 @@ DOCKER_COMPOSE_FILE = docker-compose.yml
 DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_FILE) -p $(NAME)
 
 all:
-	# If the ./database/.env file does not exist, error message will be displayed
-	[ -f ./database/.env ] || (echo "Please create a .env file in the database folder" && exit 1)
+	@[ -f ./database/.env ] || (echo "Please create a .env file in the database folder" && exit 1)
 	$(DOCKER_COMPOSE) up -d
+
+build_up:
+	$(DOCKER_COMPOSE) up --build
 
 build:
 	$(DOCKER_COMPOSE) build
@@ -31,3 +33,14 @@ down:
 # Usage: make shell_<container_name>
 shell_%:
 	$(DOCKER_COMPOSE) exec $* sh
+
+clean:
+	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) rm -f
+	docker volume rm $(shell docker volume ls -q)
+
+fclean:
+	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) rm -f
+	docker rmi -f $(shell docker images -q)
+	docker volume rm $(shell docker volume ls -q)
