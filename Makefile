@@ -4,6 +4,9 @@ all:
 build:
 	docker-compose build
 
+exec_api:
+	docker exec -it api bash
+
 logs:
 	docker compose logs -f api
 
