@@ -1,0 +1,13 @@
+alembic==1.11.1
+fastapi==0.115.0
+uvicorn[standard]
+websockets==12.0
+sqlmodel
+psycopg2-binary
+passlib[bcrypt]
+pyjwt
+python-multipart==0.0.6
+
+pydantic==2.8.2
+SQLAlchemy==2.0.31
+sqlalchemy-json==0.7.0

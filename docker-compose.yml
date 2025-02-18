@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./backend
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - "${PWD}/backend:/app"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres:15.3
+    environment:
+      - POSTGRES_PASSWORD=dev
+      - POSTGRES_USER=dev
+      - POSTGRES_DB=dev
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dev"]
+      interval: 3s
+      retries: 5
+
+  # redis:
+  #   image: redis/redis-stack-server:latest
+  #   restart: always
+  #   ports:
+  #     - "6300:6300"
+  
+  frontend:
+    build: ./frontend
+    container_name: nodejs
+    ports:
+      - "3000:3000"
+    volumes:
+      - "${PWD}/frontend:/app"
