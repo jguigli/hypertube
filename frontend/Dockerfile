@@ -1,11 +1,14 @@
-FROM node:18
+FROM node:23
 
 WORKDIR /app
 
-COPY . .
+COPY ./src/package.json .
 
-RUN npm install --legacy-peer-deps
+RUN yarn
+
+COPY ./src .
+COPY ./entrypoint.sh /entrypoint.sh
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["sh", "/entrypoint.sh"]
