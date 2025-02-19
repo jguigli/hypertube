@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel
 from database import engine
 
-from database import create_db
+# from database import create_db
 
 from api.login.resources import router as login_router
 from api.users.resources import router as users_router

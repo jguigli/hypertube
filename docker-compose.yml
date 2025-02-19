@@ -23,7 +23,7 @@ services:
 
   database:
     image: postgres:15.3
-    container_name: database
+      #container_name: database
     environment:
       - POSTGRES_PASSWORD=dev
       - POSTGRES_USER=dev
