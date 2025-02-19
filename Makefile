@@ -12,6 +12,9 @@ build_up:
 build:
 	$(DOCKER_COMPOSE) build
 
+exec_api:
+	docker exec -it api bash
+
 logs:
 	$(DOCKER_COMPOSE) logs -f api
 
