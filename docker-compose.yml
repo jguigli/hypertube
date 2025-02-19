@@ -17,8 +17,6 @@ services:
       - "8000:8000"
     volumes:
       - "${PWD}/backend:/app"
-    env_file:
-      - ./backend/.env
     depends_on:
       database:
         condition: service_healthy
@@ -26,8 +24,10 @@ services:
   database:
     image: postgres:15.3
     container_name: database
-    env_file:
-      - ./database/.env
+    environment:
+      - POSTGRES_PASSWORD=dev
+      - POSTGRES_USER=dev
+      - POSTGRES_DB=dev
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "dev"]
       interval: 3s

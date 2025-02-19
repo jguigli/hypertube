@@ -3,7 +3,6 @@ DOCKER_COMPOSE_FILE = docker-compose.yml
 DOCKER_COMPOSE = docker compose -f $(DOCKER_COMPOSE_FILE) -p $(NAME)
 
 all:
-	@[ -f ./database/.env ] || (echo "Please create a .env file in the database folder" && exit 1)
 	$(DOCKER_COMPOSE) up -d
 
 build_up:
@@ -47,3 +46,5 @@ fclean:
 	$(DOCKER_COMPOSE) rm -f
 	docker rmi -f $(shell docker images -q)
 	docker volume rm $(shell docker volume ls -q)
+
+re: fclean build_up
