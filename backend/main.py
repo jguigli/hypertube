@@ -22,6 +22,6 @@ app.add_middleware(
 app.include_router(login_router)
 app.include_router(users_router)
 
-@app.on_event("startup")
-def on_startup():
-    create_db()
+# @app.on_event("startup")
+# def on_startup():
+#     create_db()
