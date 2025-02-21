@@ -1,16 +1,8 @@
 import "../styles/Sidebar.css";
-
-import LiveTvIcon from '@mui/icons-material/LiveTv';
-import SvgIcon from '@mui/material/SvgIcon';
+import HomeIcon from '@mui/icons-material/Home';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { Link } from "react-router-dom";
-
-function Icon(props: any) {
-    return (
-        <SvgIcon color="primary">
-            <use xlinkHref={props.url} />
-        </SvgIcon>
-    );
-}
+import { useAuth } from "../contexts/AuthContext";
 
 
 export default function Sidebar(
@@ -20,37 +12,51 @@ export default function Sidebar(
     }
 ) {
 
+    const { user } = useAuth();
+
     const links = [
         {
             name: "Home",
             url: "/",
-            icon: LiveTvIcon,
+            icon: HomeIcon,
         },
-        {
-            name: "Movies",
-            url: "/movies",
-            icon: LiveTvIcon,
-        },
-        {
-            name: "Series",
-            url: "/series",
-            icon: LiveTvIcon
-        },
-        {
+
+        // Add profile link to sidebar if user is logged in
+        user ? {
             name: "Profile",
-            url: "/profile",
-            icon: LiveTvIcon
-        },
-    ];
+            url: `/profile/${user.username}`,
+            icon: AccountBoxIcon
+        } : null,
+
+    ].filter(Boolean);
+
+    // On sidebar hover : toggle_menu
+
+    const handleMouseEnter = () => {
+        props.toggle_menu();
+    };
+
+    const handleMouseLeave = () => {
+        props.toggle_menu();
+    };
 
     return (
-        <nav id="sidebar" className="bg-gray-400 p-4 h-full col-span-1 row-span-2 row-start-2" >
+        <nav
+            id="sidebar"
+            className="bg-gray-950 p-4 size-fit h-full col-span-1 row-span-2 row-start-2 border-r border-gray-500/50 text-gray-50"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
             <ul>
-                {links.map((link) => (
-                    <li key={link.name} className="flex items-center space-x-2">
+                {links.map((link) => link && (
+                    <li key={link.name} className="flex items-center space-x-2 my-3">
                         <Link to={link.url} className="flex items-center space-x-2">
-                            <link.icon color="primary" />
-                            {props.open && (link.name)}
+                            <link.icon />
+                            {props.open && (
+                                <span className="mx-2">
+                                    {link.name}
+                                </span>
+                            )}
                         </Link>
                     </li>
                 ))}

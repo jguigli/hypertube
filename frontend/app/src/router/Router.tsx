@@ -5,6 +5,7 @@ import Register from "../pages/Register";
 import Login from "../pages/Login";
 import PageNotFound from "../pages/404";
 import VideoView from "../pages/VideoView";
+import Profile from "../pages/Profile";
 
 const router = createBrowserRouter([
     {
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
             { path: "register", element: <Register /> },
             { path: "login", element: <Login /> },
             { path: "video", element: <VideoView /> },
+            { path: "profile/:username", element: <Profile /> },
             { path: "*", element: <PageNotFound /> },
         ],
     },
