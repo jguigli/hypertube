@@ -15,7 +15,7 @@ export default function Input(
             value={props.value}
             onChange={props.onChange}
             required={props.required}
-            className="border border-gray-300 rounded-md p-2"
+            className="border border-gray-300 rounded-md p-2 w-full"
             id={props.id}
         />
     );

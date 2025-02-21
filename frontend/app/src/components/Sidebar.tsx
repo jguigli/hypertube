@@ -1,6 +1,6 @@
 import "../styles/Sidebar.css";
 import HomeIcon from '@mui/icons-material/Home';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -25,7 +25,7 @@ export default function Sidebar(
         user ? {
             name: "Profile",
             url: `/profile/${user.username}`,
-            icon: AccountBoxIcon
+            icon: AccountCircleIcon
         } : null,
 
     ].filter(Boolean);

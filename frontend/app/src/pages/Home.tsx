@@ -26,36 +26,36 @@ class Movie {
 export default function Home() {
 
     const movies: Movie[] = [
-        new Movie(
-            "The Shawshank Redemption",
-            "https://images-na.ssl-images-amazon.com/images/I/51S9gFm2aHL._AC_.jpg",
-            "Two imprisoned ...",
-            1994,
-            "Frank Darabont",
-            ["Tim Robbins", "Morgan Freeman"],
-            ["Drama"],
-            9.3
-        ),
-        new Movie(
-            "The Godfather",
-            "https://images-na.ssl-images-amazon.com/images/I/51v5ZpFyaFL._AC_.jpg",
-            "The aging patriarch ...",
-            1972,
-            "Francis Ford Coppola",
-            ["Marlon Brando", "Al Pacino"],
-            ["Crime", "Drama"],
-            9.2
-        ),
-        new Movie(
-            "The Dark Knight",
-            "https://images-na.ssl-images-amazon.com/images/I/51kGZ4CCjFL._AC_.jpg",
-            "When the menace ...",
-            2008,
-            "Christopher Nolan",
-            ["Christian Bale", "Heath Ledger"],
-            ["Action", "Crime", "Drama"],
-            9.0
-        ),
+        // new Movie(
+        //     "The Shawshank Redemption",
+        //     "https://images-na.ssl-images-amazon.com/images/I/51S9gFm2aHL._AC_.jpg",
+        //     "Two imprisoned ...",
+        //     1994,
+        //     "Frank Darabont",
+        //     ["Tim Robbins", "Morgan Freeman"],
+        //     ["Drama"],
+        //     9.3
+        // ),
+        // new Movie(
+        //     "The Godfather",
+        //     "https://images-na.ssl-images-amazon.com/images/I/51v5ZpFyaFL._AC_.jpg",
+        //     "The aging patriarch ...",
+        //     1972,
+        //     "Francis Ford Coppola",
+        //     ["Marlon Brando", "Al Pacino"],
+        //     ["Crime", "Drama"],
+        //     9.2
+        // ),
+        // new Movie(
+        //     "The Dark Knight",
+        //     "https://images-na.ssl-images-amazon.com/images/I/51kGZ4CCjFL._AC_.jpg",
+        //     "When the menace ...",
+        //     2008,
+        //     "Christopher Nolan",
+        //     ["Christian Bale", "Heath Ledger"],
+        //     ["Action", "Crime", "Drama"],
+        //     9.0
+        // ),
 
     ];
 

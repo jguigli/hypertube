@@ -1,9 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, TextField, Typography } from "@mui/material";
+import { Button, ListItemIcon, ListItemText, Menu, Typography } from "@mui/material";
 import menu_toggle from "../assets/menu_icon.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Input from "./Input.tsx"
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { MenuItem } from "@mui/material";
+import LogoutIcon from '@mui/icons-material/Logout';
 
 
 function MenuIcon() {
@@ -13,17 +17,17 @@ function MenuIcon() {
 }
 
 
-function ToggleSidebar(
-    props: {
-        toggle_menu: () => void;
-    }
-) {
-    return (
-        <div onClick={props.toggle_menu}>
-            <MenuIcon />
-        </div>
-    );
-}
+// function ToggleSidebar(
+//     props: {
+//         toggle_menu: () => void;
+//     }
+// ) {
+//     return (
+//         <div onClick={props.toggle_menu}>
+//             <MenuIcon />
+//         </div>
+//     );
+// }
 
 function Logo() {
     return (
@@ -52,44 +56,96 @@ function SearchBar() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 id="search-bar"
-                sx={{ width: "100%" }}
+                required={true}
             />
         </form>
     );
 }
 
-function UserProfile() {
+function BasicMenu() {
+
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState<null | Element>(null);
+    const open = Boolean(anchorEl);
+    let menu_items = [];
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        event.preventDefault();
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    if (user != null) {
+        menu_items.push(
+            <MenuItem onClick={() => {
+                handleClose();
+                navigate(`/profile/${user.username}`)
+            }}>
+                <ListItemIcon>
+                    <AccountCircleIcon />
+                </ListItemIcon>
+                <ListItemText>Profile</ListItemText>
+
+            </MenuItem>,
+            <MenuItem onClick={() => {
+                handleClose();
+                logout();
+                navigate("/");
+            }}>
+                <ListItemIcon>
+                    <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText>Logout</ListItemText>
+            </MenuItem>
+        );
+    } else {
+        menu_items.push(
+            <MenuItem onClick={() => {
+                handleClose();
+                navigate("/login");
+            }}>
+                <ListItemText>Login</ListItemText>
+            </MenuItem>,
+            <MenuItem onClick={() => {
+                handleClose();
+                navigate("/register");
+            }}>
+                <ListItemText>Register</ListItemText>
+            </MenuItem>
+        );
+    }
 
     return (
-        <>
-            {user != null ? (
-                <div id="user-profile" className="flex flex-row items-center gap-2">
-                    <p>{user.username}</p>
-                    <Button variant="contained" onClick={() => { navigate(`/profile/${user.username}`) }}>Profile</Button>
-                    <Button variant="contained" onClick={() => {
-                        logout();
-                        navigate("/");
-                    }} >Logout</Button>
-                </div>
-            ) : (
-                <div id="user-profile" className="flex flex-row items-center gap-2">
-                    <Button variant="contained" onClick={() => { navigate("/login") }}>Login</Button>
-                    <Button variant="contained" onClick={() => {
-                        navigate("/register")
-                    }}>Register</Button>
-                </div>
-            )}
-        </>
+        <div>
+            <Button
+                id="basic-button"
+                aria-controls={open ? 'basic-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={handleClick}
+            >
+                <AccountCircleIcon />
+            </Button>
+            <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                MenuListProps={{
+                    'aria-labelledby': 'basic-button',
+                }}
+            >
+                {menu_items}
+            </Menu>
+        </div>
     );
 }
 
-export default function Navbar(
-    props: {
-        toggle_menu: () => void;
-    }
-) {
+export default function Navbar() {
     return (
         <nav
             id="navbar"
@@ -100,7 +156,8 @@ export default function Navbar(
                 <Logo />
             </div>
             <SearchBar />
-            <UserProfile />
+            {/* <UserProfile /> */}
+            <BasicMenu />
         </nav>
     );
 }
