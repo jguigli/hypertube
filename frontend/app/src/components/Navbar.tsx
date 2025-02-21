@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Button, Input, TextField, Typography } from "@mui/material";
 import menu_toggle from "../assets/menu_icon.svg";
+import { useState } from "react";
 
 
 function MenuIcon() {
@@ -25,35 +28,57 @@ function ToggleSidebar(
 function Logo() {
     return (
         <Link to="/" id="logo">
-            <h1>Hypertube</h1>
+            <Typography variant="h6">Hypertube</Typography>
         </Link>
     );
 }
 
 function SearchBar() {
+
+    const [search, setSearch] = useState("");
+
+
+    const handleSearchSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        console.log(search);
+
+    };
+
     return (
-        <input type="text" id="search-bar" className="bg-gray-50 text-gray-800 px-3 rounded-full flex-auto max-w-100" placeholder="Search..." />
+        <form onSubmit={handleSearchSubmit} className="flex flex-row gap-2 max-w-[300px] justify-items-center items-stretch">
+            <Input
+                type="search"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                id="search-bar"
+                sx={{ width: "100%" }}
+            />
+        </form>
     );
 }
 
 function UserProfile() {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     return (
         <>
             {user != null ? (
                 <div id="user-profile" className="flex flex-row items-center gap-2">
                     <p>{user.username}</p>
-                    <button onClick={logout}>Logout</button>
+                    <Button variant="contained" onClick={() => { navigate(`/profile/${user.username}`) }}>Profile</Button>
+                    <Button variant="contained" onClick={() => {
+                        logout();
+                        navigate("/");
+                    }} >Logout</Button>
                 </div>
             ) : (
                 <div id="user-profile" className="flex flex-row items-center gap-2">
-                    <button id="login-button">
-                        <Link to="/login">Login</Link>
-                    </button>
-                    <button id="register-button">
-                        <Link to="/register">Register</Link>
-                    </button>
+                    <Button variant="contained" onClick={() => { navigate("/login") }}>Login</Button>
+                    <Button variant="contained" onClick={() => {
+                        navigate("/register")
+                    }}>Register</Button>
                 </div>
             )}
         </>
@@ -68,10 +93,10 @@ export default function Navbar(
     return (
         <nav
             id="navbar"
-            className="flex flex-row justify-between items-center max-h-[50px] p-3 bg-gray-800 text-white sticky top-0 z-50 col-span-2 row-span-1"
+            className="flex flex-row justify-between items-center max-h-[50px] w-full p-3 bg-gray-950 text-white sticky top-0 z-50 border-b border-gray-500/50"
         >
             <div className="flex flex-row items-center gap-2">
-                <ToggleSidebar toggle_menu={props.toggle_menu} />
+                {/* <ToggleSidebar toggle_menu={props.toggle_menu} /> */}
                 <Logo />
             </div>
             <SearchBar />
