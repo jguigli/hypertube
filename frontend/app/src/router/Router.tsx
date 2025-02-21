@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import PageNotFound from "../pages/404";
 import VideoView from "../pages/VideoView";
 import Profile from "../pages/Profile";
+import ResetPassword from "../pages/ResetPassword";
 
 const router = createBrowserRouter([
     {
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
             { index: true, element: <Home /> },
             { path: "register", element: <Register /> },
             { path: "login", element: <Login /> },
+            { path: "forgot-password", element: <ResetPassword /> },
             { path: "video", element: <VideoView /> },
             { path: "profile/:username", element: <Profile /> },
             { path: "*", element: <PageNotFound /> },

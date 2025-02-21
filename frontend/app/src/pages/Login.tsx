@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import User from "../types/User.tsx";
-import { Button } from "@mui/material";
+import { Button, Divider } from "@mui/material";
 import Input from "../components/Input.tsx";
 import { useNavigate } from "react-router-dom";
 
@@ -40,16 +40,22 @@ export default function Login() {
     // {% endfor %}
 
     return (
-        <div id="login" className="flex flex-col align-center w-[500px]">
+        <div id="login" className="flex flex-col align-center w-[500px] space-y-5">
 
-            <div>
-                <h1 className="text-2xl font-bold">Login</h1>
-                <h2 className="text-xl">Enter your credentials to login</h2>
+            <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-bold">Login</h1>
+                    <h2 className="text-xl">Enter your credentials to login</h2>
+                </div>
+                <div className="flex gap-2 w-full items-center">
+                    <p>Don't have an account?</p>
+                    <Button variant="outlined" onClick={() => navigate("/register")}>Register</Button>
+                </div>
             </div>
 
-            <br />
-            <hr />
-            <br />
+
+            <Divider className="w-full" />
+
 
             <form onSubmit={handleSubmit} className="flex flex-col items-start gap-5">
 
@@ -77,9 +83,27 @@ export default function Login() {
                     />
                 </div>
 
-                <Button variant="contained" type="submit">Login</Button>
+                <div className="flex gap-5 w-full items-center">
+                    <Button variant="contained" type="submit">Login</Button>
+                    <div className="flex gap-2 w-full items-center">
+                        <p>Forgot your password?</p>
+                        <Button variant="outlined" onClick={() => navigate("/forgot-password")}>Reset password</Button>
+                    </div>
+                </div>
 
             </form>
+
+            <Divider className="w-full" />
+
+
+
+            <div className="flex gap-2 w-full items-center">
+                <h1 className="text-2xl font-bold">Or login with:</h1>
+                <Button variant="outlined">Google</Button>
+                <Button variant="outlined">42</Button>
+            </div>
+
+
         </div>
     )
 }

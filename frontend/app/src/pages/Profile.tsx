@@ -1,6 +1,8 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Input from "../components/Input";
+import Button from "../components/Button";
 
 export default function Profile() {
 
@@ -8,42 +10,67 @@ export default function Profile() {
 
     const params = useParams();
 
-    let username = params.username;
+    let param_username = params.username;
 
     useEffect(() => {
         if (username === undefined) {
             navigate("/");
             return;
         }
-    }, [username]);
+    }, [param_username]);
 
     const { user } = useAuth();
 
-    // if (user === undefined) {
-    //     return
-    // }
+    if (!user) {
+        return <Navigate to="/login" />;
+    }
 
-
-    // useEffect(() => {
-    //     if (user === null) {
-    //         navigate("/login");
-    //         return;
-    //     }
-    //     if (username === undefined) {
-    //         navigate("/profile/" + user.username);
-    //         return;
-    //     }
-
-    // }, [username, user, navigate]);
-
+    const [username, setUsername] = useState(user.username);
+    const [email, setEmail] = useState(user.email);
 
     return (
         <>
             <h1>Profile</h1>
-            {username === user?.username ? (
-                <p>This is your profile</p>
+            {param_username === user.username ? (
+                <div>
+
+                    <div className="flex flex-col space-y-4">
+                        <div>
+                            <label htmlFor="username_profile">Username:</label>
+                            <Input
+                                value={username}
+                                placeholder="Your new username"
+                                type="text"
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                                id="username_profile"
+                            />
+                        </div>
+
+
+                        <div>
+                            <label htmlFor="email_profile">Email:</label>
+                            <Input
+                                value={email}
+                                placeholder="Your new email"
+                                type="email"
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                id="email_profile"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={() => {
+                            }}
+                            text="Save"
+                        />
+
+                    </div>
+                </div>
+
             ) : (
-                <p>This is the profile of {username}</p>
+                <p>This is the profile of {param_username}</p>
             )}
         </>
     )
