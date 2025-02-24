@@ -1,80 +1,43 @@
-class Movie {
-
-    title: string;
-    thumbnail: string;
-    description: string;
-    year: number;
-    director: string;
-    actors: string[];
-    genres: string[];
-    rating: number;
-
-    constructor(title: string, thumbnail: string, description: string, year: number, director: string, actors: string[], genres: string[], rating: number) {
-        this.title = title;
-        this.thumbnail = thumbnail;
-        this.description = description;
-        this.year = year;
-        this.director = director;
-        this.actors = actors;
-        this.genres = genres;
-        this.rating = rating;
-    }
-}
-
-
+import Movie from '../types/Movie.tsx'
+import MovieCard from '../components/MovieCard.tsx';
+import { useSearch } from '../contexts/SearchContext.tsx';
 
 export default function Home() {
 
-    const movies: Movie[] = [
-        // new Movie(
-        //     "The Shawshank Redemption",
-        //     "https://images-na.ssl-images-amazon.com/images/I/51S9gFm2aHL._AC_.jpg",
-        //     "Two imprisoned ...",
-        //     1994,
-        //     "Frank Darabont",
-        //     ["Tim Robbins", "Morgan Freeman"],
-        //     ["Drama"],
-        //     9.3
-        // ),
-        // new Movie(
-        //     "The Godfather",
-        //     "https://images-na.ssl-images-amazon.com/images/I/51v5ZpFyaFL._AC_.jpg",
-        //     "The aging patriarch ...",
-        //     1972,
-        //     "Francis Ford Coppola",
-        //     ["Marlon Brando", "Al Pacino"],
-        //     ["Crime", "Drama"],
-        //     9.2
-        // ),
-        // new Movie(
-        //     "The Dark Knight",
-        //     "https://images-na.ssl-images-amazon.com/images/I/51kGZ4CCjFL._AC_.jpg",
-        //     "When the menace ...",
-        //     2008,
-        //     "Christopher Nolan",
-        //     ["Christian Bale", "Heath Ledger"],
-        //     ["Action", "Crime", "Drama"],
-        //     9.0
-        // ),
+    const { searchQuery } = useSearch();
 
+    let movies: Movie[] = [
+        { id: 1, watched: true, title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 2, watched: true, title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 3, watched: false, title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
+        { id: 4, watched: true, title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 5, watched: false, title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 6, watched: true, title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
+        { id: 7, watched: true, title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 8, watched: false, title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 9, watched: true, title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
+        { id: 10,watched: true,  title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 11,watched: true,  title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 12,watched: true,  title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
+        { id: 13,watched: true,  title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 14,watched: false,  title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 15,watched: true,  title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
+        { id: 16,watched: true,  title: 'Inception', rating: 8.8, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
+        { id: 17,watched: true,  title: 'The Matrix', rating: 8.7, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
+        { id: 18,watched: false,  title: 'Interstellar', rating: 8.6, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
     ];
 
+    if (searchQuery) {
+        movies = movies.filter(movie => movie.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        movies.sort((a, b) => a.title > b.title ? 1 : -1);
+    }
 
     return (
         <>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {movies.map((movie, index) => (
-                    <div key={index} className="flex flex-col gap-2 w-full">
-                        <img src={movie.thumbnail} alt={movie.title} className="w-full h-96 object-cover" />
-                        <h2 className="text-xl">{movie.title}</h2>
-                        <p>{movie.description}</p>
-                        <p>Year: {movie.year}</p>
-                        <p>Director: {movie.director}</p>
-                        <p>Actors: {movie.actors.join(", ")}</p>
-                        <p>Genres: {movie.genres.join(", ")}</p>
-                        <p>Rating: {movie.rating}</p>
-                    </div>
+            {movies.length === 0 && <p>No movies found</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full place-items-center">
+                {movies.map((movie) => (
+                    <MovieCard movie={movie} key={movie.id} />
                 ))}
             </div>
         </>

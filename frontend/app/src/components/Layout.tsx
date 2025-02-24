@@ -14,7 +14,7 @@ export default function Layout() {
 
     return (
         <>
-            <Navbar toggle_menu={toggleMenu} />
+            <Navbar />
             <Sidebar open={menuOpen} toggle_menu={toggleMenu} />
             <main id="main" className="bg-gray-900 text-gray-50 p-4">
                 <Outlet />

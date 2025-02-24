@@ -6,32 +6,40 @@ import Button from "../components/Button";
 
 export default function Profile() {
 
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const params = useParams();
+    const { user } = useAuth();
+    // if (!user) {
+
+
+    // }
+    const [username, setUsername] = useState(user?.username || "");
+    const [email, setEmail] = useState(user?.email || "");
 
     let param_username = params.username;
 
-    useEffect(() => {
-        if (username === undefined) {
-            navigate("/");
-            return;
-        }
-    }, [param_username]);
+    // useEffect(() => {
+    //     if (username === undefined) {
+    //         // navigate("/");
+    //         // return;
+    //     }
+    // }, [param_username]);
 
-    const { user } = useAuth();
 
-    if (!user) {
-        return <Navigate to="/login" />;
-    }
+    // useEffect(() => {
+    //     if (user) {
+    //         setUsername(user.username);
+    //         setEmail(user.email);
+    //     }
+    // }, [user]);
 
-    const [username, setUsername] = useState(user.username);
-    const [email, setEmail] = useState(user.email);
+
 
     return (
         <>
             <h1>Profile</h1>
-            {param_username === user.username ? (
+            {param_username === user?.username ? (
                 <div>
 
                     <div className="flex flex-col space-y-4">
