@@ -4,7 +4,7 @@ import User from "../types/User.tsx";
 
 interface AuthContextType {
     user: User | null;
-    login: (userData: User) => void;
+    login: (userData: User | null) => void;
     logout: () => void;
 }
 
@@ -17,7 +17,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return storedUser ? JSON.parse(storedUser) : null;
     });
 
-    const login = (userData: User) => {
+    const login = (userData: User | null) => {
+        if (userData === null) {
+            setUser(null);
+            localStorage.removeItem("user");
+            return;
+        }
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
     };

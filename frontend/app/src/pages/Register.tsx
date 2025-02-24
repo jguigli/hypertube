@@ -9,6 +9,8 @@ import Input from "../components/Input";
 import SvgIcon from '@mui/material/SvgIcon';
 import GoogleIcon from '@mui/icons-material/Google';
 import "../assets/42Icon.svg";
+import CustomCard from "../components/Card";
+import AuthService from "../services/AuthService";
 
 
 function RegisterFormFirstPart(
@@ -124,13 +126,9 @@ function RegisterFormSecondPart(
     );
 }
 
-export function Icon42(
-    props: {
-        color?: string;
-    }
-) {
+export function Icon42() {
 
-    const color = props.color || "#000000";
+    const color = "#fff";
 
     return (
         <SvgIcon>
@@ -177,27 +175,25 @@ export default function Register() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Simuler la création d'un utilisateur (à remplacer par un appel API)
-        const newUser = { id: Date.now().toString(), username, email };
+        const authService = new AuthService();
+        const response = await authService.register(username, password, passwordConfirmation, email, firstName, lastName);
 
-        if (password !== passwordConfirmation) {
-            alert("Passwords do not match");
-            setCurrentStep(1);
+        if (!response.success) {
+            alert("An error occurred");
             return;
         }
 
-        // Connecter immédiatement l'utilisateur après l'inscription
-        login(newUser);
+        login(response.user);
         navigate("/");
     };
 
     return (
-        <Card className="flex flex-col align-center w-[500px] space-y-5 p-5 bg-gray-950" variant="outlined" sx={{ borderRadius: "10px", boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)", bgcolor: "gray.950" }}>
+        <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
             <div id="register" className="flex flex-col align-center gap-2">
-
                 <div>
                     <h1 className="text-2xl font-bold">Register</h1>
                     <h2 className="text-xl">Enter your details to create an account</h2>
@@ -207,9 +203,7 @@ export default function Register() {
                         <Button variant="outlined" onClick={() => navigate("/login")}>Login</Button>
                     </div>
                 </div>
-
                 <Divider className="w-full" />
-
                 <form onSubmit={handleSubmit} className="flex flex-col items-start gap-5">
                     {currentStep === 1 ? (
                         <>
@@ -224,7 +218,6 @@ export default function Register() {
                                 setShowPassword={setShowPassword}
                             />
                             <Button variant="outlined" onClick={() => setCurrentStep(2)}>Next</Button>
-
                         </>
                     ) : (
                         <>
@@ -240,18 +233,15 @@ export default function Register() {
                                 <Button variant="outlined" onClick={() => setCurrentStep(1)}>Previous</Button>
                                 <Button variant="contained" type="submit">Register</Button>
                             </div>
-
                         </>
                     )}
                 </form>
-
                 <Divider className="w-full" />
-
                 <div className="flex gap-2 w-full items-center">
                     <h2 className="text-xl"> Or register with:</h2>
                     <Button variant="outlined">
                         <span className="flex items-center gap-2">
-                            <GoogleIcon />
+                            <GoogleIcon color="secondary" />
                             Google
                         </span>
                     </Button>
@@ -263,6 +253,6 @@ export default function Register() {
                     </Button>
                 </div>
             </div>
-        </Card>
+        </CustomCard>
     );
 }

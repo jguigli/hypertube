@@ -1,6 +1,8 @@
-import { Card, CardActionArea, CardContent, CardHeader, CardMedia } from "@mui/material";
+import { Card, CardActionArea, CardContent, CardHeader, CardMedia, Rating, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import Movie from "../types/Movie.tsx";
+import CustomCard from "./Card.tsx";
+import { Star } from "@mui/icons-material";
 
 export default function MovieCard({ movie }: { movie: Movie }) {
 
@@ -16,10 +18,8 @@ export default function MovieCard({ movie }: { movie: Movie }) {
     // TODO : Differenciate watched movies from unwatched ones
 
     return (
-        <Card
-            className={`movie-card h-full w-fit ${watched ? "watched" : ""}`}
-            variant="outlined"
-            sx={{ borderRadius: "10px", boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)", bgcolor: "#000" }}
+        <CustomCard
+            additionalClasses={`h-full w-full ${watched ? "watched" : ""}`}
         >
             <CardActionArea className="h-full max-h-[600px] w-fit">
                 <Link to={`/movies/${id}`}>
@@ -37,10 +37,22 @@ export default function MovieCard({ movie }: { movie: Movie }) {
                         variant="outlined"
                     />
                     <CardContent>
-                        <p>Rating: {rating}</p>
+                        <div className="flex justify-between items-center">
+                        <Rating
+                            name="rating"
+                            value={rating / 2}
+                            precision={0.5}
+                            readOnly
+                            icon={<Star color="secondary" />}
+                            emptyIcon={<Star color="disabled" />}
+                            />
+                            <Typography variant="body2" color="textSecondary">
+                                {rating.toFixed(2)} / 10
+                            </Typography>
+                        </div>
                     </CardContent>
                 </Link>
             </CardActionArea>
-        </Card >
+        </CustomCard>
     );
 }

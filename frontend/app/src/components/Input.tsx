@@ -1,3 +1,4 @@
+import TextField from '@mui/material/TextField';
 
 export default function Input(
     props: {
@@ -8,15 +9,18 @@ export default function Input(
         required: boolean;
         id?: string;
     }) {
+
     return (
-        <input
+        <TextField
             type={props.type}
             placeholder={props.placeholder}
             value={props.value}
             onChange={props.onChange}
             required={props.required}
-            className="border border-gray-300 rounded-md p-2 w-full"
             id={props.id}
+            // variant="outlined"
+            fullWidth
+            size='small'
         />
     );
 }

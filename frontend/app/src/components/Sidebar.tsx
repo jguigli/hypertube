@@ -3,8 +3,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Checkbox, Divider, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
-import Input from "./Input";
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
 
 
 export default function Sidebar(
