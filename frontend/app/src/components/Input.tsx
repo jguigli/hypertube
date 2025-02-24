@@ -1,12 +1,17 @@
+import { AttachFile, Close, Visibility, VisibilityOff } from '@mui/icons-material';
+import { ButtonBase, IconButton, InputAdornment, OutlinedInput } from '@mui/material';
 import TextField from '@mui/material/TextField';
+import { useState } from 'react';
+import { MuiFileInput } from 'mui-file-input'
+import Button from './Button';
 
 export default function Input(
     props: {
-        type: string;
-        placeholder: string;
-        value: string;
-        onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-        required: boolean;
+        type?: string;
+        placeholder?: string;
+        value?: string;
+        onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        required?: boolean;
         id?: string;
     }) {
 
@@ -21,6 +26,78 @@ export default function Input(
             // variant="outlined"
             fullWidth
             size='small'
+            variant='outlined'
+        />
+    );
+}
+
+export function PasswordInput(
+    props: {
+        placeholder: string;
+        value: string;
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+        required: boolean;
+        id?: string;
+    }) {
+
+    const [showPassword, setShowPassword] = useState(false);
+
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+    };
+
+    return (
+        <OutlinedInput
+            id={props.id}
+            type={showPassword ? 'text' : 'password'}
+            endAdornment={
+                <InputAdornment position="end">
+                    <IconButton
+                        aria-label={
+                            showPassword ? 'hide the password' : 'display the password'
+                        }
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                    >
+                        {showPassword ? <VisibilityOff color='disabled' /> : <Visibility color="disabled" />}
+                    </IconButton>
+                </InputAdornment>
+            }
+            onChange={props.onChange}
+            value={props.value}
+            required={props.required}
+            placeholder={props.placeholder}
+            size='small'
+        />
+    );
+}
+
+export function FileInput(
+    props: {
+        file: File | null;
+        onChange: (e: File | null) => void;
+    }) {
+    return (
+        <MuiFileInput
+            value={props.file}
+            placeholder={props.file ? props.file.name : 'Choose a file'}
+            size='small'
+            InputProps={{
+                inputProps: {
+                    accept: 'image/*'
+                },
+                startAdornment: <AttachFile />
+            }}
+            clearIconButtonProps={{
+                title: "Remove",
+                children: <Close fontSize="small" />
+            }}
+            onChange={(e) => { props.onChange(e); }}
         />
     );
 }

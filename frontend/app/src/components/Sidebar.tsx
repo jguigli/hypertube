@@ -1,9 +1,10 @@
-import "../styles/Sidebar.css";
 import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@mui/material";
+import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
 
 
 export default function Sidebar(
@@ -14,12 +15,18 @@ export default function Sidebar(
 ) {
 
     const { user } = useAuth();
+    const [current_page, setCurrentPage] = useState(window.location.pathname);
+
+    useEffect(() => {
+        setCurrentPage(window.location.pathname);
+        console.log(window.location.pathname);
+    }, [window.location.pathname]);
 
     const links = [
         {
             name: "Home",
             url: "/",
-            icon: HomeIcon,
+            icon: HomeIcon
         },
 
         // Add profile link to sidebar if user is logged in
@@ -27,6 +34,27 @@ export default function Sidebar(
             name: "Profile",
             url: `/profile/${user.username}`,
             icon: AccountCircleIcon
+        } : null,
+
+        // Logout link if user is logged in
+        user ? {
+            name: "Logout",
+            url: "/logout",
+            icon: LogoutOutlined
+        } : null,
+
+        // Login link if user is not logged in
+        !user ? {
+            name: "Login",
+            url: "/login",
+            icon: LoginOutlined
+        } : null,
+
+        // Register link if user is not logged in
+        !user ? {
+            name: "Register",
+            url: "/register",
+            icon: AppRegistrationOutlined
         } : null,
 
     ].filter(Boolean);
@@ -41,6 +69,7 @@ export default function Sidebar(
         props.toggle_menu();
     };
 
+
     return (
         <nav
             id="sidebar"
@@ -52,7 +81,7 @@ export default function Sidebar(
                 <ul>
                     {links.map((link) => link && (
                         <li key={link.name} className="flex items-center space-x-2 my-3">
-                            <Link to={link.url} className="flex items-center space-x-2">
+                            <Link to={link.url} className="flex items-center space-x-2" onClick={() => setCurrentPage(link.url)}>
                                 <link.icon />
                                 {props.open && (
                                     <span className="mx-2">
@@ -65,7 +94,8 @@ export default function Sidebar(
                 </ul>
             </div>
 
-            {props.open && (
+            {
+                props.open && current_page === "/" && (
                 <>
                     <div className="flex flex-col gap-2">
                         <FormControl component="fieldset">

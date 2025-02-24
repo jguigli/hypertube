@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import User from "../types/User.tsx";
-import { Button, Divider } from "@mui/material";
-import Input from "../components/Input.tsx";
+import { Button, Divider, InputLabel, Typography } from "@mui/material";
+import Input, { PasswordInput } from "../components/Input.tsx";
 import { useNavigate } from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
-import { Icon42 } from '../pages/Register.tsx';
 import CustomCard from "../components/Card.tsx";
+import Icon42 from "../utils/Icon42.tsx";
+import { Separator } from "./Register.tsx";
 
 export default function Login() {
 
@@ -19,77 +20,57 @@ export default function Login() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // API call to login
+        login(username, password);
         setPassword("");
         setUsername("");
-        // Simulation d'un utilisateur récupéré depuis l'API
-        const fakeUser: User = {
-            id: "1",
-            username: "JohnDoe",
-            email: "johndoe@example.com"
-        };
-        login(fakeUser);
         navigate("/");
     };
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
-            <div id="login" className="flex flex-col align-center space-y-5 gap-5">
+        <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
+            <div id="login" className="flex flex-col align-center space-y-5 gap-2">
                 <form onSubmit={handleSubmit} className="flex flex-col items-start gap-5">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-bold">Login</h1>
-                        <h2 className="text-xl">Enter your credentials to login</h2>
-                    </div>
-                    <div className="flex gap-2 w-full items-center">
-                        <p>Don't have an account?</p>
-                        <Button variant="outlined" onClick={() => navigate("/register")}>Register</Button>
-                    </div>
+                    <Typography variant="h4" className="font-bold text-center w-full">
+                        Login
+                    </Typography>
+                    <Separator text='Enter your credentials to login' />
                     <div className="flex flex-col gap-2 w-full">
-                        <label htmlFor="username_login">Username</label>
+                        <InputLabel htmlFor="username_register">Username</InputLabel>
                         <Input
                             type="text"
                             placeholder="Username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
-                            id="username_login"
+                            id="username_register"
                         />
                     </div>
                     <div className="flex flex-col gap-2 w-full">
-                        <label htmlFor="password_login">Password</label>
-                        <Input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            id="password_login"
-                        />
+                        <InputLabel htmlFor="password_register">Password</InputLabel>
+                        <PasswordInput placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required id="password_register" />
                     </div>
-                    <div className="flex gap-5 w-full items-center">
-                        <Button variant="contained" type="submit">Login</Button>
+                    <div className="flex gap-5 w-full items-center ">
+                        <Button variant="contained" className="w-full" type="submit">Login</Button>
                     </div>
                     <div className="flex gap-2 w-full items-center">
-                        <p>Forgot your password?</p>
-                        <Button variant="outlined" onClick={() => navigate("/forgot-password")}>Reset password</Button>
+                        <Typography variant="body1" color="primary" onClick={() => navigate("/forgot-password")}>Reset password</Typography>
                     </div>
                 </form>
-                <Divider className="w-full" />
-                <div className="flex gap-3 w-full items-center">
-                    <h2 className="text-xl"> Or login with:</h2>
-                    <Button variant="outlined">
-                        <span className="flex items-center gap-2">
-                            <GoogleIcon color="secondary" />
-                            Google
-                        </span>
-                    </Button>
+                <>
+                    <Separator text='Or login with:' />
                     <Button variant="outlined">
                         <span className="flex items-center gap-2">
                             <Icon42 />
                             42
                         </span>
                     </Button>
-                </div>
+                    <Button variant="outlined">
+                        <span className="flex items-center gap-2">
+                            <GoogleIcon color="secondary" />
+                            Google
+                        </span>
+                    </Button>
+                </>
             </div>
         </CustomCard>
     )
