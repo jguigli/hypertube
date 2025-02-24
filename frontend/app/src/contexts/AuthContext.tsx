@@ -1,35 +1,58 @@
-import { createContext, useContext, useState } from "react";
-import User from "../types/User.tsx";
-
+import { createContext, useContext, useState, useEffect } from "react";
+import User from "../types/User";
+import AuthService from "../services/AuthService";
 
 interface AuthContextType {
     user: User | null;
-    login: (userData: User | null) => void;
+    login: (username: string, password: string) => Promise<void>;
     logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
 
-    const [user, setUser] = useState<User | null>(() => {
+    useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
-
-    const login = (userData: User | null) => {
-        if (userData === null) {
-            setUser(null);
-            localStorage.removeItem("user");
-            return;
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
         }
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+    }, []);
+
+    const login = async (username: string, password: string) => {
+        const authService = new AuthService();
+        const response = await authService.login(username, password);
+        if (response.success && response.token && response.user) {
+            setUser(response.user);
+            localStorage.setItem("user", JSON.stringify(response.user));
+            localStorage.setItem("token", response.token);
+        } else {
+
+            // TODO: Remove this block after testing
+            // For testing purposes
+            const fakeUser: User = {
+                id: "1",
+                username: "admin",
+                email: "admin@example.com",
+                firstName: "Admin",
+                lastName: "Admin",
+                avatar: "https://randomuser.me/api/portraits/men/1.jpg",  // Fixed URL
+
+            };
+            setUser(fakeUser);
+            localStorage.setItem("user", JSON.stringify(fakeUser));
+            localStorage.setItem("token", "fake-token");
+            //
+
+            throw new Error("Login failed");
+        }
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
     };
 
     return (

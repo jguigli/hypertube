@@ -60,3 +60,13 @@ form {
     align-items: flex-start;
     justify-content: center;
 }
+
+
+
+#account-menu {
+    z-index: 5;
+}
+
+#account-menu-button {
+    z-index: 6;
+}
