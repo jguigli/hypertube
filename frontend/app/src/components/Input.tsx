@@ -13,6 +13,7 @@ export default function Input(
         required?: boolean;
         id?: string;
         autocomplete?: string;
+        disabled?: boolean;
     }) {
 
     return (
@@ -28,6 +29,7 @@ export default function Input(
             size='small'
             variant='outlined'
             autoComplete={props.autocomplete ? (props.autocomplete) : 'off'}
+            disabled={props.disabled ? props.disabled : false}
         />
     );
 }

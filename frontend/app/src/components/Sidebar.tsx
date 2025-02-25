@@ -35,6 +35,13 @@ export default function Sidebar(
             icon: AccountCircleIcon
         } : null,
 
+        // Public profile
+        user ? {
+            name: "Public profile",
+            url: `/profile/${user.username}`,
+            icon: AccountCircleIcon
+        } : null,
+
         // Logout link if user is logged in
         user ? {
             name: "Logout",

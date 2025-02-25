@@ -1,14 +1,14 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Layout from "../components/Layout";
-import Home from "../pages/Home";
-import Register from "../pages/Register";
-import Login from "../pages/Login";
-import PageNotFound from "../pages/404";
-import VideoView from "../pages/VideoView";
-import Profile from "../pages/Profile";
-import ResetPassword from "../pages/ResetPassword";
+import Layout from "../components/Layout.tsx";
+import Home from "../pages/Home.tsx";
+import Register from "../pages/Register.tsx";
+import Login from "../pages/Login.tsx";
+import PageNotFound from "../pages/404.tsx";
+import VideoView from "../pages/VideoView.tsx";
+import Profile from "../pages/Profile.tsx";
+import ResetPassword from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
-import PrivateRoute from "./PrivateRoute";
+import PrivateRoute from "./PrivateRoute.tsx";
 import Logout from "../pages/Logout.tsx";
 import ProfileView from "../pages/ProfileView.tsx";
 
@@ -40,16 +40,16 @@ const router = createBrowserRouter([
                 )
             },
             {
-                path: "profile", element: (
+                path: "profile/:username", element: (
                     <PrivateRoute>
-                        <Profile />
+                        <ProfileView />
                     </PrivateRoute>
                 )
             },
             {
-                path: "profile/:username", element: (
+                path: "profile", element: (
                     <PrivateRoute>
-                        <ProfileView />
+                        <Profile />
                     </PrivateRoute>
                 )
             },

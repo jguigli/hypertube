@@ -1,109 +1,82 @@
-import { useAuth } from "../contexts/AuthContext";
-import { useState } from "react";
-import Input, { FileInput } from "../components/Input";
+import { Avatar, InputLabel, TextField } from "@mui/material";
 import CustomCard from "../components/Card";
-import { Avatar, Button, InputLabel, Typography } from "@mui/material";
+import { useParams } from "react-router-dom";
+import User from "../types/User";
+import Input from "../components/Input";
+
 
 export default function ProfileView() {
 
-    const { user } = useAuth();
+    const username = useParams<{ username: string }>().username;
 
-    const [username, setUsername] = useState(user?.username || "");
-    const [email, setEmail] = useState(user?.email || "");
-    const [firstName, setFirstName] = useState(user?.firstName || "");
-    const [lastName, setLastName] = useState(user?.lastName || "");
-    const [avatar, setAvatar] = useState<string | undefined>(user?.avatar || undefined);
-    const [newAvatar, setNewAvatar] = useState<File | null>(null);
+    if (!username) {
+        return <div>User not found</div>;
+    }
 
-    const handleAvatarChange = (file: File | null) => {
-        setNewAvatar(file);
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatar(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+    // Fetch user data from the backend
+    const fakeUserPublicData: User = {
+        id: "0",
+        username: username ? username : "john_doe",
+        firstName: "John",
+        lastName: "Doe",
+        avatar: "https://randomuser.me/api/portraits/women/76.jpg"
     };
+
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
-            <Typography variant="h4" className="font-bold text-center">
-                Customize your profile
-            </Typography>
 
             <div className="flex flex-col space-y-4 my-5 items-center w-full">
 
-                <Avatar src={avatar}
+                <Avatar src={fakeUserPublicData.avatar}
                     alt="Avatar"
                     sx={{ width: 100, height: 100 }}
                 />
 
-
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">Username:</InputLabel>
-                    <Input
-                        value={username}
-                        placeholder="Your new username"
+                    <TextField
                         type="text"
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                        id="username_profile"
+                        value={fakeUserPublicData.username}
+                        fullWidth
+                        size='small'
+                        variant='outlined'
+                        disabled={true}
+                        sx={{
+                            color: '#fff'
+                        }}
+                        color="secondary"
                     />
-                </div>
-
-
-                <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="email_profile">Email:</InputLabel>
-                    <Input
-                        value={email}
-                        placeholder="Your new email"
-                        type="email"
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        id="email_profile"
-                    />
-                </div>
-
-
-                <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="firstName_profile">First name:</InputLabel>
-                    <Input
-                        value={firstName}
-                        placeholder="Your new first name"
+                    {/* <Input
+                        value={fakeUserPublicData.username}
                         type="text"
-                        onChange={(e) => setFirstName(e.target.value)}
                         required
-                        id="firstName_profile"
-                    />
+                        disabled
+                    /> */}
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="lastName_profile">Last name:</InputLabel>
+                    <InputLabel htmlFor="first_name_profile">First Name:</InputLabel>
                     <Input
-                        value={lastName}
-                        placeholder="Your new last name"
+                        value={fakeUserPublicData.firstName}
                         type="text"
-                        onChange={(e) => setLastName(e.target.value)}
                         required
-                        id="lastName_profile"
+                        disabled
                     />
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="avatar_profile">Avatar:</InputLabel>
-                    <FileInput
-                        file={newAvatar}
-                        onChange={handleAvatarChange}
+                    <InputLabel htmlFor="last_name_profile">Last Name:</InputLabel>
+                    <Input
+                        value={fakeUserPublicData.lastName}
+                        type="text"
+                        required
+                        disabled
                     />
-                </div>
-
-                <div className="flex gap-5 w-full items-center ">
-                    <Button variant="contained" className="w-full" type="submit">Save</Button>
                 </div>
 
             </div>
+
         </CustomCard>
     )
 }
