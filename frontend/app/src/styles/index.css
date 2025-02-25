@@ -61,9 +61,7 @@ form {
     justify-content: center;
 }
 
-
-
-#account-menu {
+#account-menu, #navbar {
     z-index: 5;
 }
 

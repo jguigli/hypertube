@@ -1,9 +1,8 @@
 import { AttachFile, Close, Visibility, VisibilityOff } from '@mui/icons-material';
-import { ButtonBase, IconButton, InputAdornment, OutlinedInput } from '@mui/material';
+import { IconButton, InputAdornment, OutlinedInput } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useState } from 'react';
 import { MuiFileInput } from 'mui-file-input'
-import Button from './Button';
 
 export default function Input(
     props: {
@@ -13,6 +12,7 @@ export default function Input(
         onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
         required?: boolean;
         id?: string;
+        autocomplete?: string;
     }) {
 
     return (
@@ -27,6 +27,7 @@ export default function Input(
             fullWidth
             size='small'
             variant='outlined'
+            autoComplete={props.autocomplete ? (props.autocomplete) : 'off'}
         />
     );
 }
@@ -38,6 +39,7 @@ export function PasswordInput(
         onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
         required: boolean;
         id?: string;
+        autocomplete?: string;
     }) {
 
     const [showPassword, setShowPassword] = useState(false);
@@ -73,6 +75,7 @@ export function PasswordInput(
             required={props.required}
             placeholder={props.placeholder}
             size='small'
+            autoComplete={props.autocomplete ? (props.autocomplete) : 'off'}
         />
     );
 }

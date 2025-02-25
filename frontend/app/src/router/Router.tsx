@@ -10,6 +10,7 @@ import ResetPassword from "../pages/ResetPassword";
 import PublicRoute from "./PublicRoute.tsx"
 import PrivateRoute from "./PrivateRoute";
 import Logout from "../pages/Logout.tsx";
+import ProfileView from "../pages/ProfileView.tsx";
 
 const router = createBrowserRouter([
     {
@@ -39,9 +40,16 @@ const router = createBrowserRouter([
                 )
             },
             {
-                path: "profile/:username", element: (
+                path: "profile", element: (
                     <PrivateRoute>
                         <Profile />
+                    </PrivateRoute>
+                )
+            },
+            {
+                path: "profile/:username", element: (
+                    <PrivateRoute>
+                        <ProfileView />
                     </PrivateRoute>
                 )
             },

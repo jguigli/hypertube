@@ -19,6 +19,32 @@ const theme = createTheme({
     typography: {
         fontFamily: 'Roboto, sans-serif',
     },
+    components: {
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    input: {
+                        "&:-webkit-autofill": {
+                            WebkitBoxShadow: "0 0 0 100px #030712 inset",
+                            WebkitTextFillColor: "default",
+                        },
+                    },
+                },
+            },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    input: {
+                        "&:-webkit-autofill": {
+                            WebkitBoxShadow: "0 0 0 100px #030712 inset",
+                            WebkitTextFillColor: "default",
+                        },
+                    },
+                },
+            },
+        },
+    },
 
 });
 

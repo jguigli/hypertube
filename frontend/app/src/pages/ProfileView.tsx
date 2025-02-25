@@ -4,7 +4,7 @@ import Input, { FileInput } from "../components/Input";
 import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 
-export default function Profile() {
+export default function ProfileView() {
 
     const { user } = useAuth();
 

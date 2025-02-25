@@ -19,7 +19,6 @@ export default function Sidebar(
 
     useEffect(() => {
         setCurrentPage(window.location.pathname);
-        console.log(window.location.pathname);
     }, [window.location.pathname]);
 
     const links = [
@@ -32,7 +31,7 @@ export default function Sidebar(
         // Add profile link to sidebar if user is logged in
         user ? {
             name: "Profile",
-            url: `/profile/${user.username}`,
+            url: "/profile",
             icon: AccountCircleIcon
         } : null,
 
