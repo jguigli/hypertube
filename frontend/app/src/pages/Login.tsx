@@ -28,8 +28,8 @@ export default function Login() {
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
-            <div id="login" className="flex flex-col align-center space-y-5 gap-2">
-                <form onSubmit={handleSubmit} className="flex flex-col items-start gap-5">
+            <div id="login" className="flex flex-col align-center space-y-2 gap-2">
+                <form onSubmit={handleSubmit} className="flex flex-col items-start gap-2">
                     <Typography variant="h4" className="font-bold text-center w-full">
                         Login
                     </Typography>
@@ -53,7 +53,7 @@ export default function Login() {
                         <Button variant="contained" className="w-full" type="submit">Login</Button>
                     </div>
                     <div className="flex gap-2 w-full items-center">
-                        <Typography variant="body1" color="primary" onClick={() => navigate("/forgot-password")}>Reset password</Typography>
+                        <Typography variant="body1" color="primary" onClick={() => navigate("/forgot-password")} className="cursor-pointer">Forgot password?</Typography>
                     </div>
                 </form>
                 <>
@@ -70,6 +70,10 @@ export default function Login() {
                             Google
                         </span>
                     </Button>
+                </>
+                <>
+                    <Separator text="Don't have an account?" />
+                    <Button variant="outlined" onClick={() => navigate("/register")}>Register</Button>
                 </>
             </div>
         </CustomCard>

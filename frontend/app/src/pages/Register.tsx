@@ -41,19 +41,20 @@ function RegisterFormFirstPart(
                     onChange={(e) => props.setUsername(e.target.value)}
                     required
                     id="username_register"
+                    autocomplete="new-username"
                 />
                 <Typography variant="caption" className="text-xs" color="textSecondary">This is your public display name. It can be your real name or a pseudonym.</Typography>
             </div>
 
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_register">Password</InputLabel>
-                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} required id="password_register" />
+                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} required id="password_register" autocomplete="new-password"/>
                 <Typography variant="caption" className="text-xs" color="textSecondary">Passwords must be at least 8 characters long.</Typography>
             </div>
 
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
-                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => props.setPasswordConfirmation(e.target.value)} required id="password_confirmation_register" />
+                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => props.setPasswordConfirmation(e.target.value)} required id="password_confirmation_register" autocomplete="new-password"/>
             </div>
 
         </>
@@ -248,6 +249,12 @@ export default function Register() {
                         </>
                     )}
                 </form>
+                {currentStep === 1 && (
+                    <>
+                        <Separator text='Already have an account?' />
+                        <Button variant="text" onClick={() => navigate("/login")}>Login</Button>
+                    </>
+                )}
             </div>
         </CustomCard>
     );

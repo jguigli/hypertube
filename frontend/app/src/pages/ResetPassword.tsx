@@ -1,60 +1,51 @@
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import Button from "../components/Button";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Input from "../components/Input";
-import { Divider, Typography } from "@mui/material";
+import { Button, InputLabel, Typography } from "@mui/material";
+import CustomCard from "../components/Card";
 
 export default function ResetPassword() {
 
     const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
 
 
 
     return (
 
-        <div className="flex flex-col items-start gap-5 w-[500px]">
+        <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
 
-            <Typography variant="h4">Reset Password</Typography>
-            <p>Enter your email address and we will send you a link to reset your password.</p>
+            <div className="flex flex-col items-start gap-5 ">
 
-            <Divider className="w-full" />
+                <Typography variant="h4" className="font-bold text-center w-full">
+                    Reset your password
+                </Typography>
+                <Typography variant="body1" className="text-center w-full">
+                    Enter your email address and we will send you a link to reset your password.
+                </Typography>
 
-            <form onSubmit={(e) => e.preventDefault()}>
-                <div>
-                    <label>Email</label>
-                    <Input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
+                <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-start gap-2 w-full">
+                    <div className="flex flex-col gap-2 w-full">
+                        <InputLabel htmlFor="email_reset_password">Email</InputLabel>
+                        <Input
+                            type="text"
+                            placeholder="Email associated with your account"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            id="email_reset_password"
+                        />
+                    </div>
+                    <div className="flex gap-5 w-full items-center ">
+                        <Button variant="contained" className="w-full" type="submit">Send me a mail</Button>
+                    </div>
 
-                <Button
-                    text="Reset password"
-                    type="submit"
-                    onClick={() => {
-                        setError("");
-                        setLoading(true);
-                        setTimeout(() => {
-                            setLoading(false);
-                            setError("Email not found");
-                        }, 2000);
-                    }}
-                />
-
-                {error && <p>{error}</p>}
-
-
-            </form>
-            <Divider className="w-full" />
-            <Button onClick={() => navigate("/login")} text="Back to login" />
-        </div >
+                </form>
+                <Typography variant="body1" color="primary" onClick={() => navigate("/login")} className="cursor-pointer">
+                    Back to login
+                </Typography>
+            </div >
+        </CustomCard>
     )
 }

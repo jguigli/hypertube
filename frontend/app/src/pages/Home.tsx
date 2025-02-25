@@ -1,8 +1,11 @@
 import Movie from '../types/Movie.tsx'
 import MovieCard from '../components/MovieCard.tsx';
 import { useSearch } from '../contexts/SearchContext.tsx';
+import { useState } from 'react';
 
 export default function Home() {
+
+    const [isFetchingMovies, setIsFetchingMovies] = useState(false);
 
     const { searchQuery } = useSearch();
     let movies: Movie[] = [
@@ -31,6 +34,21 @@ export default function Home() {
         movies.sort((a, b) => a.title > b.title ? 1 : -1);
     }
 
+    // Event listener for infinite scrolling
+    window.onscroll = () => {
+        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+            // Save the current scroll position
+            setIsFetchingMovies(true);
+            setTimeout(() => {
+                const scrollPosition = window.scrollY;
+                movies = movies.concat(movies);
+                // Restore the scroll position
+                window.scrollTo(0, scrollPosition);
+                setIsFetchingMovies(false);
+            }, 1000);
+        }
+    };
+
     return (
         <>
             {movies.length === 0 && <p>No movies found</p>}
@@ -39,6 +57,7 @@ export default function Home() {
                     <MovieCard movie={movie} key={movie.id} />
                 ))}
             </div>
+            {isFetchingMovies && <p>Loading more movies...</p>}
         </>
     )
 }

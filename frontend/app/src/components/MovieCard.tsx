@@ -1,4 +1,4 @@
-import { Card, CardActionArea, CardContent, CardHeader, CardMedia, Rating, Typography } from "@mui/material";
+import {  CardActionArea, CardContent, CardHeader, CardMedia, Rating, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import Movie from "../types/Movie.tsx";
 import CustomCard from "./Card.tsx";
@@ -28,7 +28,7 @@ export default function MovieCard({ movie }: { movie: Movie }) {
                             component="img"
                             image={poster_path}
                             alt={title}
-                            className="max-w-[300px] max-h-[400px] w-fit"
+                            className="w-full h-full"
                         />
                     </div>
                     <CardHeader

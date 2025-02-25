@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Avatar, IconButton, ListItemIcon, ListItemText, Menu, Typography } from "@mui/material";
+import { Avatar, IconButton, InputBase, ListItemIcon, ListItemText, Menu, Typography } from "@mui/material";
 import React, { useState } from "react";
-import Input from "./Input.tsx"
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { MenuItem } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useSearch } from "../contexts/SearchContext.tsx";
+import { AppRegistrationOutlined, LoginOutlined, Search } from "@mui/icons-material";
 
 function Logo() {
     return (
@@ -22,15 +22,19 @@ function SearchBar() {
     const { searchQuery, setSearchQuery } = useSearch();
 
     return (
-        <form className="flex flex-row gap-2 max-w-[300px] justify-items-center items-stretch">
-            <Input
-                type="search"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                id="search-bar"
-                required={true}
-            />
+        <form onSubmit={(e) => e.preventDefault()}>
+            <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
+                <InputBase
+                    sx={{ ml: 2, flex: 1, color: 'inherit' }}
+                    placeholder="Search movies"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    inputProps={{ 'aria-label': 'search movies' }}
+                />
+                <IconButton type="submit" sx={{ p: '5px' }} aria-label="search">
+                    <Search />
+                </IconButton>
+            </div>
         </form>
     );
 }
@@ -64,10 +68,12 @@ function BasicMenu() {
                 aria-expanded={open ? 'true' : undefined}
                 onMouseEnter={handleClick}
             >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }}>
-                    {/* TODO: add the profile picture of the user */}
-                    {user !== null ? user.username[0].toUpperCase() : null}
-                </Avatar>
+                {user ? (
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} src={user.avatar} />
+                ): (
+                    <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} />
+
+                )}
             </IconButton>
 
             <Menu
@@ -80,7 +86,7 @@ function BasicMenu() {
                 {user && (
                     <MenuItem onClick={() => {
                         handleClose();
-                        navigate(`/profile/${user.username}`)
+                        navigate("/profile");
                     }}>
                         <ListItemIcon>
                             <AccountCircleIcon />
@@ -108,6 +114,9 @@ function BasicMenu() {
                         handleClose();
                         navigate("/login");
                     }}>
+                        <ListItemIcon>
+                            <LoginOutlined />
+                        </ListItemIcon>
                         <ListItemText>Login</ListItemText>
                     </MenuItem>
                 )}
@@ -117,6 +126,9 @@ function BasicMenu() {
                         handleClose();
                         navigate("/register");
                     }}>
+                        <ListItemIcon>
+                            <AppRegistrationOutlined />
+                        </ListItemIcon>
                         <ListItemText>Register</ListItemText>
                     </MenuItem>
                 )}

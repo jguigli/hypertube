@@ -12,9 +12,13 @@ interface PrivateRouteProps {
 export default function PrivateRoute({ children }: PrivateRouteProps) {
     const { user } = useAuth();
 
-    if (!user) {
+    console.log("Private route:");
+
+    if (user === null) {
+        console.log("Access denied");
         return <Navigate to="/login" />;
     }
 
+    console.log("Access granted");
     return <>{children}</>;
 }
