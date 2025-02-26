@@ -24,7 +24,6 @@ export default function Input(
             onChange={props.onChange}
             required={props.required}
             id={props.id}
-            // variant="outlined"
             fullWidth
             size='small'
             variant='outlined'

@@ -5,7 +5,7 @@ export default function CustomCard(
         additionalClasses,
         children
     }: {
-        additionalClasses: string,
+        additionalClasses?: string,
         children: React.ReactNode
     }
 ) {

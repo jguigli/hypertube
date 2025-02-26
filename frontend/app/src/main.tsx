@@ -10,15 +10,18 @@ import '@fontsource/roboto/700.css';
 import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
 import { SearchProvider } from './contexts/SearchContext.tsx'
+import { MoviesProvider } from './contexts/MovieContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ThemeProvider theme={theme}>
-            <AuthProvider>
-                <SearchProvider>
-                    <AppRouter />
-                </SearchProvider>
-            </AuthProvider>
+            <MoviesProvider>
+                <AuthProvider>
+                    <SearchProvider>
+                        <AppRouter />
+                    </SearchProvider>
+                </AuthProvider>
+            </MoviesProvider>
         </ThemeProvider>
     </StrictMode>,
 )
