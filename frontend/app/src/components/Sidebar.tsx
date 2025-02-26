@@ -3,7 +3,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, FormControl, FormControlLabel, FormLabel, IconButton, Radio, RadioGroup } from "@mui/material";
-import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined } from '@mui/icons-material';
+import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 
 
@@ -25,13 +25,13 @@ export default function Sidebar() {
         },
         user ? {
             name: "Profile",
-            url: "/profile",
+            url: `/profile/${user.username}`,
             icon: AccountCircleIcon
         } : null,
         user ? {
-            name: "Public profile",
-            url: `/profile/${user.username}`,
-            icon: AccountCircleIcon
+            name: "Settings",
+            url: "/settings",
+            icon: Settings
         } : null,
         user ? {
             name: "Logout",
@@ -60,8 +60,8 @@ export default function Sidebar() {
             <div className="flex flex-col gap-2">
                 <ul>
                     {links.map((link) => link && (
-                        <li key={link.name} className="flex items-center my-3">
-                            <Link to={link.url} className="flex items-start gap-y-2" onClick={() => setCurrentPage(link.url)}>
+                        <li key={link.name} className="flex items-start gap-y-2">
+                            <Link to={link.url} className="" onClick={() => setCurrentPage(link.url)}>
                                 {menuOpen ? (
                                     <Button
                                         variant="contained"
@@ -79,7 +79,6 @@ export default function Sidebar() {
                                     <IconButton
                                         color="inherit"
                                         size="small"
-                                        href={link.url}
                                     >
                                         <link.icon fontSize='small' />
                                     </IconButton>
