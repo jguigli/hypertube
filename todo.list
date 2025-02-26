@@ -1,0 +1,8 @@
+TODO:
+
+- [ ] Navbar menu not perfect, stay open ... move the language switcher
+- [ ] Work on search provider
+- [ ] Improve infinite scroll performance
+- [ ] API Section in the sidebar
+- [ ] Change the name and icon of Profile and PublicProfile in the sidebar
+- [ ] Add the language in the fields of the register form / update profile when the user switch language

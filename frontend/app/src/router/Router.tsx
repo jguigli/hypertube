@@ -10,64 +10,77 @@ import ResetPassword from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
 import PrivateRoute from "./PrivateRoute.tsx";
 import Logout from "../pages/Logout.tsx";
-import ProfileView from "../pages/ProfileView.tsx";
+import PublicProfile from "../pages/PublicProfile.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Layout />,
         children: [
-            { index: true, element: <Home /> },
             {
-                path: "register", element: (
+                index: true,
+                element: <Home />
+            },
+            {
+                path: "register",
+                element: (
                     <PublicRoute>
                         <Register />
                     </PublicRoute>
                 ),
             },
             {
-                path: "login", element: (
+                path: "login",
+                element: (
                     <PublicRoute>
                         <Login />
                     </PublicRoute>
                 )
             },
             {
-                path: "forgot-password", element: (
+                path: "forgot-password",
+                element: (
                     <PublicRoute>
                         <ResetPassword />
                     </PublicRoute>
                 )
             },
             {
-                path: "profile/:username", element: (
+                path: "profile/:username",
+                element: (
                     <PrivateRoute>
-                        <ProfileView />
+                        <PublicProfile />
                     </PrivateRoute>
                 )
             },
             {
-                path: "profile", element: (
+                path: "profile",
+                element: (
                     <PrivateRoute>
                         <Profile />
                     </PrivateRoute>
                 )
             },
             {
-                path: "watch/:id", element: (
+                path: "watch/:id",
+                element: (
                     <PrivateRoute>
                         <VideoView />
                     </PrivateRoute>
                 )
             },
             {
-                path: "logout", element: (
+                path: "logout",
+                element: (
                     <PrivateRoute>
                         <Logout />
                     </PrivateRoute>
                 )
             },
-            { path: "*", element: <PageNotFound /> },
+            {
+                path: "*",
+                element: <PageNotFound />
+            },
         ],
     },
 ]);

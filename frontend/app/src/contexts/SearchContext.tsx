@@ -1,9 +1,5 @@
 import { createContext, useContext, useState } from "react";
 
-class Search {
-    title: string = "";
-}
-
 interface SearchContextType {
     searchQuery: string;
     setSearchQuery: (searchQuery: string) => void;

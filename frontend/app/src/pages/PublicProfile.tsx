@@ -1,11 +1,11 @@
-import { Avatar, InputLabel, TextField } from "@mui/material";
+import { Avatar, InputLabel, TextField, Typography } from "@mui/material";
 import CustomCard from "../components/Card";
 import { useParams } from "react-router-dom";
 import User from "../types/User";
 import Input from "../components/Input";
 
 
-export default function ProfileView() {
+export default function PublicProfile() {
 
     const username = useParams<{ username: string }>().username;
 
@@ -35,48 +35,20 @@ export default function ProfileView() {
 
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">Username:</InputLabel>
-                    <TextField
-                        type="text"
-                        value={fakeUserPublicData.username}
-                        fullWidth
-                        size='small'
-                        variant='outlined'
-                        disabled={true}
-                        sx={{
-                            color: '#fff'
-                        }}
-                        color="secondary"
-                    />
-                    {/* <Input
-                        value={fakeUserPublicData.username}
-                        type="text"
-                        required
-                        disabled
-                    /> */}
+                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{fakeUserPublicData.username}</Typography>
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="first_name_profile">First Name:</InputLabel>
-                    <Input
-                        value={fakeUserPublicData.firstName}
-                        type="text"
-                        required
-                        disabled
-                    />
+                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{fakeUserPublicData.firstName}</Typography>
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="last_name_profile">Last Name:</InputLabel>
-                    <Input
-                        value={fakeUserPublicData.lastName}
-                        type="text"
-                        required
-                        disabled
-                    />
+                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{fakeUserPublicData.lastName}</Typography>
                 </div>
 
             </div>
-
         </CustomCard>
-    )
+    );
 }
