@@ -7,4 +7,5 @@ export default interface User {
     avatar?: string;
     createdAt?: string;
     token?: string;
+    language?: 'en' | 'fr';
 }

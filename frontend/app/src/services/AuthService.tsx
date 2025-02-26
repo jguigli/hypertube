@@ -9,7 +9,8 @@ export default class AuthService {
         email: string,
         firstName: string,
         lastName: string,
-        avatar: File | null
+        avatar: File | null,
+        preferedLanguage: string
     ): Promise<{ success: boolean, error: any }> {
         const formData = new FormData();
         formData.append("username", username);
@@ -21,6 +22,7 @@ export default class AuthService {
         if (avatar) {
             formData.append("avatar", avatar);
         }
+        formData.append("preferedLanguage", preferedLanguage);
 
         try {
             await axios.post("http://localhost:8000/api/auth/signup", formData, {

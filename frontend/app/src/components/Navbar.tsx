@@ -47,10 +47,14 @@ function SearchBar() {
 
 export function LanguageSelection() {
 
-    const [language, setLanguage] = useState('en');
+    const { userLanguage } = useAuth();
+
+    const [language, setLanguage] = useState(userLanguage);
 
     const handleChange = (event: SelectChangeEvent) => {
-        setLanguage(event.target.value);
+        if (event.target.value === "en" || event.target.value === "fr") {
+            setLanguage(event.target.value);
+        }
     };
 
     return (
@@ -118,7 +122,7 @@ function UserMenu() {
                 {user && (
                     <MenuItem onClick={() => {
                         handleClose();
-                        navigate("/profile");
+                        navigate(`/profile/${user.username}`);
                     }}>
                         <ListItemIcon>
                             <AccountCircleIcon />
