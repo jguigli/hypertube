@@ -40,7 +40,7 @@ const VideoContext = createContext<VideoContextType | undefined>(undefined);
 export function VideoProvider({ children }: { children: React.ReactNode }) {
   const playerRef = useRef<videojs.Player | null>(null);
   const [videoOptions, setVideoOptions] = useState<videojs.PlayerOptions>({
-    autoplay: false,
+    autoplay: true,
     controls: true,
     responsive: true,
     fluid: true,
