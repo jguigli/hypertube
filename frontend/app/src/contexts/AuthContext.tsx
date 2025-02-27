@@ -1,28 +1,39 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import User from "../types/User";
 
 interface AuthContextType {
-    user: User | null;
+    user: User;
     login: (username: string, password: string) => Promise<void>;
-    userLanguage: 'en' | 'fr';
-    setUserLanguage: (language: 'en' | 'fr') => void;
     logout: () => void;
+    changeUserLanguage: (language: 'en' | 'fr') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
+    function defaultUser(): User {
+        return {
+            id: "0",
+            username: "default_user",
+            email: "",
+            firstName: "Default",
+            lastName: "User",
+            avatar: "https://randomuser.me/api/portraits/men/0.jpg",
+            is_logged_in: false,
+            language: "en"
+        };
+    }
+
     function getStoredUser() {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             return JSON.parse(storedUser);
         }
-        return null;
+        return defaultUser();
     }
 
-    const [user, setUser] = useState<User | null>(getStoredUser());
-    const [userLanguage, setUserLanguage] = useState<'en' | 'fr'>(user?.language || 'en');
+    const [user, setUser] = useState<User>(getStoredUser());
 
     const login = async (username: string, password: string) => {
         // const authService = new AuthService();
@@ -43,9 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lastName: "Admin",
             avatar: "https://randomuser.me/api/portraits/men/1.jpg",
             language: "en",
+            is_logged_in: true
         };
         setUser(fakeUser);
-        setUserLanguage(fakeUser?.language ? fakeUser.language : 'en');
         localStorage.setItem("user", JSON.stringify(fakeUser));
         localStorage.setItem("token", "fake-token");
         // throw new Error("Login failed");
@@ -53,13 +64,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = () => {
-        setUser(null);
+        setUser({ is_logged_in: false, language: "en" });
         localStorage.removeItem("user");
         localStorage.removeItem("token");
     };
 
+    const changeUserLanguage = (language: 'en' | 'fr') => {
+        const updatedUser = { ...user, language };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, userLanguage, setUserLanguage }}>
+        <AuthContext.Provider value={{ user, login, logout, changeUserLanguage }}>
             {children}
         </AuthContext.Provider>
     );

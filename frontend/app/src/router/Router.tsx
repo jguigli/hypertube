@@ -5,7 +5,6 @@ import Register from "../pages/Register.tsx";
 import Login from "../pages/Login.tsx";
 import PageNotFound from "../pages/404.tsx";
 import VideoView from "../pages/VideoView.tsx";
-import Profile from "../pages/UserSettings.tsx";
 import ResetPassword from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
 import PrivateRoute from "./PrivateRoute.tsx";
