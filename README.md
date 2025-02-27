@@ -4,6 +4,24 @@
 
 Hypertube is a modern video streaming web application that allows users to search and watch movies using the BitTorrent protocol.
 
+## Setup
+
+**Clone the Repository**
+   ```bash
+   git clone https://github.com/jguigli/hypertube.git
+   cd hypertube
+   ```
+
+**Install the app**
+   ```bash
+   make
+   ```
+    
+## Usage
+
+- **Access hypertube**: Visit `http://localhost:3000` to access the hypertube site.
+
+
 ## Dev
 
 ### Alembic
@@ -19,25 +37,6 @@ Hypertube is a modern video streaming web application that allows users to searc
    make alembic
    ```
 
-## Setup
-
-**Clone the Repository**
-   ```bash
-   git clone https://github.com/jguigli/hypertube.git
-   cd hypertube
-   ```
-
-**Install the app**
-   ```bash
-   make build
-   make
-   ```
-    
-
-## Usage
-
-- **Access hypertube**: Visit `http://localhost:3000` to access the hypertube site.
-
 
 
 ## Useful Links
@@ -48,3 +47,11 @@ Hypertube is a modern video streaming web application that allows users to searc
 [FastAPI with SQLAlchemy](https://blog.stackademic.com/using-fastapi-with-sqlalchemy-5cd370473fe5)  
 [Doc SQLAlchemy](https://docs.sqlalchemy.org/en/20/)  
 [Alembic with fastAPI](https://www.nashruddinamin.com/blog/how-to-use-alembic-for-database-migrations-in-your-fastapi-application)  
+[Send email with fastAPI byb Google](https://medium.com/nerd-for-tech/how-to-send-email-using-python-fastapi-947921059f0c)  
+[Send email with fastAPI by SMTP](https://mailmug.net/blog/fastapi-mail/)  
+[FastAPI OAuth Client](https://docs.authlib.org/en/latest/client/fastapi.html)  
+[42 API](https://api.intra.42.fr/apidoc/guides/web_application_flow)  
+[IMDb](https://developer.imdb.com/documentation/api-documentation/getting-access/)  
+[TMDb API](https://developer.themoviedb.org/v4/reference/intro/getting-started)  
+[YTS API](https://github.com/BrokenEmpire/YTS/blob/master/API.md)  
+[Streaming torrent client with Python](https://www.youtube.com/watch?v=PKJeW80yLRY)  
