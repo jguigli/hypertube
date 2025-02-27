@@ -1,5 +1,7 @@
-./backend/.env
 **/__pycache__/
 **/__pycache__/**
 .env
 .service-id
+**/.env
+en.subject.pdf
+

@@ -1,6 +1,15 @@
-version: "3.9"
-
 services:
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - "${PWD}/frontend/app:/app"
+    depends_on:
+      - api
+
   api:
     build: ./backend
     container_name: fastapi
