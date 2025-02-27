@@ -5,3 +5,6 @@ en.subject.pdf
 
 .env
 .service-id
+
+.DS_Store
+**/.DS_Store/**
