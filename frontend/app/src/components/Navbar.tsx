@@ -33,7 +33,9 @@ function SearchBar() {
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            setSearchQuery(event.target.value);
+                        }}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
                     <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
@@ -184,8 +186,8 @@ export default function Navbar() {
             <Logo />
             <SearchBar />
             <div className="flex flex-row items-center">
-                <LanguageSelection />
-                <UserMenu />
+                {/* <LanguageSelection /> */}
+                {/* <UserMenu /> */}
             </div>
         </nav>
     );

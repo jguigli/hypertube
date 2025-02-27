@@ -53,42 +53,56 @@ export default function Sidebar() {
     return (
         <nav
             id="sidebar"
-            className="bg-gray-950 p-4 size-fit h-full col-span-1 row-span-2 row-start-2 border-r border-gray-500/50 text-gray-50 z-50 space-y-3 gap-3"
+            className="bg-gray-950 size-fit h-full border-r border-gray-500/50 z-50 flex flex-col items-start  gap-5 py-4"
             onMouseEnter={() => setMenuOpen(true)}
             onMouseLeave={() => setMenuOpen(false)}
         >
-            <div className="flex flex-col gap-2">
-                <ul>
-                    {links.map((link) => link && (
-                        <li key={link.name} className="flex items-start gap-y-2">
-                            <Link to={link.url} className="" onClick={() => setCurrentPage(link.url)}>
-                                {menuOpen ? (
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        size="small"
-                                        startIcon={
-                                            <link.icon fontSize='small' />
-                                        }
-                                        className="w-full"
-                                        sx={{ backgroundColor: current_page === link.url ? "primary" : "transparent" }}
-                                    >
-                                        {link.name}
-                                    </Button>
-                                ) : (
-                                    <IconButton
-                                        color="inherit"
-                                        size="small"
-                                    >
-                                        <link.icon fontSize='small' />
-                                    </IconButton>
-                                )}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            {
+            {links.map((link) => link && (
+                <Link to={link.url} onClick={() => setCurrentPage(link.url)} className='w-full' key={link.url}>
+
+                    {
+                        menuOpen ?
+                            (
+                                <Button
+                                    variant="contained"
+                                    size='small'
+                                    className='w-full flex justify-start sidebar-open'
+                                    startIcon={<link.icon fontSize='small' className='sidebar-icon' />}
+                                    sx={{
+                                        backgroundColor: current_page === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        width: 'calc(100% - 10px)',
+                                        margin: "0 5px",
+                                        display: "flex",
+                                        justifyContent: "flex-start",
+                                    }}
+                                >{link.name}</Button>
+                            )
+                            :
+                            (
+                                <Button
+                                    variant="contained"
+                                    startIcon={<link.icon fontSize='small' />}
+                                    size='small'
+                                    sx={{
+                                        backgroundColor: current_page === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        width: 'calc(100% - 10px)',
+                                        margin: "0 5px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                    }}
+                                    className='w-full flex justify-start sidebar-closed'
+                                >
+                                    {menuOpen && link.name}
+                                </Button>
+                            )
+                    }
+                </Link>
+            ))}
+
+
+
+
+            {/* {
                 menuOpen && current_page === "/" && (
                     <>
                         <div className="flex flex-col gap-2">
@@ -107,7 +121,7 @@ export default function Sidebar() {
                         </div>
                     </>
                 )
-            }
-        </nav>
+            } */}
+        </nav >
     );
 }
