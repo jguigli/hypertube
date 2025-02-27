@@ -1,73 +1,87 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Layout from "../components/Layout";
-import Home from "../pages/Home";
-import Register from "../pages/Register";
-import Login from "../pages/Login";
-import PageNotFound from "../pages/404";
-import VideoView from "../pages/VideoView";
-import Profile from "../pages/Profile";
-import ResetPassword from "../pages/ResetPassword";
+import Layout from "../components/Layout.tsx";
+import Home from "../pages/Home.tsx";
+import Register from "../pages/Register.tsx";
+import Login from "../pages/Login.tsx";
+import PageNotFound from "../pages/404.tsx";
+import VideoView from "../pages/VideoView.tsx";
+import Profile from "../pages/UserSettings.tsx";
+import ResetPassword from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
-import PrivateRoute from "./PrivateRoute";
+import PrivateRoute from "./PrivateRoute.tsx";
 import Logout from "../pages/Logout.tsx";
-import ProfileView from "../pages/ProfileView.tsx";
+import PublicProfile from "../pages/Profile.tsx";
+import UserSettings from "../pages/UserSettings.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Layout />,
         children: [
-            { index: true, element: <Home /> },
             {
-                path: "register", element: (
+                index: true,
+                element: <Home />
+            },
+            {
+                path: "register",
+                element: (
                     <PublicRoute>
                         <Register />
                     </PublicRoute>
                 ),
             },
             {
-                path: "login", element: (
+                path: "login",
+                element: (
                     <PublicRoute>
                         <Login />
                     </PublicRoute>
                 )
             },
             {
-                path: "forgot-password", element: (
+                path: "forgot-password",
+                element: (
                     <PublicRoute>
                         <ResetPassword />
                     </PublicRoute>
                 )
             },
             {
-                path: "profile", element: (
+                path: "profile/:username",
+                element: (
                     <PrivateRoute>
-                        <Profile />
+                        <PublicProfile />
                     </PrivateRoute>
                 )
             },
             {
-                path: "profile/:username", element: (
+                path: "settings",
+                element: (
                     <PrivateRoute>
-                        <ProfileView />
+                        <UserSettings />
                     </PrivateRoute>
                 )
             },
             {
-                path: "watch/:id", element: (
+                path: "watch/:id",
+                element: (
                     <PrivateRoute>
                         <VideoView />
                     </PrivateRoute>
                 )
             },
             {
-                path: "logout", element: (
+                path: "logout",
+                element: (
                     <PrivateRoute>
                         <Logout />
                     </PrivateRoute>
                 )
             },
-            { path: "*", element: <PageNotFound /> },
+            {
+                path: "*",
+                element: <PageNotFound />
+            },
         ],
     },
 ]);

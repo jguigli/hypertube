@@ -4,10 +4,10 @@ import Input, { FileInput } from "../components/Input";
 import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 
-export default function ProfileView() {
+
+export default function UserSettings() {
 
     const { user } = useAuth();
-
     const [username, setUsername] = useState(user?.username || "");
     const [email, setEmail] = useState(user?.email || "");
     const [firstName, setFirstName] = useState(user?.firstName || "");
@@ -31,16 +31,11 @@ export default function ProfileView() {
             <Typography variant="h4" className="font-bold text-center">
                 Customize your profile
             </Typography>
-
             <div className="flex flex-col space-y-4 my-5 items-center w-full">
-
                 <Avatar src={avatar}
                     alt="Avatar"
                     sx={{ width: 100, height: 100 }}
                 />
-
-
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">Username:</InputLabel>
                     <Input
@@ -52,8 +47,6 @@ export default function ProfileView() {
                         id="username_profile"
                     />
                 </div>
-
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="email_profile">Email:</InputLabel>
                     <Input
@@ -65,8 +58,6 @@ export default function ProfileView() {
                         id="email_profile"
                     />
                 </div>
-
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="firstName_profile">First name:</InputLabel>
                     <Input
@@ -78,7 +69,6 @@ export default function ProfileView() {
                         id="firstName_profile"
                     />
                 </div>
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="lastName_profile">Last name:</InputLabel>
                     <Input
@@ -90,7 +80,6 @@ export default function ProfileView() {
                         id="lastName_profile"
                     />
                 </div>
-
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="avatar_profile">Avatar:</InputLabel>
                     <FileInput
@@ -98,11 +87,9 @@ export default function ProfileView() {
                         onChange={handleAvatarChange}
                     />
                 </div>
-
                 <div className="flex gap-5 w-full items-center ">
                     <Button variant="contained" className="w-full" type="submit">Save</Button>
                 </div>
-
             </div>
         </CustomCard>
     )

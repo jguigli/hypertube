@@ -11,17 +11,20 @@ import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
 import { SearchProvider } from './contexts/SearchContext.tsx'
 import { VideoProvider } from './contexts/VideoContext.tsx'
+import { MoviesProvider } from './contexts/MovieContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ThemeProvider theme={theme}>
-            <AuthProvider>
-                <SearchProvider>
-                    <VideoProvider>
-                        <AppRouter />
-                    </VideoProvider>
-                </SearchProvider>
-            </AuthProvider>
+            <MoviesProvider>
+                <AuthProvider>
+                    <SearchProvider>
+                        <VideoProvider>
+                            <AppRouter />
+                        </VideoProvider>
+                    </SearchProvider>
+                </AuthProvider>
+            </MoviesProvider>
         </ThemeProvider>
     </StrictMode>,
 )

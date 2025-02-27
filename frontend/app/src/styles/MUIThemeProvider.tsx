@@ -28,6 +28,9 @@ const theme = createTheme({
                             WebkitBoxShadow: "0 0 0 100px #030712 inset",
                             WebkitTextFillColor: "default",
                         },
+                        "& .MuiInputBase-root.Mui-disabled": {
+                            color: "rgba(0, 0, 0, 0.6)" // (default alpha is 0.38)
+                        },
                     },
                 },
             },
@@ -44,6 +47,7 @@ const theme = createTheme({
                 },
             },
         },
+
     },
 
 });
