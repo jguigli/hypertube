@@ -3,11 +3,12 @@ import { useSearch } from '../contexts/SearchContext.tsx';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import Movie from '../types/Movie.tsx';
+import { Button, Card } from '@mui/material';
 
 
 export default function Home() {
     const { searchQuery } = useSearch();
-    const { movies, setMovies, filterMovies, sortMovies } = useMovies();
+    const { movies, setMovies } = useMovies();
 
     const [displayedMovies, setDisplayedMovies] = useState(movies);
     const [page, setPage] = useState(1);
@@ -73,7 +74,6 @@ export default function Home() {
             setDisplayedMovies(movies);
         } else {
             setDisplayedMovies(
-                
                 movies.filter((movie) =>
                     movie.title.toLowerCase().includes(searchQuery.toLowerCase())
                 )
@@ -102,6 +102,13 @@ export default function Home() {
     }, [fetchMovies, hasMore, searchQuery]);
 
 
+    // Sort movies
+    useEffect(() => {
+        if (searchQuery) return;
+
+        setDisplayedMovies([...movies].sort((a, b) => b.rating - a.rating));
+    }, [movies, searchQuery]);
+
 
 
     return (
@@ -127,6 +134,17 @@ export default function Home() {
                     )}
                 </div>
             )}
+
+            <Card className="fixed bottom-4 p-2 rounded-full bg-white shadow-md">
+                <Button
+                    onClick={() => {
+                        
+                    }
+                }
+                >
+                    Sort by rating
+                </Button>
+                </Card>
 
         </>
     );
