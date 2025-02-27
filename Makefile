@@ -12,7 +12,7 @@ build:
 	$(DOCKER_COMPOSE) build
 
 exec_api:
-	docker exec -it api bash
+	docker exec -it fastapi bash
 
 logs:
 	$(DOCKER_COMPOSE) logs -f api
