@@ -3,8 +3,6 @@ import { useSearch } from '../contexts/SearchContext.tsx';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import Movie from '../types/Movie.tsx';
-import { IconButton } from '@mui/material';
-import { ArrowUpward, Key, KeyboardArrowUp } from '@mui/icons-material';
 
 
 export default function Home() {
@@ -35,7 +33,7 @@ export default function Home() {
                     title: "Movie 1",
                     production_year: 2021,
                     rating: 5,
-                    poster_path: "https://via.placeholder.com/300",
+                    poster_path: "#",
                     watched: false,
                 },
                 {
@@ -43,7 +41,7 @@ export default function Home() {
                     title: "Movie 2",
                     production_year: 2021,
                     rating: 5,
-                    poster_path: "https://via.placeholder.com/300",
+                    poster_path: "#",
                     watched: false,
                 },
                 {
@@ -51,7 +49,7 @@ export default function Home() {
                     title: "Movie 3",
                     production_year: 2021,
                     rating: 5,
-                    poster_path: "https://via.placeholder.com/300",
+                    poster_path: "#",
                     watched: false,
                 }
             ];
@@ -84,7 +82,8 @@ export default function Home() {
 
     // Intersection Observer pour détecter le scroll
     useEffect(() => {
-        if (!loadingRef.current) return;
+        if (!loadingRef.current || !hasMore || searchQuery) return;
+
 
         observerRef.current = new IntersectionObserver(
             (entries) => {
@@ -99,7 +98,7 @@ export default function Home() {
         observerRef.current.observe(loadingRef.current);
 
         return () => observerRef.current?.disconnect();
-    }, [fetchMovies]);
+    }, [fetchMovies, hasMore, searchQuery]);
 
 
 
@@ -118,14 +117,15 @@ export default function Home() {
                 </div>
             )}
 
-            {/* Loader pour charger plus de films */}
             {hasMore && (
                 <div ref={loadingRef} className="flex justify-center py-4">
-                    {isLoading ? <p>Loading...</p> : <p>Scroll to load more...</p>}
+                    {isLoading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        !searchQuery && <p>Scroll to load more...</p>
+                    )}
                 </div>
             )}
-
-
 
         </>
     );
