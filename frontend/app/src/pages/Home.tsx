@@ -199,12 +199,20 @@ export default function Home() {
 
     const handleSortChange = (event: SelectChangeEvent) => {
         setSortOption(event.target.value);
-        setDisplayedMovies(applySortAndFilter(movies));
+        // Fetch new movies sorted by the selected option
+        // The scroll observer will take care of loading more movies
+        setPage(1);
+        setHasMore(true);
+        setMovies([]);
     };
 
     const handleFilterChange = (event: SelectChangeEvent) => {
         setFilterOption(event.target.value);
-        setDisplayedMovies(applySortAndFilter(movies));
+        // Fetch new movies sorted by the selected option
+        // The scroll observer will take care of loading more movies
+        setPage(1);
+        setHasMore(true);
+        setMovies([]);
     };
 
     return (
@@ -231,7 +239,7 @@ export default function Home() {
                 </div>
             )}
 
-            <Card className="fixed bottom-4 p-2 rounded-full bg-white shadow-md flex gap-4 p-4">
+            <Card className="fixed bottom-4 rounded-full bg-white shadow-md flex gap-4 p-4">
                 <FormControl variant="outlined" size="small">
                     <InputLabel>Sort by</InputLabel>
                     <Select
