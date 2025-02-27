@@ -1,63 +1,151 @@
-import Movie from '../types/Movie.tsx'
 import MovieCard from '../components/MovieCard.tsx';
 import { useSearch } from '../contexts/SearchContext.tsx';
-import { useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useMovies } from '../contexts/MovieContext.tsx';
+import Movie from '../types/Movie.tsx';
+import { Button, Card } from '@mui/material';
+
 
 export default function Home() {
-
-    const [isFetchingMovies, setIsFetchingMovies] = useState(false);
-
     const { searchQuery } = useSearch();
-    let movies: Movie[] = [
-        { id: 1, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 2, watched: true, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 3, watched: false, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-        { id: 4, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 5, watched: false, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 6, watched: true, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-        { id: 7, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 8, watched: false, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 9, watched: true, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-        { id: 10, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 11, watched: true, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 12, watched: true, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-        { id: 13, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 14, watched: false, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 15, watched: true, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-        { id: 16, watched: true, title: 'Inception', rating: Math.random() * 10, production_year: 2010, poster_path: 'https://lioneldavoust.com/wp-content/uploads/inception.jpg' },
-        { id: 17, watched: true, title: 'The Matrix', rating: Math.random() * 10, production_year: 1999, poster_path: 'https://media.senscritique.com/media/000021915685/0/matrix.png' },
-        { id: 18, watched: false, title: 'Interstellar', rating: Math.random() * 10, production_year: 2014, poster_path: 'https://bibliosff.wordpress.com/wp-content/uploads/2022/07/interstellar-affiche-film.jpg' },
-    ];
+    const { movies, setMovies } = useMovies();
 
-    if (searchQuery) {
-        movies = movies.filter(movie => movie.title.toLowerCase().includes(searchQuery.toLowerCase()));
-        movies.sort((a, b) => a.title > b.title ? 1 : -1);
-    }
+    const [displayedMovies, setDisplayedMovies] = useState(movies);
+    const [page, setPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
-    // Event listener for infinite scrolling
-    window.onscroll = () => {
-        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
-            // Save the current scroll position
-            setIsFetchingMovies(true);
-            setTimeout(() => {
-                const scrollPosition = window.scrollY;
-                movies = movies.concat(movies);
-                // Restore the scroll position
-                window.scrollTo(0, scrollPosition);
-                setIsFetchingMovies(false);
-            }, 1000);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadingRef = useRef<HTMLDivElement | null>(null);
+
+    // Fonction pour récupérer les films depuis l'API
+    const fetchMovies = useCallback(async () => {
+        if (isLoading || !hasMore) return;
+
+        setIsLoading(true);
+        try {
+            // const response = await fetch(`/api/movies?page=${page}`);
+            // const newMovies = await response.json();
+
+            // Mock response
+            const newMovies: Movie[] = [
+                {
+                    id: Math.random(),
+                    title: "Movie 1",
+                    production_year: 2021,
+                    rating: 5,
+                    poster_path: "#",
+                    watched: false,
+                },
+                {
+                    id: Math.random(),
+                    title: "Movie 2",
+                    production_year: 2021,
+                    rating: 5,
+                    poster_path: "#",
+                    watched: false,
+                },
+                {
+                    id: Math.random(),
+                    title: "Movie 3",
+                    production_year: 2021,
+                    rating: 5,
+                    poster_path: "#",
+                    watched: false,
+                }
+            ];
+
+            if (newMovies.length === 0) {
+                setHasMore(false);
+            } else {
+                setMovies([...movies, ...newMovies]);
+                setPage((prevPage) => prevPage + 1);
+            }
+        } catch (error) {
+            console.error("Erreur lors du chargement des films", error);
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [page, isLoading, hasMore, setMovies]);
+
+    // Filtrer les films selon la recherche
+    useEffect(() => {
+        if (searchQuery === "") {
+            setDisplayedMovies(movies);
+        } else {
+            setDisplayedMovies(
+                movies.filter((movie) =>
+                    movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+            );
+        }
+    }, [searchQuery, movies]);
+
+    // Intersection Observer pour détecter le scroll
+    useEffect(() => {
+        if (!loadingRef.current || !hasMore || searchQuery) return;
+
+
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    fetchMovies();
+                }
+            },
+            { rootMargin: "50%" }
+            // Déclenche fetchMovies() en fonction de la position du scroll
+        );
+
+        observerRef.current.observe(loadingRef.current);
+
+        return () => observerRef.current?.disconnect();
+    }, [fetchMovies, hasMore, searchQuery]);
+
+
+    // Sort movies
+    useEffect(() => {
+        if (searchQuery) return;
+
+        setDisplayedMovies([...movies].sort((a, b) => b.rating - a.rating));
+    }, [movies, searchQuery]);
+
+
 
     return (
         <>
-            {movies.length === 0 && <p>No movies found</p>}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full place-items-center">
-                {movies.map((movie) => (
-                    <MovieCard movie={movie} key={movie.id} />
-                ))}
-            </div>
-            {isFetchingMovies && <p>Loading more movies...</p>}
+            {displayedMovies.length === 0 ? (
+                <div className="flex justify-center items-center">
+                    <p className="text-3xl">No movies found</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full place-items-center p-4">
+                    {displayedMovies.map((movie) => (
+                        <MovieCard movie={movie} key={movie.id} />
+                    ))}
+                </div>
+            )}
+
+            {hasMore && (
+                <div ref={loadingRef} className="flex justify-center py-4">
+                    {isLoading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        !searchQuery && <p>Scroll to load more...</p>
+                    )}
+                </div>
+            )}
+
+            <Card className="fixed bottom-4 p-2 rounded-full bg-white shadow-md">
+                <Button
+                    onClick={() => {
+                        
+                    }
+                }
+                >
+                    Sort by rating
+                </Button>
+                </Card>
+
         </>
-    )
+    );
 }

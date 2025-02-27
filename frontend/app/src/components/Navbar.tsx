@@ -8,6 +8,10 @@ import { MenuItem } from "@mui/material";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useSearch } from "../contexts/SearchContext.tsx";
 import { AppRegistrationOutlined, LoginOutlined, Search } from "@mui/icons-material";
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+
 
 function Logo() {
     return (
@@ -22,24 +26,58 @@ function SearchBar() {
     const { searchQuery, setSearchQuery } = useSearch();
 
     return (
-        <form onSubmit={(e) => e.preventDefault()}>
-            <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-                <InputBase
-                    sx={{ ml: 2, flex: 1, color: 'inherit' }}
-                    placeholder="Search movies"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    inputProps={{ 'aria-label': 'search movies' }}
-                />
-                <IconButton type="submit" sx={{ p: '5px' }} aria-label="search">
-                    <Search />
-                </IconButton>
-            </div>
-        </form>
+        <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
+            <form onSubmit={(e) => e.preventDefault()}>
+                <div className="flex flex-row items-center w-full">
+                    <InputBase
+                        sx={{ ml: 2, flex: 1, color: 'inherit' }}
+                        placeholder="Search movies"
+                        value={searchQuery}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            setSearchQuery(event.target.value);
+                        }}
+                        inputProps={{ 'aria-label': 'search movies' }}
+                    />
+                    <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
+                        <Search />
+                    </IconButton>
+                </div>
+            </form>
+        </div>
     );
 }
 
-function BasicMenu() {
+export function LanguageSelection() {
+
+    const { userLanguage } = useAuth();
+
+    const [language, setLanguage] = useState(userLanguage);
+
+    const handleChange = (event: SelectChangeEvent) => {
+        if (event.target.value === "en" || event.target.value === "fr") {
+            setLanguage(event.target.value);
+        }
+    };
+
+    return (
+        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+            <InputLabel id="demo-select-small-label">Language</InputLabel>
+            <Select
+                labelId="demo-select-small-label"
+                id="demo-select-small"
+                value={language}
+                label="Language"
+                onChange={handleChange}
+                size="small"
+            >
+                <MenuItem value="en">English</MenuItem>
+                <MenuItem value="fr">French</MenuItem>
+            </Select>
+        </FormControl>
+    );
+}
+
+function UserMenu() {
 
     const { user, logout } = useAuth();
     const { setSearchQuery } = useSearch();
@@ -70,7 +108,7 @@ function BasicMenu() {
             >
                 {user ? (
                     <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} src={user.avatar} />
-                ): (
+                ) : (
                     <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} />
 
                 )}
@@ -86,7 +124,7 @@ function BasicMenu() {
                 {user && (
                     <MenuItem onClick={() => {
                         handleClose();
-                        navigate("/profile");
+                        navigate(`/profile/${user.username}`);
                     }}>
                         <ListItemIcon>
                             <AccountCircleIcon />
@@ -138,6 +176,7 @@ function BasicMenu() {
     );
 }
 
+
 export default function Navbar() {
     return (
         <nav
@@ -146,7 +185,10 @@ export default function Navbar() {
         >
             <Logo />
             <SearchBar />
-            <BasicMenu />
+            <div className="flex flex-row items-center">
+                {/* <LanguageSelection /> */}
+                {/* <UserMenu /> */}
+            </div>
         </nav>
     );
 }

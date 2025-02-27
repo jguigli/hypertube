@@ -35,9 +35,10 @@ body {
 #main {
     width: calc(100% - 50px);
     min-height: calc(100vh - 50px - 50px);
+    /* 50px for header and 50px for footer */
     align-self: flex-end;
     height: 100%;
-    /* 50px for header and 50px for footer */
+    padding: 20px 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -61,10 +62,14 @@ form {
     justify-content: center;
 }
 
-#account-menu, #navbar {
+/* #account-menu, #navbar {
     z-index: 5;
 }
 
 #account-menu-button {
     z-index: 6;
+} */
+
+.sidebar-closed span {
+    margin-right: 0 !important;
 }

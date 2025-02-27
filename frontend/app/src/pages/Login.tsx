@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import User from "../types/User.tsx";
-import { Button, Divider, InputLabel, Typography } from "@mui/material";
+import { Button, InputLabel, Typography } from "@mui/material";
 import Input, { PasswordInput } from "../components/Input.tsx";
 import { useNavigate } from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
@@ -15,7 +14,6 @@ export default function Login() {
     const [password, setPassword] = useState("");
 
     const { login } = useAuth();
-
     const navigate = useNavigate();
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -73,7 +71,7 @@ export default function Login() {
                 </>
                 <>
                     <Separator text="Don't have an account?" />
-                    <Button variant="outlined" onClick={() => navigate("/register")}>Register</Button>
+                    <Button variant="text" onClick={() => navigate("/register")}>Register</Button>
                 </>
             </div>
         </CustomCard>
