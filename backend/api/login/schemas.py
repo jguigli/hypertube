@@ -15,6 +15,12 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-
 class TokenData(BaseModel):
-    username: str | None
+    user_id: int | None
+
+class ForgotPasswordForm(BaseModel):
+    email: str
+
+class ResetPasswordForm(BaseModel):
+    password: str
+    password_confirmation: str
