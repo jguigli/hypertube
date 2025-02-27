@@ -8,11 +8,11 @@ import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 export default function UserSettings() {
 
     const { user } = useAuth();
-    const [username, setUsername] = useState(user?.username || "");
-    const [email, setEmail] = useState(user?.email || "");
-    const [firstName, setFirstName] = useState(user?.firstName || "");
-    const [lastName, setLastName] = useState(user?.lastName || "");
-    const [avatar, setAvatar] = useState<string | undefined>(user?.avatar || undefined);
+    const [username, setUsername] = useState(user.username || "");
+    const [email, setEmail] = useState(user.email || "");
+    const [firstName, setFirstName] = useState(user.firstName || "");
+    const [lastName, setLastName] = useState(user.lastName || "");
+    const [avatar, setAvatar] = useState<string | undefined>(user.avatar || undefined);
     const [newAvatar, setNewAvatar] = useState<File | null>(null);
 
     const handleAvatarChange = (file: File | null) => {
@@ -86,6 +86,10 @@ export default function UserSettings() {
                         file={newAvatar}
                         onChange={handleAvatarChange}
                     />
+                </div>
+                <div className="flex flex-col gap-2 w-full">
+                    <InputLabel htmlFor="language_profile">Language:</InputLabel>
+                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{user.language}</Typography>
                 </div>
                 <div className="flex gap-5 w-full items-center ">
                     <Button variant="contained" className="w-full" type="submit">Save</Button>

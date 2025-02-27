@@ -13,7 +13,7 @@ interface PublicRouteProps {
 export default function PublicRoute({ children }: PublicRouteProps) {
     const { user } = useAuth();
 
-    if (user) {
+    if (user.is_logged_in === true) {
         return <Navigate to="/" />;
     }
 

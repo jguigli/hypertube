@@ -3,20 +3,37 @@ import { useSearch } from '../contexts/SearchContext.tsx';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import Movie from '../types/Movie.tsx';
-import { Button, Card } from '@mui/material';
+import { useAuth } from '../contexts/AuthContext.tsx';
+import { Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 
 
 export default function Home() {
     const { searchQuery } = useSearch();
     const { movies, setMovies } = useMovies();
+    const { user } = useAuth();
 
     const [displayedMovies, setDisplayedMovies] = useState(movies);
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [sortOption, setSortOption] = useState("rating");
+    const [filterOption, setFilterOption] = useState("all");
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadingRef = useRef<HTMLDivElement | null>(null);
+
+    const applySortAndFilter = (movies: Movie[]) => {
+        let filteredMovies = movies;
+        if (filterOption !== "all") {
+            filteredMovies = filteredMovies.filter(movie => movie.genres.includes(filterOption));
+        }
+        if (sortOption === "rating") {
+            filteredMovies.sort((a, b) => b.imdb_rating - a.imdb_rating);
+        } else if (sortOption === "year") {
+            filteredMovies.sort((a, b) => b.production_year - a.production_year);
+        }
+        return filteredMovies;
+    };
 
     // Fonction pour récupérer les films depuis l'API
     const fetchMovies = useCallback(async () => {
@@ -30,35 +47,113 @@ export default function Home() {
             // Mock response
             const newMovies: Movie[] = [
                 {
-                    id: Math.random(),
-                    title: "Movie 1",
-                    production_year: 2021,
-                    rating: 5,
-                    poster_path: "#",
+                    imdb_id: Math.random().toString(36).substring(7),
+                    production_year: 1994,
+                    imdb_rating: 9.3,
                     watched: false,
+                    language: {
+                        en: {
+                            title: "The Shawshank Redemption",
+                            poster_path: "/path/to/poster_en.jpg",
+                            audio: "English"
+                        },
+                        fr: {
+                            title: "Les Évadés",
+                            poster_path: "/path/to/poster_fr.jpg",
+                            audio: "French"
+                        }
+                    },
+                    videos_quality: {
+                        sd_url: "/path/to/sd.mp4",
+                        hd_url: "/path/to/hd.mp4",
+                        full_hd_url: "/path/to/full_hd.mp4"
+                    },
+                    nb_downloads: 1000,
+                    nb_peers: 200,
+                    nb_seeders: 150,
+                    genres: ["Drama"],
+                    summary: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+                    casting: {
+                        producer: "Niki Marvin",
+                        director: "Frank Darabont",
+                        actors: ["Tim Robbins", "Morgan Freeman"]
+                    }
                 },
                 {
-                    id: Math.random(),
-                    title: "Movie 2",
-                    production_year: 2021,
-                    rating: 5,
-                    poster_path: "#",
-                    watched: false,
+                    imdb_id: Math.random().toString(36).substring(7),
+                    production_year: 1972,
+                    imdb_rating: 9.2,
+                    watched: true,
+                    language: {
+                        en: {
+                            title: "The Godfather",
+                            poster_path: "/path/to/poster_en.jpg",
+                            audio: "English"
+                        },
+                        fr: {
+                            title: "Le Parrain",
+                            poster_path: "/path/to/poster_fr.jpg",
+                            audio: "French"
+                        }
+                    },
+                    videos_quality: {
+                        sd_url: "/path/to/sd.mp4",
+                        hd_url: "/path/to/hd.mp4",
+                        full_hd_url: "/path/to/full_hd.mp4"
+                    },
+                    nb_downloads: 2000,
+                    nb_peers: 300,
+                    nb_seeders: 250,
+                    genres: ["Crime", "Drama"],
+                    summary: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+                    casting: {
+                        producer: "Albert S. Ruddy",
+                        director: "Francis Ford Coppola",
+                        actors: ["Marlon Brando", "Al Pacino"]
+                    }
                 },
                 {
-                    id: Math.random(),
-                    title: "Movie 3",
-                    production_year: 2021,
-                    rating: 5,
-                    poster_path: "#",
+                    imdb_id: Math.random().toString(36).substring(7),
+                    production_year: 2008,
+                    imdb_rating: 9.0,
                     watched: false,
-                }
+                    language: {
+                        en: {
+                            title: "The Godfather",
+                            poster_path: "/path/to/poster_en.jpg",
+                            audio: "English"
+                        },
+                        fr: {
+                            title: "Le Parrain",
+                            poster_path: "/path/to/poster_fr.jpg",
+                            audio: "French"
+                        }
+                    },
+                    videos_quality: {
+                        sd_url: "/path/to/sd.mp4",
+                        hd_url: "/path/to/hd.mp4",
+                        full_hd_url: "/path/to/full_hd.mp4"
+                    },
+                    nb_downloads: 2000,
+                    nb_peers: 300,
+                    nb_seeders: 250,
+                    genres: ["Crime", "Drama"],
+                    summary: "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+                    casting: {
+                        producer: "Albert S. Ruddy",
+                        director: "Francis Ford Coppola",
+                        actors: ["Marlon Brando", "Al Pacino"]
+                    }
+                },
+
             ];
 
             if (newMovies.length === 0) {
                 setHasMore(false);
             } else {
-                setMovies([...movies, ...newMovies]);
+                const updatedMovies = [...movies, ...newMovies];
+                setMovies(updatedMovies);
+                setDisplayedMovies(applySortAndFilter(updatedMovies));
                 setPage((prevPage) => prevPage + 1);
             }
         } catch (error) {
@@ -66,20 +161,21 @@ export default function Home() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, isLoading, hasMore, setMovies]);
+    }, [page, isLoading, hasMore, setMovies, movies, sortOption, filterOption]);
 
     // Filtrer les films selon la recherche
     useEffect(() => {
         if (searchQuery === "") {
             setDisplayedMovies(movies);
         } else {
+            const userLanguage = user.language;
             setDisplayedMovies(
                 movies.filter((movie) =>
-                    movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+                    movie.language[userLanguage].title.toLowerCase().includes(searchQuery.toLowerCase())
                 )
             );
         }
-    }, [searchQuery, movies]);
+    }, [searchQuery, movies, user]);
 
     // Intersection Observer pour détecter le scroll
     useEffect(() => {
@@ -101,15 +197,15 @@ export default function Home() {
         return () => observerRef.current?.disconnect();
     }, [fetchMovies, hasMore, searchQuery]);
 
+    const handleSortChange = (event: SelectChangeEvent) => {
+        setSortOption(event.target.value);
+        setDisplayedMovies(applySortAndFilter(movies));
+    };
 
-    // Sort movies
-    useEffect(() => {
-        if (searchQuery) return;
-
-        setDisplayedMovies([...movies].sort((a, b) => b.rating - a.rating));
-    }, [movies, searchQuery]);
-
-
+    const handleFilterChange = (event: SelectChangeEvent) => {
+        setFilterOption(event.target.value);
+        setDisplayedMovies(applySortAndFilter(movies));
+    };
 
     return (
         <>
@@ -120,7 +216,7 @@ export default function Home() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full place-items-center p-4">
                     {displayedMovies.map((movie) => (
-                        <MovieCard movie={movie} key={movie.id} />
+                        <MovieCard movie={movie} key={movie.imdb_id} />
                     ))}
                 </div>
             )}
@@ -135,17 +231,33 @@ export default function Home() {
                 </div>
             )}
 
-            <Card className="fixed bottom-4 p-2 rounded-full bg-white shadow-md">
-                <Button
-                    onClick={() => {
-                        
-                    }
-                }
-                >
-                    Sort by rating
-                </Button>
-                </Card>
-
+            <Card className="fixed bottom-4 p-2 rounded-full bg-white shadow-md flex gap-4 p-4">
+                <FormControl variant="outlined" size="small">
+                    <InputLabel>Sort by</InputLabel>
+                    <Select
+                        value={sortOption}
+                        onChange={handleSortChange}
+                        label="Sort by"
+                    >
+                        <MenuItem value="rating">Rating</MenuItem>
+                        <MenuItem value="year">Production Year</MenuItem>
+                    </Select>
+                </FormControl>
+                <FormControl variant="outlined" size="small">
+                    <InputLabel>Filter by</InputLabel>
+                    <Select
+                        value={filterOption}
+                        onChange={handleFilterChange}
+                        label="Filter by"
+                    >
+                        <MenuItem value="all">All</MenuItem>
+                        <MenuItem value="Drama">Drama</MenuItem>
+                        <MenuItem value="Action">Action</MenuItem>
+                        <MenuItem value="Sci-Fi">Sci-Fi</MenuItem>
+                        <MenuItem value="Crime">Crime</MenuItem>
+                    </Select>
+                </FormControl>
+            </Card>
         </>
     );
 }

@@ -164,7 +164,7 @@ export default function Register() {
     const [avatar, setAvatar] = useState<File | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
 
-    // const { login } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -179,7 +179,8 @@ export default function Register() {
             email,
             firstName,
             lastName,
-            avatar
+            avatar,
+            user.language
         );
 
         if (!response.success) {

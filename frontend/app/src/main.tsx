@@ -17,13 +17,13 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ThemeProvider theme={theme}>
             <MoviesProvider>
-                <AuthProvider>
-                    <SearchProvider>
+                <SearchProvider>
+                    <AuthProvider>
                         <VideoProvider>
                             <AppRouter />
                         </VideoProvider>
-                    </SearchProvider>
-                </AuthProvider>
+                    </AuthProvider>
+                </SearchProvider>
             </MoviesProvider>
         </ThemeProvider>
     </StrictMode>,
