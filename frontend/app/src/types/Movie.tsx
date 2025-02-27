@@ -5,4 +5,5 @@ export default interface Movie {
     rating: number;
     poster_path: string;
     watched: boolean;
+    video_url: string;
 }
