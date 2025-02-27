@@ -4,6 +4,8 @@ import Movie from "../types/Movie";
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
+    sortMovies: (sortType: string) => void;
+    filterMovies: (filterType: string, value: any) => void;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -61,8 +63,26 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         },
     ]);
 
+    function sortMovies(sortType: string) {
+        if (sortType === "rating") {
+            setMovies([...movies].sort((a, b) => b.rating - a.rating));
+        } else if (sortType === "year") {
+            setMovies([...movies].sort((a, b) => b.production_year - a.production_year));
+        }
+    }
+
+    function filterMovies(filterType: string, value: string) {
+        if (filterType === "name") {
+            setMovies([...movies].filter((movie) => movie.title.toLowerCase().includes(value.toLowerCase())));
+        } else if (filterType === "watched") {
+            setMovies([...movies].filter((movie) => movie.watched));
+        } else if (filterType === "unwatched") {
+            setMovies([...movies].filter((movie) => !movie.watched));
+        }
+    }
+
     return (
-        <MoviesContext.Provider value={{ movies, setMovies }}>
+        <MoviesContext.Provider value={{ movies, setMovies, sortMovies, filterMovies }}>
             {children}
         </MoviesContext.Provider>
     );
