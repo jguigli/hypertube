@@ -66,6 +66,7 @@ export function PasswordInput(
                         onClick={handleClickShowPassword}
                         onMouseDown={handleMouseDownPassword}
                         edge="end"
+                        tabIndex={-1} // Add this line to prevent tab selection
                     >
                         {showPassword ? <VisibilityOff color='disabled' /> : <Visibility color="disabled" />}
                     </IconButton>

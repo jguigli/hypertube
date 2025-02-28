@@ -1,7 +1,26 @@
 import axios from "axios";
 import User from "../types/User";
 
-export default class AuthService {
+// Axios configuration
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = "http://localhost:8000";
+
+
+export default class UserService {
+
+    // POST /users/register
+
+    // GET / users / me
+
+    // GET / users / { user_id }
+
+    // PUT / users / informations
+
+    // GET / users / me / picture
+
+    // GET / users / { user_id } / picture
+
+    // PUT / users / picture
 
 
     // TODO:
@@ -120,7 +139,11 @@ export default class AuthService {
 
             return { success: true, token, error: null, user: user };
         } catch (error) {
-            return { success: false, token: null, error, user: null };
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, token: null, error: errorMessage, user: null };
         }
     }
 

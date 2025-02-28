@@ -7,7 +7,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import CustomCard from "../components/Card.tsx";
 import Icon42 from "../utils/Icon42.tsx";
 import { Separator } from "./Register.tsx";
-import AuthService from "../services/AuthService.tsx";
+import LoginService from "../services/LoginService.tsx";
 
 export default function Login() {
 
@@ -31,8 +31,8 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const authService = new AuthService();
-        const response = await authService.login(username, password, user.language);
+        const loginService = new LoginService();
+        const response = await loginService.login(username, password, user.language);
 
         if (response.success && response.user && response.token) {
             login(response.user, response.token);
@@ -41,7 +41,7 @@ export default function Login() {
             setError("");
             navigate("/");
         } else {
-            const errorMessage = response.error?.message || "Login failed. Please try again.";
+            const errorMessage = response.error || "Login failed. Please try again.";
             setError(errorMessage);
         }
     };
