@@ -30,6 +30,22 @@ const router = createBrowserRouter([
                 ),
             },
             {
+                path: "/auth/google/callback",
+                element: (
+                    <PublicRoute>
+                        <></>
+                    </PublicRoute>
+                ),
+            },
+            {
+                path: "/auth/42/callback",
+                element: (
+                    <PublicRoute>
+                        <></>
+                    </PublicRoute>
+                ),
+            },
+            {
                 path: "login",
                 element: (
                     <PublicRoute>

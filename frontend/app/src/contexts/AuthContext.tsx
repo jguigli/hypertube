@@ -3,7 +3,8 @@ import User from "../types/User";
 
 interface AuthContextType {
     user: User;
-    login: (username: string, password: string) => Promise<void>;
+    getToken: () => string | null;
+    login: (user: User, token: string) => void;
     logout: () => void;
     changeUserLanguage: (language: 'en' | 'fr') => void;
 }
@@ -12,20 +13,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
-    function defaultUser(): User {
-        return {
-            id: "0",
-            username: "default_user",
-            email: "",
-            firstName: "Default",
-            lastName: "User",
-            avatar: "https://randomuser.me/api/portraits/men/0.jpg",
-            is_logged_in: false,
-            language: "en"
-        };
-    }
+    const [user, setUser] = useState<User>(getUser());
 
-    function getStoredUser() {
+    function getUser() {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             return JSON.parse(storedUser);
@@ -33,38 +23,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return defaultUser();
     }
 
-    const [user, setUser] = useState<User>(getStoredUser());
-
-    const login = async (username: string, password: string) => {
-        // const authService = new AuthService();
-        // const response = await authService.login(username, password);
-        // if (response.success && response.token && response.user) {
-        //     setUser(response.user);
-        //     localStorage.setItem("user", JSON.stringify(response.user));
-        //     localStorage.setItem("token", response.token);
-        // } else {
-
-        // TODO: Remove this block after testing
-        // For testing purposes
-        const fakeUser: User = {
-            id: "1",
-            username: "admin",
-            email: "admin@example.com",
-            firstName: "Admin",
-            lastName: "Admin",
-            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-            language: "en",
-            is_logged_in: true
+    function defaultUser(): User {
+        return {
+            username: "",
+            email: "",
+            firstName: "",
+            lastName: "",
+            is_logged_in: false,
+            language: "en"
         };
-        setUser(fakeUser);
-        localStorage.setItem("user", JSON.stringify(fakeUser));
-        localStorage.setItem("token", "fake-token");
-        // throw new Error("Login failed");
-        // }
+    }
+
+    function getToken() {
+        return localStorage.getItem("token");
+    }
+
+    const login = (user: User, token: string) => {
+        setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
     };
 
     const logout = () => {
-        setUser({ is_logged_in: false, language: "en" });
+        setUser(defaultUser());
         localStorage.removeItem("user");
         localStorage.removeItem("token");
     };
@@ -76,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, changeUserLanguage }}>
+        <AuthContext.Provider value={{ user, getToken, login, logout, changeUserLanguage }}>
             {children}
         </AuthContext.Provider>
     );
