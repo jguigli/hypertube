@@ -16,7 +16,6 @@ export default function ResetPassword() {
         // Send email to the user
         // POST localhost:8000/reset_password
         const loginService = new LoginService();
-        console.log(email);
         loginService.resetPassword(email);
     }
 

@@ -23,7 +23,6 @@ export default class UserService {
             }
         > {
 
-
         try {
 
             const response = await axios.post(
@@ -77,11 +76,13 @@ export default class UserService {
             );
 
             if (userResponse.status === 200) {
-                const user = {
+                const user: User = {
                     email: userResponse.data.email,
                     username: userResponse.data.user_name,
                     firstName: userResponse.data.first_name,
-                    lastName: userResponse.data.last_name
+                    lastName: userResponse.data.last_name,
+                    is_logged_in: true,
+                    language: "en"
                 };
                 return { success: true, user: user, error: null };
             } else {
@@ -95,23 +96,26 @@ export default class UserService {
             return { success: false, user: null, error: errorMessage };
         }
     }
+
     // GET / users / { user_id }
 
     // PUT / users / informations
-
-    // GET / users / me / picture
-
-    // GET / users / { user_id } / picture
-
-    // PUT / users / picture
-    async setPicture(token: string, profile_picture: File): Promise<{ success: boolean, error: string | null }> {
-
-        const formData = new FormData();
-        formData.append("profile_picture", profile_picture);
+    async setInformations(
+        token: string,
+        email: string,
+        user_name: string,
+        first_name: string,
+        last_name: string
+    ): Promise<{ success: boolean, error: string | null }> {
 
         const response = await axios.put(
-            "/users/picture",
-            formData,
+            "/users/informations",
+            {
+                email: email,
+                user_name: user_name,
+                first_name: first_name,
+                last_name: last_name
+            },
             {
                 headers: {
                     Authorization: `${token}`
@@ -123,17 +127,85 @@ export default class UserService {
             return { success: true, error: null };
         }
         return { success: false, error: response.data };
+    }
+
+    // GET / users / me / picture
+    async getPicture(token: string): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                "/users/me/picture",
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    responseType: "blob"
+                }
+            );
+            if (response.status === 200) {
+                const avatar = response.data;
+                if (avatar) {
+                    const avatarBase64: string = await this.blobToBase64(avatar);
+                    return { success: true, avatar: avatarBase64, error: null };
+                }
+            }
+            return { success: false, avatar: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, avatar: null, error: errorMessage };
+        }
 
     }
 
+    // GET / users / { user_id } / picture
 
+    // PUT / users / picture
+    async setPicture(token: string, profile_picture: File): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }> {
 
-    // TODO:
-    // Error handling for the register and login methods
-    // Display the error message in the UI
-    // Register / login with 42 and Google
+        const formData = new FormData();
+        formData.append("profile_picture", profile_picture);
 
+        const response = await axios.put(
+            "/users/picture",
+            formData,
+            {
+                headers: {
+                    Authorization: `${token}`
+                },
+                responseType: "blob"
+            }
+        );
 
+        if (response.status === 200) {
+            const avatar = response.data;
+            if (avatar) {
+                const avatarBase64: string = await this.blobToBase64(avatar);
+                return { success: true, avatar: avatarBase64, error: null };
+            }
+        }
+        return { success: false, avatar: null, error: response.data };
 
+    }
 
+    async blobToBase64(blob: Blob): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
 }

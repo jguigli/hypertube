@@ -8,6 +8,8 @@ import CustomCard from "../components/Card.tsx";
 import Icon42 from "../utils/Icon42.tsx";
 import { Separator } from "./Register.tsx";
 import LoginService from "../services/LoginService.tsx";
+import UserService from "../services/UserService.tsx";
+import User from "../types/User.tsx";
 
 export default function Login() {
 
@@ -17,6 +19,7 @@ export default function Login() {
 
     const { user, login } = useAuth();
     const navigate = useNavigate();
+    const userService = new UserService();
 
 
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,20 +33,54 @@ export default function Login() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const loginService = new LoginService();
-        const response = await loginService.login(username, password, user.language);
 
-        if (response.success && response.user && response.token) {
-            login(response.user, response.token);
-            setPassword("");
-            setUsername("");
-            setError("");
-            navigate("/");
-        } else {
-            const errorMessage = response.error || "Login failed. Please try again.";
-            setError(errorMessage);
+        e.preventDefault();
+
+        const loginService = new LoginService();
+        const response = await loginService.login(username, password);
+
+        // Check if the request was successful
+        if (!response.success || !response.token) {
+            alert("An error occurred: " + response.error || "An unexpected error occurred");
+            return;
         }
+
+        const token = response.token;
+
+        // GET api/auth/me -> Get the user
+        const userResponse = await userService.getMe(token);
+
+        // Check if the request was successful
+        if (!userResponse.success || !userResponse.user) {
+            alert("An error occurred: " + userResponse.error || "An unexpected error occurred");
+            return;
+        }
+
+        let newUser: User = {
+            email: userResponse.user.email,
+            username: userResponse.user.username,
+            firstName: userResponse.user.firstName,
+            lastName: userResponse.user.lastName,
+            language: user.language,
+            is_logged_in: true,
+        }
+
+        // Get the user's avatar
+        const avatarResponse = await userService.getPicture(token);
+        if (avatarResponse.success && avatarResponse.avatar) {
+            newUser.avatar = avatarResponse.avatar;
+        } else {
+            alert("An error occurred while getting the user's avatar" + avatarResponse.error || "An unexpected error occurred");
+        }
+
+        login(newUser, token);
+
+        setPassword("");
+        setUsername("");
+        setError("");
+
+        navigate("/");
+
     };
 
     return (
