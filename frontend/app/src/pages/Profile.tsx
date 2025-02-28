@@ -13,24 +13,16 @@ export default function PublicProfile() {
         return <div>User not found</div>;
     }
 
-    // Fetch user data from the backend
-    // const fakeUserPublicData: User = {
-    //     id: "0",
-    //     username: username ? username : "john_doe",
-    //     firstName: "John",
-    //     lastName: "Doe",
-    //     avatar: "https://randomuser.me/api/portraits/women/76.jpg"
-    // };
-
     const { user } = useAuth();
-    const fakeUserPublicData: User = {
-        id: user?.id ? user.id : "0",
-        username: user?.username ? user.username : "john_doe",
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        avatar: user?.avatar
-    };
 
+    const fakeUserPublicData: User = {
+        username: user.username ? user.username : "john_doe",
+        firstName: user.firstName,
+        lastName: user.lastName,
+        language: user.language,
+        is_logged_in: user.is_logged_in,
+        avatar: typeof user.avatar === 'string' ? user.avatar : ""
+    };
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
@@ -38,7 +30,7 @@ export default function PublicProfile() {
                 Public Profile
             </Typography>
             <div className="flex flex-col space-y-4 my-5 items-center w-full">
-                <Avatar src={fakeUserPublicData.avatar}
+                <Avatar src={fakeUserPublicData.avatar || ""}
                     alt="Avatar"
                     sx={{ width: 100, height: 100 }}
                 />
@@ -54,6 +46,11 @@ export default function PublicProfile() {
                     <InputLabel htmlFor="last_name_profile">Last Name:</InputLabel>
                     <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{fakeUserPublicData.lastName}</Typography>
                 </div>
+                <div className="flex flex-col gap-2 w-full">
+                    <InputLabel htmlFor="language_profile">Language:</InputLabel>
+                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{fakeUserPublicData.language}</Typography>
+                </div>
+
             </div>
         </CustomCard>
     );

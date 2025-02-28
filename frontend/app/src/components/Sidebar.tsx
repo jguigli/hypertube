@@ -2,7 +2,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, FormControl, FormControlLabel, FormLabel, IconButton, Radio, RadioGroup } from "@mui/material";
+import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 
@@ -23,27 +23,27 @@ export default function Sidebar() {
             url: "/",
             icon: HomeIcon
         },
-        user ? {
+        user.is_logged_in ? {
             name: "Profile",
             url: `/profile/${user.username}`,
             icon: AccountCircleIcon
         } : null,
-        user ? {
+        user.is_logged_in ? {
             name: "Settings",
             url: "/settings",
             icon: Settings
         } : null,
-        user ? {
+        user.is_logged_in ? {
             name: "Logout",
             url: "/logout",
             icon: LogoutOutlined
         } : null,
-        !user ? {
+        !user.is_logged_in ? {
             name: "Login",
             url: "/login",
             icon: LoginOutlined
         } : null,
-        !user ? {
+        !user.is_logged_in ? {
             name: "Register",
             url: "/register",
             icon: AppRegistrationOutlined
