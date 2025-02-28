@@ -25,7 +25,6 @@ export default function VideoView() {
     const { user } = useAuth();
     const { movies } = useMovies();
     const movie = movies.find((movie) => movie.imdb_id === videoID);
-    console.log("Movie:", movie);
 
     const { setVideoSource } = useVideo();
 
