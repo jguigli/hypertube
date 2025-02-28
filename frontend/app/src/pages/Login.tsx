@@ -41,7 +41,11 @@ export default function Login() {
 
         // Check if the request was successful
         if (!response.success || !response.token) {
-            alert("An error occurred: " + response.error || "An unexpected error occurred");
+            if (response.error) {
+                setError(response.error);
+            } else {
+                setError("An unexpected error occurred, please try again later");
+            }
             return;
         }
 
@@ -52,7 +56,11 @@ export default function Login() {
 
         // Check if the request was successful
         if (!userResponse.success || !userResponse.user) {
-            alert("An error occurred: " + userResponse.error || "An unexpected error occurred");
+            if (userResponse.error) {
+                setError(userResponse.error);
+            } else {
+                setError("An unexpected error occurred, please try again later");
+            }
             return;
         }
 

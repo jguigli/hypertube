@@ -7,6 +7,7 @@ en.subject.pdf
 
 .env
 .service-id
+backend/profile_pictures/*.png
 
 .DS_Store
 **/.DS_Store/**

@@ -211,15 +211,6 @@ export default function Register() {
             return;
         }
 
-        // // Log the user to get the token
-        // const loginResponse = await loginService.login(username, password);
-        // // Check if the request was successful
-        // if (!loginResponse.success || !loginResponse.token) {
-        //     alert("An error occurred: " + loginResponse.error || "An unexpected error occurred");
-        //     return;
-        // }
-        // const token = loginResponse.token;
-
         const token = response.token;
 
         // GET api/auth/me -> Get the user
