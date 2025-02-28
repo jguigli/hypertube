@@ -68,10 +68,10 @@ export default function VideoView() {
 
     return (
         <>
-            <h1>{movie?.language[user.language].title}</h1>
+            {/* <h1>{movie?.language[user.language].title}</h1> */}
 
             {/* Affichage du lecteur Video.js */}
-            <VideoJS />
+            {/* <VideoJS /> */}
 
             {/* Exemple de bouton pour changer la vidéo */}
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
