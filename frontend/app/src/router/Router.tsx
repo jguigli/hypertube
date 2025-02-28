@@ -5,7 +5,7 @@ import Register from "../pages/Register.tsx";
 import Login from "../pages/Login.tsx";
 import PageNotFound from "../pages/404.tsx";
 import VideoView from "../pages/VideoView.tsx";
-import ResetPassword from "../pages/ResetPassword.tsx";
+import ResetPassword, { ChangePassword } from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
 import PrivateRoute from "./PrivateRoute.tsx";
 import Logout from "../pages/Logout.tsx";
@@ -58,6 +58,14 @@ const router = createBrowserRouter([
                 element: (
                     <PublicRoute>
                         <ResetPassword />
+                    </PublicRoute>
+                )
+            },
+            {
+                path: "reset-password",
+                element: (
+                    <PublicRoute>
+                        <ChangePassword />
                     </PublicRoute>
                 )
             },

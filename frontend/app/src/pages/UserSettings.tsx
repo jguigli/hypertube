@@ -4,12 +4,11 @@ import Input, { FileInput } from "../components/Input";
 import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 import UserService from "../services/UserService";
-import { set } from "video.js/dist/types/tech/middleware";
 
 
 export default function UserSettings() {
 
-    const { user, changeUserAvatar, changeUserInfo, getToken } = useAuth();
+    const { user, changeUserInfo, getToken } = useAuth();
 
     const [username, setUsername] = useState(user.username || "");
     const [email, setEmail] = useState(user.email || "");

@@ -5,6 +5,7 @@ import { useMovies } from '../contexts/MovieContext.tsx';
 import Movie from '../types/Movie.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Home() {
@@ -22,6 +23,21 @@ export default function Home() {
 
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadingRef = useRef<HTMLDivElement | null>(null);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if there is (access_token, token_type and context) in the url params
+        // If yes, navigate to the reset password page
+        // If no, display the home page
+        const urlParams = new URLSearchParams(window.location.search);
+        const access_token = urlParams.get('access_token');
+        const token_type = urlParams.get('token_type');
+        const context = urlParams.get('context');
+        if (access_token && token_type && context === 'reset_password') {
+            navigate(`/reset-password?access_token=${access_token}&token_type=${token_type}&context=${context}`);
+        }
+    }, [navigate]);
 
     const applySortAndFilter = (movies: Movie[]) => {
         let filteredMovies = movies;
