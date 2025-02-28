@@ -4,6 +4,7 @@ interface ActionCommentsProps {
   handleClick?: () => void;
   type: string | JSX.Element;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const ActionComments: React.FC<ActionCommentsProps> = ({ handleClick, type, className = "" }) => {

@@ -87,6 +87,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your comment here"
+              style={{ marginRight: "10px" }}
             />
             <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
           </>
@@ -96,8 +97,18 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
             <div style={{ display: "flex", marginTop: "5px" }}>
               {editMode ? (
                 <>
-                  <ActionComments className="reply" type="Save" handleClick={() => handleEditNode(comments.id, input)} />
-                  <ActionComments className="reply" type="Cancel" handleClick={() => setEditMode(false)} />
+                  <ActionComments
+                    className="reply"
+                    type="Save"
+                    handleClick={() => handleEditNode(comments.id, input)}
+                    style={{ marginRight: "10px", display: "flex", alignItems: "center" }}
+                  />
+                  <ActionComments
+                    className="reply"
+                    type="Cancel"
+                    handleClick={() => setEditMode(false)}
+                    style={{ marginRight: "10px", display: "flex", alignItems: "center" }}
+                  />
                 </>
               ) : (
                 <>
@@ -109,9 +120,20 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                       </>
                     }
                     handleClick={handleNewComment}
+                    style={{ marginLeft: "10px", display: "flex", alignItems: "center" }}
                   />
-                  <ActionComments className="reply" type="Edit" handleClick={() => setEditMode(true)} />
-                  <ActionComments className="reply" type="Delete" handleClick={() => handleDeleteNode(comments.id)} />
+                  <ActionComments
+                    className="reply"
+                    type="Edit"
+                    handleClick={() => setEditMode(true)}
+                    style={{ marginLeft: "10px", display: "flex", alignItems: "center" }}
+                    />
+                  <ActionComments
+                    className="reply"
+                    type="Delete"
+                    handleClick={() => handleDeleteNode(comments.id)}
+                    style={{ marginLeft: "10px", display: "flex", alignItems: "center"}}
+                    />
                 </>
               )}
             </div>
