@@ -1,65 +1,63 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import User from "../types/User";
 
 interface AuthContextType {
-    user: User | null;
-    login: (username: string, password: string) => Promise<void>;
-    userLanguage: 'en' | 'fr';
-    setUserLanguage: (language: 'en' | 'fr') => void;
+    user: User;
+    getToken: () => string | null;
+    login: (user: User, token: string) => void;
     logout: () => void;
+    changeUserLanguage: (language: 'en' | 'fr') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
-    function getStoredUser() {
+    const [user, setUser] = useState<User>(getUser());
+
+    function getUser() {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             return JSON.parse(storedUser);
         }
-        return null;
+        return defaultUser();
     }
 
-    const [user, setUser] = useState<User | null>(getStoredUser());
-    const [userLanguage, setUserLanguage] = useState<'en' | 'fr'>(user?.language || 'en');
-
-    const login = async (username: string, password: string) => {
-        // const authService = new AuthService();
-        // const response = await authService.login(username, password);
-        // if (response.success && response.token && response.user) {
-        //     setUser(response.user);
-        //     localStorage.setItem("user", JSON.stringify(response.user));
-        //     localStorage.setItem("token", response.token);
-        // } else {
-
-        // TODO: Remove this block after testing
-        // For testing purposes
-        const fakeUser: User = {
-            id: "1",
-            username: "admin",
-            email: "admin@example.com",
-            firstName: "Admin",
-            lastName: "Admin",
-            avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-            language: "en",
+    function defaultUser(): User {
+        return {
+            username: "",
+            email: "",
+            firstName: "",
+            lastName: "",
+            is_logged_in: false,
+            language: "en"
         };
-        setUser(fakeUser);
-        setUserLanguage(fakeUser?.language ? fakeUser.language : 'en');
-        localStorage.setItem("user", JSON.stringify(fakeUser));
-        localStorage.setItem("token", "fake-token");
-        // throw new Error("Login failed");
-        // }
+    }
+
+    function getToken() {
+        return localStorage.getItem("token");
+    }
+
+    const login = (user: User, token: string) => {
+        setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
     };
 
     const logout = () => {
-        setUser(null);
+        setUser(defaultUser());
         localStorage.removeItem("user");
         localStorage.removeItem("token");
     };
 
+    const changeUserLanguage = (language: 'en' | 'fr') => {
+        const updatedUser = { ...user, language };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, userLanguage, setUserLanguage }}>
+        <AuthContext.Provider value={{ user, getToken, login, logout, changeUserLanguage }}>
             {children}
         </AuthContext.Provider>
     );

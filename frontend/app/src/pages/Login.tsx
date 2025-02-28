@@ -7,21 +7,43 @@ import GoogleIcon from '@mui/icons-material/Google';
 import CustomCard from "../components/Card.tsx";
 import Icon42 from "../utils/Icon42.tsx";
 import { Separator } from "./Register.tsx";
+import LoginService from "../services/LoginService.tsx";
 
 export default function Login() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-    const { login } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUsername(e.target.value);
+        setError("");
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        setError("");
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        login(username, password);
-        setPassword("");
-        setUsername("");
-        navigate("/");
+        const loginService = new LoginService();
+        const response = await loginService.login(username, password, user.language);
+
+        if (response.success && response.user && response.token) {
+            login(response.user, response.token);
+            setPassword("");
+            setUsername("");
+            setError("");
+            navigate("/");
+        } else {
+            const errorMessage = response.error || "Login failed. Please try again.";
+            setError(errorMessage);
+        }
     };
 
     return (
@@ -38,15 +60,16 @@ export default function Login() {
                             type="text"
                             placeholder="Username"
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={handleUsernameChange}
                             required
                             id="username_register"
                         />
                     </div>
                     <div className="flex flex-col gap-2 w-full">
                         <InputLabel htmlFor="password_register">Password</InputLabel>
-                        <PasswordInput placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required id="password_register" />
+                        <PasswordInput placeholder="Password" value={password} onChange={handlePasswordChange} required id="password_register" />
                     </div>
+                    {error && <Typography variant="body1" color="error">{error}</Typography>}
                     <div className="flex gap-5 w-full items-center ">
                         <Button variant="contained" className="w-full" type="submit">Login</Button>
                     </div>

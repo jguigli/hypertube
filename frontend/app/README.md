@@ -28,7 +28,7 @@ frontend
 │   ├── router                  # Routing configuration
 │   │   └── Router.tsx
 │   ├── services                # API services
-│   │   └── AuthService.tsx
+│   │   └── loginService.tsx
 │   ├── styles                  # Stylesheets
 │   │   ├── App.css
 │   │   └── index.css

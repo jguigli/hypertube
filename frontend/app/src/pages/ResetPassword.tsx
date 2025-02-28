@@ -3,6 +3,7 @@ import { useState } from "react";
 import Input from "../components/Input";
 import { Button, InputLabel, Typography } from "@mui/material";
 import CustomCard from "../components/Card";
+import LoginService from "../services/LoginService";
 
 export default function ResetPassword() {
 
@@ -10,7 +11,14 @@ export default function ResetPassword() {
 
     const [email, setEmail] = useState("");
 
-
+    function sendResetEmail(event: React.FormEvent) {
+        event.preventDefault();
+        // Send email to the user
+        // POST localhost:8000/reset_password
+        const loginService = new LoginService();
+        console.log(email);
+        loginService.resetPassword(email);
+    }
 
     return (
 
@@ -25,7 +33,7 @@ export default function ResetPassword() {
                     Enter your email address and we will send you a link to reset your password.
                 </Typography>
 
-                <form onSubmit={(e) => e.preventDefault()} className="flex flex-col items-start gap-2 w-full">
+                <form onSubmit={sendResetEmail} className="flex flex-col items-start gap-2 w-full">
                     <div className="flex flex-col gap-2 w-full">
                         <InputLabel htmlFor="email_reset_password">Email</InputLabel>
                         <Input
