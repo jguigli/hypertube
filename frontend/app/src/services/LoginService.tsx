@@ -9,6 +9,75 @@ axios.defaults.baseURL = "http://localhost:8000";
 export default class LoginService {
 
     // POST /token
+    async login(
+        username: string,
+        password: string
+    ): Promise<{ success: boolean, token: string | null, error: string | null }> {
+
+        try {
+
+            const formData = new URLSearchParams();
+            formData.append("username", username);
+            formData.append("password", password);
+
+            const response = await axios.post(
+                "/token",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                }
+            );
+
+            if (response.status == 200) {
+                const access_token = response.data.access_token;
+                const token_type = response.data.token_type;
+                const token = `${token_type} ${access_token}`;
+                return { success: true, token: token, error: null };
+            } else {
+                return { success: false, token: null, error: response.data };
+            }
+
+            const token: string = `${response.data.token_type} ${response.data.access_token}`;
+            const userResponse = await axios.get(
+                "http://localhost:8000/users/me", {
+                headers: {
+                    Authorization: `${token}`
+                }
+            });
+
+            const user: User = {
+                email: userResponse.data.email,
+                firstName: userResponse.data.first_name,
+                lastName: userResponse.data.last_name,
+                username: userResponse.data.user_name,
+                is_logged_in: true,
+                language: language
+            }
+
+            // Get the user's avatar
+            const avatarResponse = await axios.get(
+                "http://localhost:8000/users/me/picture",
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    responseType: "blob"
+                }
+            );
+
+            user.avatar = URL.createObjectURL(avatarResponse.data);
+
+            return { success: true, token, error: null, user: user };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, token: null, error: errorMessage, user: null };
+        }
+    }
 
     // POST /reset_password
     async resetPassword(email: string): Promise<{ success: boolean, error: any }> {
@@ -98,62 +167,6 @@ export default class LoginService {
         }
     }
 
-    async login(username: string, password: string, language: "en" | "fr"): Promise<{ success: boolean, token: string | null, error: any, user: User | null }> {
-        try {
-
-            const formData = new URLSearchParams();
-            formData.append("username", username);
-            formData.append("password", password);
-
-            const response = await axios.post(
-                "http://localhost:8000/token",
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                }
-            );
-
-            const token: string = `${response.data.token_type} ${response.data.access_token}`;
-            const userResponse = await axios.get(
-                "http://localhost:8000/users/me", {
-                headers: {
-                    Authorization: `${token}`
-                }
-            });
-
-            const user: User = {
-                email: userResponse.data.email,
-                firstName: userResponse.data.first_name,
-                lastName: userResponse.data.last_name,
-                username: userResponse.data.user_name,
-                is_logged_in: true,
-                language: language
-            }
-
-            // Get the user's avatar
-            const avatarResponse = await axios.get(
-                "http://localhost:8000/users/me/picture",
-                {
-                    headers: {
-                        Authorization: `${token}`
-                    },
-                    responseType: "blob"
-                }
-            );
-
-            user.avatar = URL.createObjectURL(avatarResponse.data);
-
-            return { success: true, token, error: null, user: user };
-        } catch (error) {
-            let errorMessage = "An unexpected error occurred";
-            if (axios.isAxiosError(error) && error.response) {
-                errorMessage = error.response.data.detail || errorMessage;
-            }
-            return { success: false, token: null, error: errorMessage, user: null };
-        }
-    }
 
 
     async registerOAuth(provider: "42" | "google") {

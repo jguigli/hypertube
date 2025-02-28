@@ -4,6 +4,6 @@ export default interface User {
     firstName?: string;
     lastName?: string;
     avatar?: string;
-    language: 'en' | 'fr';
-    is_logged_in: boolean;
+    language?: 'en' | 'fr';
+    is_logged_in?: boolean;
 }
