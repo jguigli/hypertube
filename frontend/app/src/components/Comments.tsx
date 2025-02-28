@@ -12,6 +12,7 @@ interface CommentType {
   items?: CommentType[];
 }
 
+
 interface CommentsProps {
   comments: CommentType;
   handleInsertNode: (commentId: number, item: string) => void;
