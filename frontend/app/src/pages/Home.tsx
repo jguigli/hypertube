@@ -8,9 +8,10 @@ import { Card, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } fr
 
 
 export default function Home() {
-    const { searchQuery } = useSearch();
-    const { movies, setMovies } = useMovies();
+
     const { user } = useAuth();
+    const { movies, setMovies } = useMovies();
+    const { searchQuery } = useSearch();
 
     const [displayedMovies, setDisplayedMovies] = useState(movies);
     const [page, setPage] = useState(1);

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { Divider, InputLabel, Typography } from "@mui/material";
@@ -9,6 +8,9 @@ import "../assets/42Icon.svg";
 import CustomCard from "../components/Card";
 import Icon42 from "../utils/Icon42";
 import LoginService from "../services/LoginService";
+import UserService from "../services/UserService";
+import User from "../types/User";
+import { useAuth } from "../contexts/AuthContext";
 
 
 function RegisterFormFirstPart(
@@ -21,6 +23,8 @@ function RegisterFormFirstPart(
         setPasswordConfirmation: (passwordConfirmation: string) => void;
         showPassword: boolean;
         setShowPassword: (showPassword: boolean) => void;
+        passwordError: string | null;
+        setPasswordError: (passwordError: string | null) => void;
     }
 ) {
 
@@ -29,9 +33,20 @@ function RegisterFormFirstPart(
     // - Password
     // - Password confirmation
 
+    function handlePasswordChange(event: React.ChangeEvent<HTMLInputElement>, type: "password" | "passwordConfirmation") {
+        event.preventDefault();
+        if (type === "password") {
+            props.setPassword(event.target.value);
+        } else {
+            props.setPasswordConfirmation(event.target.value);
+        }
+        if (props.passwordError) {
+            props.setPasswordError(null);
+        }
+    }
+
     return (
         <>
-
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="username_register">Username</InputLabel>
                 <Input
@@ -45,18 +60,16 @@ function RegisterFormFirstPart(
                 />
                 <Typography variant="caption" className="text-xs" color="textSecondary">This is your public display name. It can be your real name or a pseudonym.</Typography>
             </div>
-
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_register">Password</InputLabel>
-                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} required id="password_register" autocomplete="new-password" />
+                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
                 <Typography variant="caption" className="text-xs" color="textSecondary">Passwords must be at least 8 characters long.</Typography>
+                {props.passwordError && <Typography variant="caption" className="text-xs text-red-500">{props.passwordError}</Typography>}
             </div>
-
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
-                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => props.setPasswordConfirmation(e.target.value)} required id="password_confirmation_register" autocomplete="new-password" />
+                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
             </div>
-
         </>
     );
 }
@@ -167,32 +180,81 @@ export default function Register() {
     const { user, login } = useAuth();
     const navigate = useNavigate();
 
+    const userService = new UserService();
     const loginService = new LoginService();
+
+    const [passwordError, setPasswordError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
 
         e.preventDefault();
 
-        // POST api/auth/signup -> Create a new user
-        const response = await loginService.register(
-            username,
-            password,
-            passwordConfirmation,
-            email,
-            firstName,
-            lastName,
-            avatar,
-            user.language
-        );
-
-        if (!response.success) {
-            alert("An error occurred: " + response.error);
+        // Check if the passwords match
+        if (password !== passwordConfirmation) {
+            setPasswordError("Passwords do not match.");
+            setCurrentStep(1);
             return;
         }
 
-        if (response.user && response.token) {
-            login(response.user, response.token);
+        // POST api/auth/signup -> Create a new user
+        const response = await userService.register(
+            username,
+            password,
+            email,
+            firstName,
+            lastName,
+        );
+
+        // response.token is unused yet
+
+        // Check if the request was successful
+        if (!response.success) {
+            alert("An error occurred: " + response.error || "An unexpected error occurred");
+            return;
         }
+
+        // Log the user to get the token
+        const loginResponse = await loginService.login(username, password);
+
+        // Check if the request was successful
+        if (!loginResponse.success || !loginResponse.token) {
+            alert("An error occurred: " + loginResponse.error || "An unexpected error occurred");
+            return;
+        }
+
+        const token = loginResponse.token;
+
+        // GET api/auth/me -> Get the user
+        const userResponse = await userService.getMe(token);
+
+        // Check if the request was successful
+        if (!userResponse.success || !userResponse.user) {
+            alert("An error occurred: " + userResponse.error || "An unexpected error occurred");
+            return;
+        }
+
+        let newUser: User = {
+            email: userResponse.user.email,
+            username: userResponse.user.username,
+            firstName: userResponse.user.firstName,
+            lastName: userResponse.user.lastName,
+            language: user.language,
+            is_logged_in: true,
+        }
+
+        // Avatar
+        if (avatar) {
+
+            // PUT /users/picture -> Upload the avatar
+            const avatarResponse = await userService.setPicture(token, avatar);
+            if (avatarResponse.success) {
+                newUser.avatar = URL.createObjectURL(avatar);
+            }
+
+        }
+
+        // Set the user/token in the context and localStorage
+        login(newUser, token);
 
         // Reset form fields
         setPassword("");
@@ -251,6 +313,8 @@ export default function Register() {
                                 setPasswordConfirmation={setPasswordConfirmation}
                                 showPassword={showPassword}
                                 setShowPassword={setShowPassword}
+                                passwordError={passwordError}
+                                setPasswordError={setPasswordError}
                             />
                             <Button variant="contained" onClick={() => setCurrentStep(2)} className="w-full">Next</Button>
                         </>
