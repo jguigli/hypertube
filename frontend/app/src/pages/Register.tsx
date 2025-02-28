@@ -7,8 +7,8 @@ import Input, { FileInput, PasswordInput } from "../components/Input";
 import GoogleIcon from '@mui/icons-material/Google';
 import "../assets/42Icon.svg";
 import CustomCard from "../components/Card";
-import AuthService from "../services/AuthService";
 import Icon42 from "../utils/Icon42";
+import LoginService from "../services/LoginService";
 
 
 function RegisterFormFirstPart(
@@ -167,14 +167,14 @@ export default function Register() {
     const { user, login } = useAuth();
     const navigate = useNavigate();
 
-    const authService = new AuthService();
+    const loginService = new LoginService();
 
     const handleSubmit = async (e: React.FormEvent) => {
 
         e.preventDefault();
 
         // POST api/auth/signup -> Create a new user
-        const response = await authService.register(
+        const response = await loginService.register(
             username,
             password,
             passwordConfirmation,
@@ -208,11 +208,11 @@ export default function Register() {
     };
 
     const handle42Register = async () => {
-        authService.registerOAuth("42");
+        loginService.registerOAuth("42");
     };
 
     const handleGoogleRegister = async () => {
-        authService.registerOAuth("google");
+        loginService.registerOAuth("google");
     };
 
     return (
