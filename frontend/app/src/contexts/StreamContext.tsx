@@ -52,6 +52,21 @@ export function VideoProvider(
             src: "", // Source initiale vide, on la mettra à jour via `setVideoSource`
             type: "video/mp4",
         }],
+        tracks: [
+            {
+              kind: "subtitles",
+              src: "",
+              srclang: "en",
+              label: "English",
+              default: true
+            },
+            {
+              kind: "subtitles",
+              src: "",
+              srclang: "fr",
+              label: "Français"
+            }
+          ]
     });
 
     // Fonction pour mettre à jour la source vidéo
