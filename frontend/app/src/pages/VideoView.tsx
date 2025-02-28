@@ -14,7 +14,7 @@
 
 import { useEffect } from "react";
 import VideoJS from "../components/VideoJS";
-import { useVideo } from "../contexts/VideoContext";
+import { useVideo } from "../contexts/StreamContext";
 import { useParams } from "react-router-dom";
 import { useMovies } from "../contexts/MovieContext";
 import { useAuth } from "../contexts/AuthContext";

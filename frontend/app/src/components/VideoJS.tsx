@@ -1,12 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import "../styles/video.css"
-import { useVideo } from "../contexts/VideoContext";
+import { useVideo } from "../contexts/StreamContext";
 
 const VideoJS = () => {
   const { playerRef, videoOptions } = useVideo();
   const videoRef = useRef<HTMLDivElement | null>(null);
+
+  const [Playing, setPlaying] = useState(false);
+  const [Muted, setMuted] = useState(false);
 
   useEffect(() => {
     if (!playerRef.current && videoRef.current) {
@@ -19,9 +22,17 @@ const VideoJS = () => {
       playerRef.current = videojs(videoElement, videoOptions, () => {
         videojs.log("player is ready");
       });
+
+      playerRef.current.on("play", () => setPlaying(true));
+      playerRef.current.on("pause", () => setPlaying(false));
+
+      playerRef.current.on("volumechange", () => {
+        setMuted(playerRef.current?.muted() || playerRef.current?.volume() === 0);
+      });
+
     } else if (playerRef.current) {
       // Met à jour la source vidéo si les options changent
-      playerRef.current.src(videoOptions.sources || []);
+        playerRef.current.src(videoOptions.sources || []);
     }
   }, [videoOptions]);
 
