@@ -60,7 +60,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   const [input, setInput] = useState<string>("");
   const [editMode, setEditMode] = useState<boolean>(false);
   const [showInput, setShowInput] = useState<boolean>(false);
-  const [expand, setExpand] = useState<boolean>(true);
+  const [expand, setExpand] = useState<boolean>(false);
 
   const handleNewComment = () => {
     setExpand(!expand);
@@ -97,6 +97,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
             <div style={{ display: "flex", marginTop: "5px" }}>
               {editMode ? (
                 <>
+                <Stack direction="row" spacing={1.5}>
                   <ActionComments
                     className="reply"
                     type="Save"
@@ -109,31 +110,31 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                     handleClick={() => setEditMode(false)}
                     style={{ marginRight: "10px", display: "flex", alignItems: "center" }}
                   />
+                </Stack>
                 </>
               ) : (
                 <>
-                  <ActionComments
-                    className="reply"
-                    type={
-                      <>
-                        {expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply
-                      </>
-                    }
-                    handleClick={handleNewComment}
-                    style={{ marginLeft: "10px", display: "flex", alignItems: "center" }}
-                  />
-                  <ActionComments
-                    className="reply"
-                    type="Edit"
-                    handleClick={() => setEditMode(true)}
-                    style={{ marginLeft: "10px", display: "flex", alignItems: "center" }}
+                  <Stack direction="row" spacing={1.5}>
+                    <ActionComments
+                      className="reply"
+                      type={
+                        <>
+                          {expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply
+                        </>
+                      }
+                      handleClick={handleNewComment}
                     />
-                  <ActionComments
-                    className="reply"
-                    type="Delete"
-                    handleClick={() => handleDeleteNode(comments.id)}
-                    style={{ marginLeft: "10px", display: "flex", alignItems: "center"}}
+                    <ActionComments
+                      className="reply"
+                      type="Edit"
+                      handleClick={() => setEditMode(true)}
                     />
+                    <ActionComments
+                      className="reply"
+                      type="Delete"
+                      handleClick={() => handleDeleteNode(comments.id)}
+                    />
+                  </Stack>
                 </>
               )}
             </div>
@@ -152,7 +153,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
               placeholder="Type your reply here"
             />
             <Stack direction="row" spacing={2}>
-              <Button variant="contained" onClick={onAddComment}>Reply</Button>
+              <Button variant="contained" onClick={onAddComment}>Add reply</Button>
               <Button variant="outlined" className="reply comment" onClick={() => setShowInput(false)}>
                 Cancel
               </Button>
