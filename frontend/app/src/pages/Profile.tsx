@@ -16,15 +16,13 @@ export default function PublicProfile() {
     const { user } = useAuth();
 
     const fakeUserPublicData: User = {
-        id: user.id ? user.id : "0",
         username: user.username ? user.username : "john_doe",
         firstName: user.firstName,
         lastName: user.lastName,
-        avatar: user.avatar,
         language: user.language,
-        is_logged_in: user.is_logged_in
+        is_logged_in: user.is_logged_in,
+        avatar: typeof user.avatar === 'string' ? user.avatar : ""
     };
-
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
@@ -32,7 +30,7 @@ export default function PublicProfile() {
                 Public Profile
             </Typography>
             <div className="flex flex-col space-y-4 my-5 items-center w-full">
-                <Avatar src={fakeUserPublicData.avatar}
+                <Avatar src={fakeUserPublicData.avatar || ""}
                     alt="Avatar"
                     sx={{ width: 100, height: 100 }}
                 />

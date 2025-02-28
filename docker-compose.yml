@@ -37,11 +37,5 @@ services:
     restart: always
     ports:
       - "6300:6300"
-  
-  frontend:
-    build: ./frontend
-    container_name: nodejs
-    ports:
-      - "3000:3000"
-    volumes:
-      - "${PWD}/frontend:/app"
+
+

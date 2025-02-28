@@ -48,13 +48,13 @@ function RegisterFormFirstPart(
 
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_register">Password</InputLabel>
-                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} required id="password_register" autocomplete="new-password"/>
+                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => props.setPassword(e.target.value)} required id="password_register" autocomplete="new-password" />
                 <Typography variant="caption" className="text-xs" color="textSecondary">Passwords must be at least 8 characters long.</Typography>
             </div>
 
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
-                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => props.setPasswordConfirmation(e.target.value)} required id="password_confirmation_register" autocomplete="new-password"/>
+                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => props.setPasswordConfirmation(e.target.value)} required id="password_confirmation_register" autocomplete="new-password" />
             </div>
 
         </>
@@ -164,12 +164,14 @@ export default function Register() {
     const [avatar, setAvatar] = useState<File | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
 
-    const { user } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
 
+    const authService = new AuthService();
+
     const handleSubmit = async (e: React.FormEvent) => {
+
         e.preventDefault();
-        const authService = new AuthService();
 
         // POST api/auth/signup -> Create a new user
         const response = await authService.register(
@@ -184,14 +186,33 @@ export default function Register() {
         );
 
         if (!response.success) {
-            alert("An error occurred");
+            alert("An error occurred: " + response.error);
             return;
         }
 
-        // POST api/auth/login -> Login the user and get the JWT token
-        // const loginResponse = await authService.login(username, password);
+        if (response.user && response.token) {
+            login(response.user, response.token);
+        }
+
+        // Reset form fields
+        setPassword("");
+        setUsername("");
+        setPasswordConfirmation("");
+        setEmail("");
+        setFirstName("");
+        setLastName("");
+        setAvatar(null);
 
         navigate("/");
+
+    };
+
+    const handle42Register = async () => {
+        authService.registerOAuth("42");
+    };
+
+    const handleGoogleRegister = async () => {
+        authService.registerOAuth("google");
     };
 
     return (
@@ -203,12 +224,14 @@ export default function Register() {
                 {currentStep === 1 && (
                     <>
                         <Separator text='With an existing account:' />
-                        <Button variant="outlined">
+                        <Button variant="outlined"
+                            onClick={handle42Register}
+                        >
                             <span className="flex items-center gap-2">
                                 <Icon42 /> 42
                             </span>
                         </Button>
-                        <Button variant="outlined">
+                        <Button variant="outlined" onClick={handleGoogleRegister}>
                             <span className="flex items-center gap-2">
                                 <GoogleIcon color="secondary" /> Google
                             </span>
