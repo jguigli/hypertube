@@ -37,5 +37,3 @@ services:
     restart: always
     ports:
       - "6300:6300"
-
-
