@@ -22,7 +22,9 @@ def get_user_by_username(db: Session, user_name: str):
     return db.query(models.User).filter(models.User.user_name == user_name).first()
 
 def get_users(db: Session):
-    return db.query(models.User).all()
+    # Return all users {id, user_name}
+    users = db.query(models.User).all()
+    return {"users": [{"id": user.id, "user_name": user.user_name} for user in users]}
 
 def create_user(db: Session, user: schemas.User):
     db_user = models.User(
@@ -88,7 +90,7 @@ def manage_profile_picture(
 
     with open(file_location, "wb") as file:
         shutil.copyfileobj(profile_picture.file, file)
-    
+
     user.profile_picture_path = file_location
     db.commit()
     db.refresh(user)

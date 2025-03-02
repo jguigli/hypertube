@@ -18,7 +18,7 @@ export default function Home() {
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const [sortOption, setSortOption] = useState("rating");
+    const [sortOption, setSortOption] = useState("");
     const [filterOption, setFilterOption] = useState("all");
 
     const observerRef = useRef<IntersectionObserver | null>(null);
