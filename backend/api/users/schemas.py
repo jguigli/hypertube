@@ -35,6 +35,21 @@ class OtherUser(BaseModel):
     class Config:
         from_attributes = True
 
+
+class IdUsername(BaseModel):
+    id: int
+    user_name: str
+
+    class Config:
+        from_attributes = True
+
+
+class UsersList(BaseModel):
+    users: list[IdUsername]
+
+    class Config:
+        from_attributes = True
+
 class UserEditInfos(BaseModel):
     email: str
     user_name: str

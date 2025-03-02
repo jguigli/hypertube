@@ -4,6 +4,10 @@ import User from "../types/User";
 // Axios configuration
 axios.defaults.baseURL = "http://localhost:8000";
 
+interface AllUsers {
+    id: number;
+    user_name: string;
+}
 
 export default class UserService {
 
@@ -97,7 +101,81 @@ export default class UserService {
         }
     }
 
+    // GET / users
+    async getUsers(
+        token: string
+    ): Promise<
+        {
+            success: boolean,
+            users: AllUsers[] | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                "/users/",
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                const users: AllUsers[] = response.data.users;
+                return { success: true, users: users, error: null };
+            }
+            return { success: false, users: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, users: null, error: errorMessage };
+        }
+    }
+
     // GET / users / { user_id }
+    async getUser(
+        user_id: number,
+        token: string
+    ): Promise<
+        {
+            success: boolean,
+            user: User | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                `/users/${user_id}`,
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+            if (response.status === 200) {
+                const user: User = {
+                    email: response.data.email,
+                    username: response.data.user_name,
+                    firstName: response.data.first_name,
+                    lastName: response.data.last_name,
+                    is_logged_in: true,
+                    language: response.data.language || "en"
+                };
+                return { success: true, user: user, error: null };
+            } else {
+                return { success: false, user: null, error: response.data };
+            }
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, user: null, error: errorMessage };
+        }
+    }
 
     // PUT / users / informations
     async setInformations(
@@ -166,6 +244,39 @@ export default class UserService {
     }
 
     // GET / users / { user_id } / picture
+    async getPictureById(user_id: number, token: string): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                `/users/${user_id}/picture`,
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    responseType: "blob"
+                }
+            );
+            if (response.status === 200) {
+                const avatar = response.data;
+                if (avatar) {
+                    const avatarBase64: string = await this.blobToBase64(avatar);
+                    return { success: true, avatar: avatarBase64, error: null };
+                }
+            }
+            return { success: false, avatar: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, avatar: null, error: errorMessage };
+        }
+    }
 
     // PUT / users / picture
     async setPicture(token: string, profile_picture: File): Promise<

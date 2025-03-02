@@ -124,7 +124,7 @@ async def get_current_user_from_mail(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY_MAIL_LINK, algorithms=[ALGORITHM])
-        user_id: str = payload.get("user_name")
+        user_id: str = payload.get("user_id")
         if user_id is None:
             raise credentials_exception
         token_data = schemas.TokenData(user_id=user_id)

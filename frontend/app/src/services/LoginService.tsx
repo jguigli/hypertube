@@ -3,7 +3,6 @@ import axios from "axios";
 // Axios configuration
 axios.defaults.baseURL = "http://localhost:8000";
 
-
 export default class LoginService {
 
     // POST /token
@@ -62,6 +61,38 @@ export default class LoginService {
     }
 
     // PUT /password
+    async changePassword(newPassword: string, confirmPassword: string, authToken: string): Promise<
+        {
+            success: boolean,
+            error: any
+        }
+    > {
+        try {
+            const formData = new URLSearchParams();
+            formData.append("password", newPassword);
+            formData.append("password_confirmation", confirmPassword);
+            const response = await axios.put(
+                "/password",
+                {
+                    password: newPassword,
+                    password_confirmation: confirmPassword,
+                },
+                {
+                    headers: {
+                        Authorization: authToken,
+                    },
+                }
+            );
+            return { success: response.status === 200, error: null };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, error: { message: errorMessage } };
+        }
+    }
+
 
     // GET /auth/42/callback
     // GET /auth/google/callback

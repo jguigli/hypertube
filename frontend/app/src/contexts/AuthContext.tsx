@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const changeUserAvatar = (avatar: string) => {
-        const newUser = { ...user, avatar };
+        const newUser = { ...user, avatar: avatar };
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
     };

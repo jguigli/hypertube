@@ -13,7 +13,6 @@ export default function ResetPassword() {
 
     function sendResetEmail(event: React.FormEvent) {
         event.preventDefault();
-        // Send email to the user
         // POST localhost:8000/reset_password
         const loginService = new LoginService();
         loginService.resetPassword(email);
@@ -70,6 +69,9 @@ export function ChangePassword() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [passwordError, setPasswordError] = useState("");
 
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState("");
+
     if (!access_token || !token_type || context !== 'reset_password') {
         navigate("/login");
     }
@@ -83,7 +85,7 @@ export function ChangePassword() {
         }
     }
 
-    function handleSubmit(event: React.FormEvent) {
+    async function handleSubmit(event: React.FormEvent) {
         event.preventDefault();
 
         // Check if the passwords match
@@ -93,6 +95,16 @@ export function ChangePassword() {
         }
 
         // Send the new password to the server
+        const loginService = new LoginService();
+        const authToken = `${token_type} ${access_token}`;
+        const response = await loginService.changePassword(newPassword, confirmPassword, authToken);
+
+        if (response.success) {
+            setError("");
+            setSuccess(true);
+        } else if (response.error) {
+            setError(response.error);
+        }
     }
 
     return (
@@ -116,9 +128,15 @@ export function ChangePassword() {
                         <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
                         <PasswordInput placeholder="Password confirmation" value={confirmPassword} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
                     </div>
+                    {success && <Typography variant="caption" >Password changed successfully, you can now <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/login")}>login</span>.
+                    </Typography>}
+                    {error && <Typography variant="caption" className="text-xs text-red-500">{error}</Typography>}
                     <div className="flex gap-5 w-full items-center ">
                         <Button variant="contained" className="w-full" type="submit">
                             Reset password
+                        </Button>
+                        <Button variant="outlined" className="w-full" onClick={() => navigate("/login")}>
+                            Back to login
                         </Button>
                     </div>
                 </form>

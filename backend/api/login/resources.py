@@ -29,7 +29,7 @@ from .security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     get_current_user_from_mail,
     verify_password,
-    get_password_hash       
+    get_password_hash
 )
 from api.users import crud as user_crud
 from api.users import models as user_models

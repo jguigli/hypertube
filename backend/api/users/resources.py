@@ -54,6 +54,15 @@ async def get_other_user(
     return user
 
 
+@router.get("/users/", response_model=schemas.UsersList)
+async def get_users(
+    current_user: Annotated[models.User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db),
+):
+    users = crud.get_users(db)
+    return users
+
+
 @router.put("/users/informations", response_model=schemas.User)
 async def edit_user_informations(
     user_infos: schemas.UserEditInfos,
