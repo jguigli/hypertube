@@ -5,6 +5,7 @@ import CustomCard from "./Card.tsx";
 import { Star } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext.tsx";
 
+
 export default function MovieCard({ movie }: { movie: Movie }) {
 
     // TODO : Differenciate watched movies from unwatched ones
@@ -21,7 +22,7 @@ export default function MovieCard({ movie }: { movie: Movie }) {
                             component="img"
                             image={movie.language[user.language].poster_path}
                             alt={movie.language[user.language].title}
-                            className="w-full h-full"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                     <CardHeader

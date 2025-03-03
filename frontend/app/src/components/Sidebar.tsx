@@ -5,38 +5,46 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
+import { useActiveLink } from '../contexts/ActiveLinkContext';
 
 
 export default function Sidebar() {
 
     const { user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [current_page, setCurrentPage] = useState(window.location.pathname);
+
+    const {activeLink, setActiveLink} = useActiveLink();
+
+    setActiveLink(window.location.pathname);
 
     useEffect(() => {
-        setCurrentPage(window.location.pathname);
+        setActiveLink(window.location.pathname);
     }, [window.location.pathname]);
 
     const links = [
         {
             name: "Home",
             url: "/",
-            icon: HomeIcon
+            icon: HomeIcon,
+            activeLink: "/"
         },
         user.is_logged_in ? {
             name: "Profile",
             url: `/profile/${user.username}`,
-            icon: AccountCircleIcon
+            icon: AccountCircleIcon,
+            activeLink: `/profile`
         } : null,
         user.is_logged_in ? {
             name: "Settings",
             url: "/settings",
-            icon: Settings
+            icon: Settings,
+            activeLink: "/settings"
         } : null,
         user.is_logged_in ? {
             name: "Logout",
             url: "/logout",
-            icon: LogoutOutlined
+            icon: LogoutOutlined,
+            activeLink: "/logout"
         } : null,
         !user.is_logged_in ? {
             name: "Login",
@@ -58,7 +66,7 @@ export default function Sidebar() {
             onMouseLeave={() => setMenuOpen(false)}
         >
             {links.map((link) => link && (
-                <Link to={link.url} onClick={() => setCurrentPage(link.url)} className='w-full' key={link.url}>
+                <Link to={link.url} onClick={() => setActiveLink(link.url)} className='w-full' key={link.url}>
 
                     {
                         menuOpen ?
@@ -69,7 +77,7 @@ export default function Sidebar() {
                                     className='w-full flex justify-start sidebar-open'
                                     startIcon={<link.icon fontSize='small' className='sidebar-icon' />}
                                     sx={{
-                                        backgroundColor: current_page === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        backgroundColor: activeLink === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
                                         width: 'calc(100% - 10px)',
                                         margin: "0 5px",
                                         display: "flex",
@@ -84,7 +92,7 @@ export default function Sidebar() {
                                     startIcon={<link.icon fontSize='small' />}
                                     size='small'
                                     sx={{
-                                        backgroundColor: current_page === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        backgroundColor: activeLink === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
                                         width: 'calc(100% - 10px)',
                                         margin: "0 5px",
                                         display: "flex",
@@ -98,30 +106,6 @@ export default function Sidebar() {
                     }
                 </Link>
             ))}
-
-
-
-
-            {/* {
-                menuOpen && current_page === "/" && (
-                    <>
-                        <div className="flex flex-col gap-2">
-                            <FormControl component="fieldset">
-                                <FormLabel component="legend">Sort by</FormLabel>
-                                <RadioGroup
-                                    aria-label="sort-by"
-                                    defaultValue="title"
-                                    name="radio-buttons-group"
-                                >
-                                    <FormControlLabel value="title" control={<Radio />} label="Title" />
-                                    <FormControlLabel value="date" control={<Radio />} label="Rating" />
-                                    <FormControlLabel value="author" control={<Radio />} label="Production year" />
-                                </RadioGroup>
-                            </FormControl>
-                        </div>
-                    </>
-                )
-            } */}
         </nav >
     );
 }

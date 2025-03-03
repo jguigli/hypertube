@@ -2,8 +2,13 @@ import axios from "axios";
 import User from "../types/User";
 
 // Axios configuration
-axios.defaults.baseURL = "http://localhost:8000";
+const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
+axios.defaults.baseURL = `http://${hostname}:3000/api`;
 
+interface AllUsers {
+    id: number;
+    user_name: string;
+}
 
 export default class UserService {
 
@@ -22,7 +27,6 @@ export default class UserService {
                 error: string | null
             }
         > {
-
 
         try {
 
@@ -77,11 +81,13 @@ export default class UserService {
             );
 
             if (userResponse.status === 200) {
-                const user = {
+                const user: User = {
                     email: userResponse.data.email,
                     username: userResponse.data.user_name,
                     firstName: userResponse.data.first_name,
-                    lastName: userResponse.data.last_name
+                    lastName: userResponse.data.last_name,
+                    is_logged_in: true,
+                    language: "en"
                 };
                 return { success: true, user: user, error: null };
             } else {
@@ -95,23 +101,100 @@ export default class UserService {
             return { success: false, user: null, error: errorMessage };
         }
     }
+
+    // GET / users
+    async getUsers(
+        token: string
+    ): Promise<
+        {
+            success: boolean,
+            users: AllUsers[] | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                "/users/",
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                const users: AllUsers[] = response.data.users;
+                return { success: true, users: users, error: null };
+            }
+            return { success: false, users: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, users: null, error: errorMessage };
+        }
+    }
+
     // GET / users / { user_id }
+    async getUser(
+        user_id: number,
+        token: string
+    ): Promise<
+        {
+            success: boolean,
+            user: User | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                `/users/${user_id}`,
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+            if (response.status === 200) {
+                const user: User = {
+                    email: response.data.email,
+                    username: response.data.user_name,
+                    firstName: response.data.first_name,
+                    lastName: response.data.last_name,
+                    is_logged_in: true,
+                    language: response.data.language || "en"
+                };
+                return { success: true, user: user, error: null };
+            } else {
+                return { success: false, user: null, error: response.data };
+            }
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, user: null, error: errorMessage };
+        }
+    }
 
     // PUT / users / informations
-
-    // GET / users / me / picture
-
-    // GET / users / { user_id } / picture
-
-    // PUT / users / picture
-    async setPicture(token: string, profile_picture: File): Promise<{ success: boolean, error: string | null }> {
-
-        const formData = new FormData();
-        formData.append("profile_picture", profile_picture);
+    async setInformations(
+        token: string,
+        email: string,
+        user_name: string,
+        first_name: string,
+        last_name: string
+    ): Promise<{ success: boolean, error: string | null }> {
 
         const response = await axios.put(
-            "/users/picture",
-            formData,
+            "/users/informations",
+            {
+                email: email,
+                user_name: user_name,
+                first_name: first_name,
+                last_name: last_name
+            },
             {
                 headers: {
                     Authorization: `${token}`
@@ -123,17 +206,118 @@ export default class UserService {
             return { success: true, error: null };
         }
         return { success: false, error: response.data };
+    }
+
+    // GET / users / me / picture
+    async getPicture(token: string): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                "/users/me/picture",
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    responseType: "blob"
+                }
+            );
+            if (response.status === 200) {
+                const avatar = response.data;
+                if (avatar) {
+                    const avatarBase64: string = await this.blobToBase64(avatar);
+                    return { success: true, avatar: avatarBase64, error: null };
+                }
+            }
+            return { success: false, avatar: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, avatar: null, error: errorMessage };
+        }
 
     }
 
+    // GET / users / { user_id } / picture
+    async getPictureById(user_id: number, token: string): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }
+    > {
+        try {
+            const response = await axios.get(
+                `/users/${user_id}/picture`,
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    },
+                    responseType: "blob"
+                }
+            );
+            if (response.status === 200) {
+                const avatar = response.data;
+                if (avatar) {
+                    const avatarBase64: string = await this.blobToBase64(avatar);
+                    return { success: true, avatar: avatarBase64, error: null };
+                }
+            }
+            return { success: false, avatar: null, error: response.data };
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, avatar: null, error: errorMessage };
+        }
+    }
 
+    // PUT / users / picture
+    async setPicture(token: string, profile_picture: File): Promise<
+        {
+            success: boolean,
+            avatar: string | null,
+            error: string | null
+        }> {
 
-    // TODO:
-    // Error handling for the register and login methods
-    // Display the error message in the UI
-    // Register / login with 42 and Google
+        const formData = new FormData();
+        formData.append("profile_picture", profile_picture);
 
+        const response = await axios.put(
+            "/users/picture",
+            formData,
+            {
+                headers: {
+                    Authorization: `${token}`
+                },
+                responseType: "blob"
+            }
+        );
 
+        if (response.status === 200) {
+            const avatar = response.data;
+            if (avatar) {
+                const avatarBase64: string = await this.blobToBase64(avatar);
+                return { success: true, avatar: avatarBase64, error: null };
+            }
+        }
+        return { success: false, avatar: null, error: response.data };
 
+    }
 
+    async blobToBase64(blob: Blob): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    }
 }

@@ -12,19 +12,22 @@ import theme from './styles/MUIThemeProvider.tsx'
 import { SearchProvider } from './contexts/SearchContext.tsx'
 import { VideoProvider } from './contexts/StreamContext.tsx'
 import { MoviesProvider } from './contexts/MovieContext.tsx'
+import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
-        <ThemeProvider theme={theme}>
-            <MoviesProvider>
-                <SearchProvider>
-                    <AuthProvider>
-                        <VideoProvider>
-                            <AppRouter />
-                        </VideoProvider>
-                    </AuthProvider>
-                </SearchProvider>
-            </MoviesProvider>
-        </ThemeProvider>
+        <ActiveLinkProvider>
+            <ThemeProvider theme={theme}>
+                <MoviesProvider>
+                    <SearchProvider>
+                        <AuthProvider>
+                            <VideoProvider>
+                                <AppRouter />
+                            </VideoProvider>
+                        </AuthProvider>
+                    </SearchProvider>
+                </MoviesProvider>
+            </ThemeProvider>
+        </ActiveLinkProvider>
     </StrictMode>,
 )
