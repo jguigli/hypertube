@@ -14,9 +14,6 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-    allowedHosts: [
-      'nginx',
-      '*.clusters.42paris.fr'
-    ],
+    allowedHosts: true,
   },
 })
