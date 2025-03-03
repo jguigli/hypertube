@@ -62,14 +62,6 @@ form {
     justify-content: center;
 }
 
-/* #account-menu, #navbar {
-    z-index: 5;
-}
-
-#account-menu-button {
-    z-index: 6;
-} */
-
 .sidebar-closed span {
     margin-right: 0 !important;
 }

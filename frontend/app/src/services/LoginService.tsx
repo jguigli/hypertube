@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Axios configuration
-axios.defaults.baseURL = "http://localhost:8000";
+axios.defaults.baseURL = "http://localhost:8080/api";
 
 export default class LoginService {
 
