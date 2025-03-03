@@ -2,7 +2,7 @@ import axios from "axios";
 import User from "../types/User";
 
 // Axios configuration
-axios.defaults.baseURL = "http://localhost:8080/api";
+axios.defaults.baseURL = "http://localhost:3000/api";
 
 interface AllUsers {
     id: number;
