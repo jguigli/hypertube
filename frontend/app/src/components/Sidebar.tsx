@@ -98,30 +98,6 @@ export default function Sidebar() {
                     }
                 </Link>
             ))}
-
-
-
-
-            {/* {
-                menuOpen && current_page === "/" && (
-                    <>
-                        <div className="flex flex-col gap-2">
-                            <FormControl component="fieldset">
-                                <FormLabel component="legend">Sort by</FormLabel>
-                                <RadioGroup
-                                    aria-label="sort-by"
-                                    defaultValue="title"
-                                    name="radio-buttons-group"
-                                >
-                                    <FormControlLabel value="title" control={<Radio />} label="Title" />
-                                    <FormControlLabel value="date" control={<Radio />} label="Rating" />
-                                    <FormControlLabel value="author" control={<Radio />} label="Production year" />
-                                </RadioGroup>
-                            </FormControl>
-                        </div>
-                    </>
-                )
-            } */}
         </nav >
     );
 }

@@ -12,8 +12,18 @@ interface PrivateRouteProps {
 export default function PrivateRoute({ children }: PrivateRouteProps) {
     const { user } = useAuth();
 
-    if (user.is_logged_in === false) {
+    if (!user.is_logged_in) {
         return <Navigate to="/login" />;
+    }
+
+    return <>{children}</>;
+}
+
+export function LogoutRoute({ children }: PrivateRouteProps) {
+    const { user } = useAuth();
+
+    if (!user.is_logged_in) {
+        return <Navigate to="/" />;
     }
 
     return <>{children}</>;

@@ -41,9 +41,7 @@ export default function UserSettings() {
         if (response.avatar) {
             setAvatar(response.avatar);
             setNewAvatar(null);
-            const newUser = user;
             user.avatar = response.avatar;
-            
             changeUserInfo({ ...user, avatar: response.avatar });
         }
 
