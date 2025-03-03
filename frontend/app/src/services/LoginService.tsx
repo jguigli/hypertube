@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Axios configuration
-axios.defaults.baseURL = "http://localhost:3000/api";
+const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
+axios.defaults.baseURL = `http://${hostname}:3000/api`;
 
 export default class LoginService {
 
