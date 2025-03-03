@@ -1,24 +1,34 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import { MenuItem } from "@mui/material";
 import { useSearch } from "../contexts/SearchContext.tsx";
 import { Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 
 
 function Logo() {
+
+    const { setActiveLink } = useActiveLink();
+
     return (
-        <Link to="/" id="logo">
-            <Typography variant="h6">Hypertube</Typography>
-        </Link>
+        <div className="flex flex-row items-center gap-1">
+            <Link to="/" id="logo" onClick={() => setActiveLink("/")}>
+                <PlayCircleOutlineIcon />
+            </Link>
+            <Link to="/" id="logo" onClick={() => setActiveLink("/")}>
+                <Typography variant="h6">Hypertube</Typography>
+            </Link>
+        </div>
     );
 }
 
-function SearchBar() {
+function MovieSearchBar() {
 
     const { searchQuery, setSearchQuery } = useSearch();
 
@@ -56,8 +66,8 @@ export function LanguageSelection() {
     };
 
     return (
-        <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-            <InputLabel id="demo-select-small-label">Language</InputLabel>
+        <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
+            <InputLabel size="small" id="demo-select-small-label" sx={{ paddingTop: 0.5 }}>Language</InputLabel>
             <Select
                 labelId="demo-select-small-label"
                 id="demo-select-small"
@@ -73,118 +83,68 @@ export function LanguageSelection() {
     );
 }
 
-// function UserMenu() {
+function UserSearchBar() {
 
-//     const { user, logout } = useAuth();
-//     const { setSearchQuery } = useSearch();
-//     const navigate = useNavigate();
-//     const [anchorEl, setAnchorEl] = useState<null | Element>(null);
-//     const open = Boolean(anchorEl);
+    const [userSearch, setUserSearch] = useState("");
+    const { setActiveLink } = useActiveLink();
+    const navigate = useNavigate()
+    const { user } = useAuth();
+    const username = user.username;
 
-//     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-//         event.preventDefault();
-//         setAnchorEl(event.currentTarget);
-//     };
+    function handleUserSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setUserSearch(event.target.value);
+    }
 
-//     const handleClose = () => {
-//         setAnchorEl(null);
-//     };
+    function handleUserSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        // Navigate to user profile
+        setActiveLink(`/profile`);
+        navigate(`/profile/${userSearch}`);
+    }
 
-//     return (
-//         <>
-//             <IconButton
-//                 id="account-menu-button"
-//                 onClick={handleClick}
-//                 size="small"
-//                 sx={{ ml: 2 }}
-//                 aria-controls={open ? 'account-menu' : undefined}
-//                 aria-haspopup="true"
-//                 aria-expanded={open ? 'true' : undefined}
-//                 onMouseEnter={handleClick}
-//             >
-//                 {user ? (
-//                     <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} src={user.avatar} />
-//                 ) : (
-//                     <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }} />
-
-//                 )}
-//             </IconButton>
-
-//             <Menu
-//                 id="account-menu"
-//                 anchorEl={anchorEl}
-//                 open={open}
-//                 onClose={handleClose}
-//                 MenuListProps={{ 'aria-labelledby': 'account-menu-button' }}
-//             >
-//                 {user && (
-//                     <MenuItem onClick={() => {
-//                         handleClose();
-//                         navigate(`/profile/${user.username}`);
-//                     }}>
-//                         <ListItemIcon>
-//                             <AccountCircleIcon />
-//                         </ListItemIcon>
-//                         <ListItemText>Profile</ListItemText>
-//                     </MenuItem>
-//                 )}
-
-//                 {user && (
-//                     <MenuItem onClick={() => {
-//                         logout();
-//                         setSearchQuery("");
-//                         handleClose();
-//                         navigate("/");
-//                     }}>
-//                         <ListItemIcon>
-//                             <LogoutIcon />
-//                         </ListItemIcon>
-//                         <ListItemText>Logout</ListItemText>
-//                     </MenuItem>
-//                 )}
-
-//                 {!user && (
-//                     <MenuItem onClick={() => {
-//                         handleClose();
-//                         navigate("/login");
-//                     }}>
-//                         <ListItemIcon>
-//                             <LoginOutlined />
-//                         </ListItemIcon>
-//                         <ListItemText>Login</ListItemText>
-//                     </MenuItem>
-//                 )}
-
-//                 {!user && (
-//                     <MenuItem onClick={() => {
-//                         handleClose();
-//                         navigate("/register");
-//                     }}>
-//                         <ListItemIcon>
-//                             <AppRegistrationOutlined />
-//                         </ListItemIcon>
-//                         <ListItemText>Register</ListItemText>
-//                     </MenuItem>
-//                 )}
-
-//             </Menu>
-//         </>
-//     );
-// }
+    return (
+        <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
+            <form onSubmit={handleUserSearchSubmit}>
+                <div className="flex flex-row items-center w-full">
+                    <InputBase
+                        sx={{ ml: 2, flex: 1, color: 'inherit' }}
+                        placeholder="Search users"
+                        value={userSearch}
+                        onChange={handleUserSearchChange}
+                        inputProps={{ 'aria-label': 'search movies' }}
+                    />
+                    <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
+                        <Search />
+                    </IconButton>
+                </div>
+            </form>
+        </div>
+    );
+}
 
 
 export default function Navbar() {
+
+    const { user } = useAuth();
+    const { activeLink } = useActiveLink();
+
     return (
         <nav
             id="navbar"
             className="flex flex-row justify-between items-center max-h-[50px] w-full p-3 bg-gray-950 text-white sticky top-0 z-50 border-b border-gray-500/50"
         >
             <Logo />
-            <SearchBar />
-            <div className="flex flex-row items-center">
-                <LanguageSelection />
-                {/* <UserMenu /> */}
-            </div>
+
+            {
+                user.is_logged_in && (
+                    (activeLink.includes('profile') || activeLink.includes('settings')) ? (
+                        <UserSearchBar />
+                    ) : (
+                        <MovieSearchBar />
+                    )
+                )
+            }
+            <LanguageSelection />
         </nav>
     );
 }

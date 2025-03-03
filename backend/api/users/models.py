@@ -27,7 +27,7 @@ class User(Base):
     def access_token(self):
         access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
         return security.create_access_token(
-            data={"user_name": str(self.user_name)}, expires_delta=access_token_expires
+            data={"user_id": self.id}, expires_delta=access_token_expires
         )
 
     @property

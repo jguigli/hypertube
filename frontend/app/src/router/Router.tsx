@@ -5,12 +5,13 @@ import Register from "../pages/Register.tsx";
 import Login from "../pages/Login.tsx";
 import PageNotFound from "../pages/404.tsx";
 import VideoView from "../pages/VideoView.tsx";
-import ResetPassword from "../pages/ResetPassword.tsx";
+import ResetPassword, { ChangePassword } from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
-import PrivateRoute from "./PrivateRoute.tsx";
+import PrivateRoute, { LogoutRoute } from "./PrivateRoute.tsx";
 import Logout from "../pages/Logout.tsx";
 import PublicProfile from "../pages/Profile.tsx";
 import UserSettings from "../pages/UserSettings.tsx";
+import HomeRouter from "./HomeRouter.tsx";
 
 const router = createBrowserRouter([
     {
@@ -19,7 +20,11 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <Home />
+                element: (
+                    <HomeRouter>
+                        <Home />
+                    </HomeRouter>
+                )
             },
             {
                 path: "register",
@@ -27,7 +32,7 @@ const router = createBrowserRouter([
                     <PublicRoute>
                         <Register />
                     </PublicRoute>
-                ),
+                )
             },
             {
                 path: "/auth/google/callback",
@@ -35,7 +40,7 @@ const router = createBrowserRouter([
                     <PublicRoute>
                         <></>
                     </PublicRoute>
-                ),
+                )
             },
             {
                 path: "/auth/42/callback",
@@ -43,7 +48,7 @@ const router = createBrowserRouter([
                     <PublicRoute>
                         <></>
                     </PublicRoute>
-                ),
+                )
             },
             {
                 path: "login",
@@ -58,6 +63,14 @@ const router = createBrowserRouter([
                 element: (
                     <PublicRoute>
                         <ResetPassword />
+                    </PublicRoute>
+                )
+            },
+            {
+                path: "reset-password",
+                element: (
+                    <PublicRoute>
+                        <ChangePassword />
                     </PublicRoute>
                 )
             },
@@ -88,17 +101,17 @@ const router = createBrowserRouter([
             {
                 path: "logout",
                 element: (
-                    <PrivateRoute>
+                    <LogoutRoute>
                         <Logout />
-                    </PrivateRoute>
+                    </LogoutRoute>
                 )
             },
             {
                 path: "*",
                 element: <PageNotFound />
-            },
-        ],
-    },
+            }
+        ]
+    }
 ]);
 
 export default function AppRouter() {

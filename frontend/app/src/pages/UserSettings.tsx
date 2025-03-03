@@ -3,11 +3,13 @@ import { useState } from "react";
 import Input, { FileInput } from "../components/Input";
 import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
+import UserService from "../services/UserService";
 
 
 export default function UserSettings() {
 
-    const { user } = useAuth();
+    const { user, changeUserInfo, getToken } = useAuth();
+
     const [username, setUsername] = useState(user.username || "");
     const [email, setEmail] = useState(user.email || "");
     const [firstName, setFirstName] = useState(user.firstName || "");
@@ -15,26 +17,67 @@ export default function UserSettings() {
     const [avatar, setAvatar] = useState<string | undefined>(user.avatar || undefined);
     const [newAvatar, setNewAvatar] = useState<File | null>(null);
 
-    const handleAvatarChange = (file: File | null) => {
-        setNewAvatar(file);
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatar(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+    const userService = new UserService();
+
+    const handleAvatarChange = async (file: File | null) => {
+
+        const token = getToken();
+        if (!token) {
+            alert("You are not authenticated");
+            return;
         }
+        else if (!file) {
+            alert("Please select a file");
+            return;
+        }
+
+        // PUT /users/picture
+        const response = await userService.setPicture(token, file);
+        if (!response.success) {
+            alert("An error occurred while uploading the avatar" + response.error || "An unexpected error occurred");
+            return;
+        }
+
+        if (response.avatar) {
+            setAvatar(response.avatar);
+            setNewAvatar(null);
+            user.avatar = response.avatar;
+            changeUserInfo({ ...user, avatar: response.avatar });
+        }
+
     };
+
+
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const token = getToken();
+        if (!token) {
+            alert("You are not authenticated");
+            return;
+        }
+
+        // PUT /users/informations
+        const response = await userService.setInformations(token, email, username, firstName, lastName);
+        if (!response.success) {
+            alert("An error occurred while updating the user information" + response.error || "An unexpected error occurred");
+            return;
+        }
+
+        changeUserInfo({ ...user, email, firstName, lastName });
+
+        alert("User information updated successfully");
+    }
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
             <Typography variant="h4" className="font-bold text-center">
                 Customize your profile
             </Typography>
-            <div className="flex flex-col space-y-4 my-5 items-center w-full">
+            <form onSubmit={handleSubmit} className="flex flex-col space-y-4 my-5 items-center w-full">
                 <Avatar src={avatar}
                     alt="Avatar"
                     sx={{ width: 100, height: 100 }}
+                    className="m-auto"
                 />
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">Username:</InputLabel>
@@ -94,7 +137,7 @@ export default function UserSettings() {
                 <div className="flex gap-5 w-full items-center ">
                     <Button variant="contained" className="w-full" type="submit">Save</Button>
                 </div>
-            </div>
+            </form>
         </CustomCard>
     )
 }

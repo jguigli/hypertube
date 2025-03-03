@@ -6,7 +6,10 @@ all:
 	$(DOCKER_COMPOSE) up -d --build
 
 build_up:
-$(DOCKER_COMPOSE) up  --build
+	$(DOCKER_COMPOSE) up --build
+
+build_up_d:
+	$(DOCKER_COMPOSE) up --build -d
 
 build:
 	$(DOCKER_COMPOSE) build
