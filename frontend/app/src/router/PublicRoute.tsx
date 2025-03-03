@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 // Example: Login, Register, Forgot Password, etc.
 
 import { ReactNode } from "react";
+import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 interface PublicRouteProps {
     children: ReactNode;

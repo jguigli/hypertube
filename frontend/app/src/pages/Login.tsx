@@ -89,6 +89,7 @@ export default function Login() {
         setUsername("");
         setError("");
 
+        setActiveLink("/");
         navigate("/");
 
     };
