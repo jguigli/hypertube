@@ -19,4 +19,4 @@ EXPOSE 8000
 CMD ["sh", "-c", \
     "envsubst < /app/alembic.ini.template > /app/alembic.ini && \
     alembic upgrade heads && \
-    uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"]
+    uvicorn api.main:app --host 0.0.0.0 --port 8000 --root-path /api/ --reload"]

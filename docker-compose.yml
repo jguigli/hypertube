@@ -3,8 +3,8 @@ services:
   frontend:
     build: ./frontend
     container_name: frontend
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     volumes:
       - "${PWD}/frontend/app:/app"
     depends_on:
@@ -13,8 +13,8 @@ services:
   api:
     build: ./backend
     container_name: fastapi
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - "${PWD}/backend:/app"
     depends_on:
@@ -42,7 +42,10 @@ services:
     build: ./nginx
     container_name: nginx
     ports:
-      - "8080:8080"
+      - "3000:8080"
     depends_on:
       - frontend
       - api
+
+
+  
