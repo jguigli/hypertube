@@ -100,7 +100,7 @@ export default class LoginService {
     // GET /auth/42 and GET /auth/google
     async registerOAuth(provider: "42" | "google") {
         try {
-            window.open(`http://localhost:8000/auth/${provider}`, "_self");
+            window.open(`http://localhost:3000/api/auth/${provider}`, "_self");
         }
         catch (error) {
             return error;

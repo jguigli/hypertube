@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import { Divider, InputLabel, Typography } from "@mui/material";
 import Input, { FileInput, PasswordInput } from "../components/Input";
@@ -11,6 +11,7 @@ import LoginService from "../services/LoginService";
 import UserService from "../services/UserService";
 import User from "../types/User";
 import { useAuth } from "../contexts/AuthContext";
+import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 
 function RegisterFormFirstPart(
@@ -185,6 +186,8 @@ export default function Register() {
 
     const [passwordError, setPasswordError] = useState<string | null>(null);
 
+    const { setActiveLink} = useActiveLink();
+
     const handleSubmit = async (e: React.FormEvent) => {
 
         e.preventDefault();
@@ -337,7 +340,9 @@ export default function Register() {
                 {currentStep === 1 && (
                     <>
                         <Separator text='Already have an account?' />
-                        <Button variant="text" onClick={() => navigate("/login")}>Login</Button>
+                        <Link to="/login" onClick={() => setActiveLink("/login")} className="w-full">
+                            <Button variant="text" className="w-full">Login</Button>
+                        </Link>
                     </>
                 )}
             </div>

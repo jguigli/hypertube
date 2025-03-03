@@ -4,6 +4,7 @@ import CustomCard from "./Card";
 import { Separator } from "../pages/Register";
 import { ExpandMore, PlayArrow, Search, VideoLibraryOutlined } from "@mui/icons-material";
 import { useState } from "react";
+import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 const accordionItems = [
     {
@@ -29,6 +30,8 @@ const accordionItems = [
 export default function LandingPage() {
 
     const [expanded, setExpanded] = useState<string | false>(false);
+
+    const { setActiveLink } = useActiveLink();
 
     const handleChange =
         (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -73,10 +76,10 @@ export default function LandingPage() {
                 </div>
 
                 <Separator text="Get started" />
-                <Link to="/login" className="w-full">
+                <Link to="/login" className="w-full" onClick={() => setActiveLink("/login")}>
                     <Button variant="contained" className="w-full">Login</Button>
                 </Link>
-                <Link to="/register" className="w-full">
+                <Link to="/register" className="w-full" onClick={() => setActiveLink("/register")}>
                     <Button variant="outlined" className="w-full">Register</Button>
                 </Link>
             </div>
