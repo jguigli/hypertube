@@ -57,8 +57,7 @@ export function VideoProvider(
               kind: "subtitles",
               src: "",
               srclang: "en",
-              label: "English",
-              default: true
+              label: "English"
             },
             {
               kind: "subtitles",
