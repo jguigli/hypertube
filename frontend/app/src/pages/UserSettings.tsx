@@ -45,6 +45,8 @@ export default function UserSettings() {
             changeUserInfo({ ...user, avatar: response.avatar });
         }
 
+        alert("Avatar updated successfully");
+
     };
 
 
@@ -129,10 +131,6 @@ export default function UserSettings() {
                         file={newAvatar}
                         onChange={handleAvatarChange}
                     />
-                </div>
-                <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="language_profile">Language:</InputLabel>
-                    <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{user.language}</Typography>
                 </div>
                 <div className="flex gap-5 w-full items-center ">
                     <Button variant="contained" className="w-full" type="submit">Save</Button>

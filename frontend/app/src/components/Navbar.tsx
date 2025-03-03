@@ -88,8 +88,6 @@ function UserSearchBar() {
     const [userSearch, setUserSearch] = useState("");
     const { setActiveLink } = useActiveLink();
     const navigate = useNavigate()
-    const { user } = useAuth();
-    const username = user.username;
 
     function handleUserSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setUserSearch(event.target.value);
@@ -97,7 +95,7 @@ function UserSearchBar() {
 
     function handleUserSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        // Navigate to user profile
+        setUserSearch("");
         setActiveLink(`/profile`);
         navigate(`/profile/${userSearch}`);
     }
