@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, InputLabel, Typography } from "@mui/material";
 import Input, { PasswordInput } from "../components/Input.tsx";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
 import CustomCard from "../components/Card.tsx";
 import Icon42 from "../utils/Icon42.tsx";
@@ -10,6 +10,7 @@ import { Separator } from "./Register.tsx";
 import LoginService from "../services/LoginService.tsx";
 import UserService from "../services/UserService.tsx";
 import User from "../types/User.tsx";
+import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 
 export default function Login() {
 
@@ -21,6 +22,7 @@ export default function Login() {
     const navigate = useNavigate();
     const userService = new UserService();
 
+    const { setActiveLink} = useActiveLink();
 
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value);
@@ -139,7 +141,9 @@ export default function Login() {
                 </>
                 <>
                     <Separator text="Don't have an account?" />
-                    <Button variant="text" onClick={() => navigate("/register")}>Register</Button>
+                    <Link to="/register" onClick={() => setActiveLink("/register")} className="w-full">
+                        <Button variant="text" className="w-full">Register</Button>
+                    </Link>
                 </>
             </div>
         </CustomCard>
