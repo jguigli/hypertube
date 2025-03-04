@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
+import api.users.schemas as schemas
 from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -108,22 +109,40 @@ oauth.register(
 )
 
 ###########################################################################################
+
+
 @router.get("/auth/42")
 async def auth_42(request: Request):
     return await oauth.fortytwo.authorize_redirect(request, OAUTH42_REDIRECT_URI)
 
+
 @router.get("/auth/42/callback")
-async def auth_42_callback(request: Request):
+async def auth_42_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
     token = await oauth.fortytwo.authorize_access_token(request)
-    # user = await oauth.fortytwo.parse_id_token(request, token)
-    user_info = token.get("userinfo")
+    if not token:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    response = await oauth.fortytwo.get("https://api.intra.42.fr/v2/me", token=token)
+    if response.status_code != 200:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
-    user = user_crud.get_user_by_email(user_info["email"])
+    json = response.json()
+
+    user = user_crud.get_user_by_email(db, json["email"])
     if not user:
-        user = user_crud.create_user(user_info["email"], user_info["name"], user_info["picture"]) ###############################
+        user_infos = schemas.User42(
+            email=json["email"], user_name=json["login"],
+            first_name=json["first_name"], last_name=json["last_name"],
+            password="InsecureDPassw0rD!"
+        )
+        # Redirect to a frontend page to confirm all values
+        user = user_crud.create_user(db, user_infos)
 
-    access_token = create_access_token({"username": user.name})
-    return Token(access_token=access_token, token_type="bearer")
+    access_token = create_access_token({"username": user.user_name})
+    # return Token(access_token=access_token, token_type="bearer")
+    return RedirectResponse(url=f"http://localhost:3000/auth/42/?access_token={access_token}&token_type=Bearer")
 
 
 @router.get("/auth/google")

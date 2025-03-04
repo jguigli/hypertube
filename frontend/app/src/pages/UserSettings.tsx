@@ -5,9 +5,7 @@ import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 import UserService from "../services/UserService";
 
-
 export default function UserSettings() {
-
     const { user, changeUserInfo, getToken } = useAuth();
 
     const [username, setUsername] = useState(user.username || "");
@@ -16,22 +14,23 @@ export default function UserSettings() {
     const [lastName, setLastName] = useState(user.lastName || "");
     const [avatar, setAvatar] = useState<string | undefined>(user.avatar || undefined);
     const [newAvatar, setNewAvatar] = useState<File | null>(null);
-
     const userService = new UserService();
 
-    const handleAvatarChange = async (file: File | null) => {
+    const [usernameError, setUsernameError] = useState<string | null>(null);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [firstNameError, setFirstNameError] = useState<string | null>(null);
+    const [lastNameError, setLastNameError] = useState<string | null>(null);
 
+    const handleAvatarChange = async (file: File | null) => {
         const token = getToken();
         if (!token) {
             alert("You are not authenticated");
             return;
-        }
-        else if (!file) {
+        } else if (!file) {
             alert("Please select a file");
             return;
         }
 
-        // PUT /users/picture
         const response = await userService.setPicture(token, file);
         if (!response.success) {
             alert("An error occurred while uploading the avatar" + response.error || "An unexpected error occurred");
@@ -46,9 +45,7 @@ export default function UserSettings() {
         }
 
         alert("Avatar updated successfully");
-
     };
-
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -58,15 +55,20 @@ export default function UserSettings() {
             return;
         }
 
-        // PUT /users/informations
         const response = await userService.setInformations(token, email, username, firstName, lastName);
         if (!response.success) {
-            alert("An error occurred while updating the user information" + response.error || "An unexpected error occurred");
+            if (response.error === "Username already taken") {
+                setUsernameError("Username already taken");
+            } else if (response.error === "Email already taken") {
+                setEmailError("Email already taken");
+            } else if (response.error === "Invalid email format") {
+                setEmailError("Invalid email format");
+            } else {
+                alert("An error occurred while updating the user information" + response.error || "An unexpected error occurred");
+            }
             return;
         }
-
         changeUserInfo({ ...user, email, firstName, lastName });
-
         alert("User information updated successfully");
     }
 
@@ -76,21 +78,21 @@ export default function UserSettings() {
                 Customize your profile
             </Typography>
             <form onSubmit={handleSubmit} className="flex flex-col space-y-4 my-5 items-center w-full">
-                <Avatar src={avatar}
-                    alt="Avatar"
-                    sx={{ width: 100, height: 100 }}
-                    className="m-auto"
-                />
+                <Avatar src={avatar} alt="Avatar" sx={{ width: 100, height: 100 }} className="m-auto" />
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">Username:</InputLabel>
                     <Input
                         value={username}
                         placeholder="Your new username"
                         type="text"
-                        onChange={(e) => setUsername(e.target.value)}
+                        onChange={(e) => {
+                            setUsername(e.target.value);
+                            setUsernameError(null);
+                        }}
                         required
                         id="username_profile"
                     />
+                    {usernameError && <Typography variant="body2" className="text-red-500">{usernameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="email_profile">Email:</InputLabel>
@@ -98,10 +100,14 @@ export default function UserSettings() {
                         value={email}
                         placeholder="Your new email"
                         type="email"
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                            setEmail(e.target.value);
+                            setEmailError(null);
+                        }}
                         required
                         id="email_profile"
                     />
+                    {emailError && <Typography variant="body2" className="text-red-500">{emailError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="firstName_profile">First name:</InputLabel>
@@ -109,10 +115,14 @@ export default function UserSettings() {
                         value={firstName}
                         placeholder="Your new first name"
                         type="text"
-                        onChange={(e) => setFirstName(e.target.value)}
+                        onChange={(e) => {
+                            setFirstName(e.target.value);
+                            setFirstNameError(null);
+                        }}
                         required
                         id="firstName_profile"
                     />
+                    {firstNameError && <Typography variant="body2" className="text-red-500">{firstNameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="lastName_profile">Last name:</InputLabel>
@@ -120,22 +130,23 @@ export default function UserSettings() {
                         value={lastName}
                         placeholder="Your new last name"
                         type="text"
-                        onChange={(e) => setLastName(e.target.value)}
+                        onChange={(e) => {
+                            setLastName(e.target.value);
+                            setLastNameError(null);
+                        }}
                         required
                         id="lastName_profile"
                     />
+                    {lastNameError && <Typography variant="body2" className="text-red-500">{lastNameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="avatar_profile">Avatar:</InputLabel>
-                    <FileInput
-                        file={newAvatar}
-                        onChange={handleAvatarChange}
-                    />
+                    <FileInput file={newAvatar} onChange={handleAvatarChange} />
                 </div>
                 <div className="flex gap-5 w-full items-center ">
                     <Button variant="contained" className="w-full" type="submit">Save</Button>
                 </div>
             </form>
         </CustomCard>
-    )
+    );
 }
