@@ -8,7 +8,8 @@ import os
 
 from .models import Movie
 
-CHUNK_SIZE = 1024 
+CHUNK_SIZE = 1024
+DOWNLOAD_MOVIES_FOLDER = "./downloads/"
 
 async def file_streamer(file_path: str):
     with open(file_path, 'rb') as f:
@@ -21,6 +22,9 @@ async def file_streamer(file_path: str):
 
 
 async def download_torrent(movie: Movie):
+
+    file_path = f"{DOWNLOAD_MOVIES_FOLDER}/movie_{movie.id}"
+
     session = lt.session()
     session.listen_on(6881, 6891)
     session.start_dht()
@@ -32,7 +36,7 @@ async def download_torrent(movie: Movie):
     session.add_dht_router("router.bitcomet.com", 6881)
 
     params = {
-        "save_path": "./downloads",
+        "save_path": file_path,
         "storage_mode": lt.storage_mode_t.storage_mode_sparse
     }
 
@@ -54,8 +58,8 @@ async def download_torrent(movie: Movie):
     torrent_info = handle.get_torrent_info()
     print(torrent_info)
 
-    file_path = os.path.join('./downloads/' + torrent_info.files().file_path(0))
-    print(f"file path : {file_path}")
+    # file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER + torrent_info.files().file_path(0))
+    # print(f"file path : {file_path}")
 
     while os.path.exists(file_path) and os.stat(file_path).st_size < CHUNK_SIZE * CHUNK_SIZE:  # attendre 1 Mo minimum
         await asyncio.sleep(1)

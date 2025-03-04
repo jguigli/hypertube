@@ -78,6 +78,7 @@ def get_magnet_link_piratebay(title, year):
     name = first_movie_metadata["name"]
 
     # print(f"MOVIE MEDATA : {movies_metadata}")
+    print(f"MOVIE MEDATA : {first_movie_metadata}")
     # print(f"NAME : {name}")
 
     return generate_magnet_link(info_hash, name)
