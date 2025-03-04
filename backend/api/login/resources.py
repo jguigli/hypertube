@@ -115,33 +115,36 @@ oauth.register(
 ###########################################################################################
 
 
-@router.get("/auth/42")
-async def auth_42(request: Request):
-    return await oauth.fortytwo.authorize_redirect(request, OAUTH42_REDIRECT_URI)
-
-
-@router.get("/auth/42/callback")
-async def auth_42_callback(
-    request: Request,
-    db: Session = Depends(get_db)
+async def handle_oauth_callback(
+        request: Request,
+        db: Session,
+        provider: str,
+        user_info_url: str,
+        email_key: str,
+        name_key: str,
+        first_name_key: str,
+        last_name_key: str,
+        picture_key: tuple[str]
 ):
-    token = await oauth.fortytwo.authorize_access_token(request)
+    token = await oauth.create_client(provider).authorize_access_token(request)
     if not token:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-    response = await oauth.fortytwo.get("https://api.intra.42.fr/v2/me", token=token)
+    response = await oauth.create_client(provider).get(user_info_url, token=token)
     if response.status_code != 200:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     json = response.json()
-    print(json)
-    user = user_crud.get_user_by_email(db, json["email"])
+    user = user_crud.get_user_by_email(db, json[email_key])
     if not user:
-        user_infos = schemas.User42(
-            email=json["email"], user_name=json["login"],
-            first_name=json["first_name"], last_name=json["last_name"],
+        user_infos = schemas.UserRegister(
+            email=json[email_key], user_name=json[name_key],
+            first_name=json[first_name_key], last_name=json[last_name_key],
             password="InsecureDPassw0rD!"
         )
         user = user_crud.create_user(db, user_infos)
-        response = requests.get(json['image']['link'])
+        picture_link = json
+        for key in picture_key:
+            picture_link = picture_link[key]
+        response = requests.get(picture_link)
         if response.status_code == 200:
             profile_picture = UploadFile(
                 size=len(response.content),
@@ -156,48 +159,46 @@ async def auth_42_callback(
     return RedirectResponse(url=f"http://localhost:3000/auth/?access_token={access_token}&token_type=Bearer")
 
 
+@router.get("/auth/42")
+async def auth_42(request: Request):
+    return await oauth.fortytwo.authorize_redirect(
+        request, OAUTH42_REDIRECT_URI
+    )
+
+
+@router.get("/auth/42/callback")
+async def auth_42_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await handle_oauth_callback(
+        request, db, provider="fortytwo",
+        user_info_url="https://api.intra.42.fr/v2/me",
+        email_key="email", name_key="login",
+        first_name_key="first_name", last_name_key="last_name",
+        picture_key=("image", "link")
+    )
+
+
 @router.get("/auth/google")
 async def auth_google(request: Request):
-    return await oauth.google.authorize_redirect(request, OAUTH_GOOGLE_REDIRECT_URI)
+    return await oauth.google.authorize_redirect(
+        request, OAUTH_GOOGLE_REDIRECT_URI
+    )
 
 
 @router.get("/auth/google/callback")
 async def auth_google_callback(
     request: Request,
     db: Session = Depends(get_db)
- ):
+):
+    return await handle_oauth_callback(
+        request, db, provider="google",
+        user_info_url="https://openidconnect.googleapis.com/v1/userinfo",
+        email_key="email", name_key="name",
+        first_name_key="given_name", last_name_key="name",
+        picture_key=("picture",)
+    )
 
-    try:
-        google = oauth.create_client('google')
-        token = await google.authorize_access_token(request)
-        if not token:
-            return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-        userinfo = token['userinfo']
-        user = user_crud.get_user_by_email(db, userinfo['email'])
-        if not user:
-            print(userinfo)
-            user_infos = schemas.User42(
-                email=userinfo["email"], user_name=userinfo["name"],
-                first_name=userinfo["given_name"], last_name=userinfo["given_name"],
-                password="InsecureDPassw0rD!"
-            )
-            user = user_crud.create_user(db, user_infos)
-            response = requests.get(userinfo['picture'])
-            if response.status_code == 200:
-                profile_picture = UploadFile(
-                    size=len(response.content),
-                    file=BytesIO(response.content),
-                    filename="profile_picture.jpg",
-                )
-                user = user_crud.manage_profile_picture(db, user, profile_picture)
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"user_id": user.id}, expires_delta=access_token_expires
-        )
-        return RedirectResponse(url=f"http://localhost:3000/auth/?access_token={access_token}&token_type=Bearer")
-
-    except Exception as e:
-        print(e)
-        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
 ###########################################################################################
