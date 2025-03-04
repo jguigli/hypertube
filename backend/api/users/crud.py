@@ -88,8 +88,10 @@ def manage_profile_picture(
     file_name_unique = f"user_{user.id}{file_extension}"
     file_location = os.path.join(PROFILE_PICTURES_FOLDER, file_name_unique)
 
+    print(file_location)
     with open(file_location, "wb") as file:
         shutil.copyfileobj(profile_picture.file, file)
+        print("file copied")
 
     user.profile_picture_path = file_location
     db.commit()

@@ -1,11 +1,11 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import UserService from "../services/UserService";
 import User from "../types/User";
 import { useNavigate } from "react-router-dom";
 
 
-export default function Auth42() {
+export default function Auth() {
 
     // Get the access_token and token_type from the URL
     const urlParams = new URLSearchParams(window.location.search);
