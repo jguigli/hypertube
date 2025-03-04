@@ -12,7 +12,7 @@ import UserService from "../services/UserService";
 import User from "../types/User";
 import { useAuth } from "../contexts/AuthContext";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
-import { set } from "video.js/dist/types/tech/middleware";
+
 
 function RegisterFormFirstPart(
     props: {
@@ -67,9 +67,13 @@ function RegisterFormFirstPart(
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_register">Password</InputLabel>
                 <PasswordInput placeholder="Password" value={props.password} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
-                <Typography variant="caption" className="text-xs" color="textSecondary">
-                    Passwords must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, one digit and one special character.
-                </Typography>
+                {
+                    !props.passwordFormatError && (
+                        <Typography variant="caption" className="text-xs" color="textSecondary">
+                            Passwords must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, one digit and one special character.
+                        </Typography>
+                    )
+                }
                 {props.passwordError && <Typography variant="caption" className="text-xs text-red-500">{props.passwordError}</Typography>}
                 {props.passwordFormatError && <Typography variant="caption" className="text-xs text-red-500">{props.passwordFormatError}</Typography>}
             </div>
@@ -199,7 +203,7 @@ export default function Register() {
         e.preventDefault();
 
         if (password !== passwordConfirmation) {
-            setPasswordError("Passwords do not match.");
+            setPasswordError("Password and password confirmation do not match.");
             setCurrentStep(1);
             return;
         }
@@ -238,7 +242,7 @@ export default function Register() {
             }
 
             if (response.error === "The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character") {
-                setPasswordFormatError("The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character");
+                setPasswordFormatError("The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character");
                 setCurrentStep(1);
                 return;
             } else {
@@ -305,7 +309,7 @@ export default function Register() {
         event.preventDefault();
 
         if (password !== passwordConfirmation) {
-            setPasswordError("Passwords do not match.");
+            setPasswordError("Passwords and password confirmation do not match.");
             return;
         }
         setCurrentStep(2);
