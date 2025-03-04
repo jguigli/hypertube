@@ -9,6 +9,7 @@ services:
       - "${PWD}/frontend/app:/app"
     depends_on:
       - api
+    restart: unless-stopped
 
   api:
     build: ./backend
@@ -22,6 +23,7 @@ services:
         condition: service_healthy
     env_file:
       .env
+    restart: unless-stopped
 
   database:
     image: postgres:15.3
@@ -31,12 +33,13 @@ services:
       test: ["CMD", "pg_isready", "-U", "dev"]
       interval: 3s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis/redis-stack-server:latest
-    restart: always
     ports:
       - "6300:6300"
+    restart: unless-stopped
 
   nginx:
     build: ./nginx
@@ -46,6 +49,15 @@ services:
     depends_on:
       - frontend
       - api
+    restart: unless-stopped
 
-
-  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "5050:5050"
+    env_file:
+      .env
+    depends_on:
+      - database
+    restart: unless-stopped

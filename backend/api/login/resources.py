@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, Depends, status, BackgroundTasks
+from fastapi import Depends, Response, HTTPException, APIRouter, Depends, status, BackgroundTasks, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from api.database import get_db
 from pydantic import BaseModel
@@ -37,6 +37,9 @@ from api.users import models as user_models
 from api.mail.send_email import send_email_reset_password
 import re
 
+from PIL import Image
+import requests
+from io import BytesIO
 
 
 router = APIRouter(tags=["Login"])
@@ -106,6 +109,7 @@ oauth.register(
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     access_token_url="https://oauth2.googleapis.com/token",
     client_kwargs={"scope": "openid email profile"},
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
 )
 
 ###########################################################################################
@@ -127,9 +131,8 @@ async def auth_42_callback(
     response = await oauth.fortytwo.get("https://api.intra.42.fr/v2/me", token=token)
     if response.status_code != 200:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-
     json = response.json()
-
+    print(json)
     user = user_crud.get_user_by_email(db, json["email"])
     if not user:
         user_infos = schemas.User42(
@@ -137,12 +140,20 @@ async def auth_42_callback(
             first_name=json["first_name"], last_name=json["last_name"],
             password="InsecureDPassw0rD!"
         )
-        # Redirect to a frontend page to confirm all values
         user = user_crud.create_user(db, user_infos)
-
-    access_token = create_access_token({"username": user.user_name})
-    # return Token(access_token=access_token, token_type="bearer")
-    return RedirectResponse(url=f"http://localhost:3000/auth/42/?access_token={access_token}&token_type=Bearer")
+        response = requests.get(json['image']['link'])
+        if response.status_code == 200:
+            profile_picture = UploadFile(
+                size=len(response.content),
+                file=BytesIO(response.content),
+                filename="profile_picture.jpg",
+            )
+            user = user_crud.manage_profile_picture(db, user, profile_picture)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"user_id": user.id}, expires_delta=access_token_expires
+    )
+    return RedirectResponse(url=f"http://localhost:3000/auth/?access_token={access_token}&token_type=Bearer")
 
 
 @router.get("/auth/google")
@@ -151,14 +162,42 @@ async def auth_google(request: Request):
 
 
 @router.get("/auth/google/callback")
-async def auth_google_callback(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user_info = token.get("userinfo")
+async def auth_google_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+ ):
 
-    user = user_crud.get_user_by_email(user_info["email"])
-    if not user:
-        user = user_crud.create_user(user_info["email"], user_info["name"], user_info["picture"]) ###############################
+    try:
+        google = oauth.create_client('google')
+        token = await google.authorize_access_token(request)
+        if not token:
+            return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+        userinfo = token['userinfo']
+        user = user_crud.get_user_by_email(db, userinfo['email'])
+        if not user:
+            print(userinfo)
+            user_infos = schemas.User42(
+                email=userinfo["email"], user_name=userinfo["name"],
+                first_name=userinfo["given_name"], last_name=userinfo["given_name"],
+                password="InsecureDPassw0rD!"
+            )
+            user = user_crud.create_user(db, user_infos)
+            response = requests.get(userinfo['picture'])
+            if response.status_code == 200:
+                profile_picture = UploadFile(
+                    size=len(response.content),
+                    file=BytesIO(response.content),
+                    filename="profile_picture.jpg",
+                )
+                user = user_crud.manage_profile_picture(db, user, profile_picture)
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"user_id": user.id}, expires_delta=access_token_expires
+        )
+        return RedirectResponse(url=f"http://localhost:3000/auth/?access_token={access_token}&token_type=Bearer")
 
-    access_token = create_access_token({"username": user.name})
-    return Token(access_token=access_token, token_type="bearer")
+    except Exception as e:
+        print(e)
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+
 ###########################################################################################
