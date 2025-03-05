@@ -22,6 +22,7 @@ import { useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
 import Video from "../components/VideoJS";
+import CustomCard from "../components/Card";
 
 interface CommentType {
     id: number;
@@ -94,12 +95,14 @@ export default function VideoView() {
                 Charger une nouvelle vidéo
             </button> */}
             <div className="Video_view">
+            <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
                 <Comments
                     handleInsertNode={handleInsertNode}
                     handleEditNode={handleEditNode}
                     handleDeleteNode={handleDeleteNode}
                     comments={commentsData}
                 />
+                </CustomCard>
             </div>
         </>
     );
