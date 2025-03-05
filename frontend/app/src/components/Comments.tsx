@@ -1,14 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import ActionComments from "./ActionComments";
 import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
-import { Button, Stack } from "@mui/material";
+import { Button, Stack, Avatar } from "@mui/material";
+import CustomCard from "./Card";
 
 interface CommentType {
   id: number;
   name?: string;
+  avatarUrl?: string;
+  timestamp: number;
   items?: CommentType[];
 }
-
 
 interface CommentsProps {
   comments: CommentType;
@@ -17,12 +19,22 @@ interface CommentsProps {
   handleDeleteNode: (commentId: number) => void;
 }
 
+const formatTimeAgo = (timestamp: number): string => {
+  const now = Date.now();
+  const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+  if (diffInSeconds < 60) return `${diffInSeconds} sec ago`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+  return `${Math.floor(diffInSeconds / 86400)} days ago`;
+};
+
 export const useNode = () => {
   const insertNode = (tree: CommentType, commentId: number, item: string): CommentType => {
     if (tree.id === commentId) {
       return {
         ...tree,
-        items: [...(tree.items || []), { id: Date.now(), name: item, items: [] }],
+        items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [] }],
       };
     }
     return {
@@ -72,7 +84,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
   const onAddComment = () => {
     if (editMode) {
-      handleEditNode(comments.id, inputRef.current?.innerText ?? ""); 
+      handleEditNode(comments.id, inputRef.current?.innerText ?? "");
       setEditMode(false);
     } else {
       if (input.trim() === "") return;
@@ -84,7 +96,8 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   };
 
   return (
-    <div>
+    // <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
+    <div className="comment-wrapper">
       <div className={comments.id === 1 ? "inputcontainer" : "commentContainer"}>
         {comments.id === 1 ? (
           <>
@@ -101,46 +114,56 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
           </>
         ) : (
           <>
-            <span
-              contentEditable={editMode}
-              suppressContentEditableWarning={editMode}
-              style={{ wordWrap: "break-word" }}
-              ref={inputRef}
-            >
-              {comments.name}
-            </span>
-            <div style={{ display: "flex", marginTop: "20px" }}>
-              {editMode ? (
-                <Stack direction="column" spacing={1} alignItems="flex-start">
-                  <Stack direction="row" spacing={1.5}>
-                    <ActionComments className="reply" type="Save" handleClick={onAddComment} />
-                    <ActionComments
-                      className="reply"
-                      type="Cancel"
-                      handleClick={() => {
-                        if (inputRef.current) inputRef.current.innerText = comments.name ?? "";
-                        setEditMode(false);
-                      }}
-                    />
+            <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Avatar src={comments.avatarUrl} alt={comments.name} />
+                <span
+                  contentEditable={editMode}
+                  suppressContentEditableWarning={editMode}
+                  style={{ wordWrap: "break-word" }}
+                  ref={inputRef}
+                >
+                  {comments.name}
+                </span>
+              </div>
+
+              <span style={{ fontSize: "12px", color: "#bbb", marginTop: "4px", display: "block" }}>
+                {formatTimeAgo(comments.timestamp)}
+              </span>
+
+              <div style={{ display: "flex", marginTop: "20px" }}>
+                {editMode ? (
+                  <Stack direction="column" spacing={1} alignItems="flex-start">
+                    <Stack direction="row" spacing={1.5}>
+                      <ActionComments className="reply" type="Save" handleClick={onAddComment} />
+                      <Button
+                        variant="outlined"
+                        className="reply"
+                        onClick={() => {
+                          if (inputRef.current) inputRef.current.innerText = comments.name ?? "";
+                          setEditMode(false);
+                        }}>Cancel</Button>
+                    </Stack>
                   </Stack>
-                </Stack>
-              ) : (
-                <Stack direction="column" spacing={1} alignItems="flex-start">
-                  <Stack direction="row" spacing={1.5}>
-                    <ActionComments
-                      className="reply"
-                      type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>}
-                      handleClick={handleNewComment}
-                    />
-                    <ActionComments className="reply" type="Edit" handleClick={() => setEditMode(true)} />
-                    <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comments.id)} />
+                ) : (
+                  <Stack direction="column" spacing={1} alignItems="flex-start">
+                    <Stack direction="row" spacing={1.5}>
+                      <ActionComments
+                        className="reply"
+                        type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>}
+                        handleClick={handleNewComment}
+                      />
+                      <ActionComments className="reply" type="Edit" handleClick={() => setEditMode(true)} />
+                      <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comments.id)} />
+                    </Stack>
                   </Stack>
-                </Stack>
-              )}
-            </div>
+                )}
+              </div>
+            </CustomCard>
           </>
         )}
       </div>
+
       <div style={{ display: expand ? "block" : "none", paddingLeft: "20px" }}>
         {showInput && (
           <div style={{ display: "flex", marginTop: "20px" }}>
@@ -162,15 +185,14 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
           </div>
         )}
         {comments.items?.map((cmnt) => (
-          <Comments
-            key={cmnt.id}
-            handleInsertNode={handleInsertNode}
-            handleEditNode={handleEditNode}
-            handleDeleteNode={handleDeleteNode}
-            comments={cmnt}
-          />
+          <Comments key={cmnt.id} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} comments={cmnt} />
         ))}
       </div>
+      {/* {comments.id !== 1 ? ( 
+        </CustomCard>
+      ) : null } */}
+      {/* </div> */}
+      {/* </CustomCard> */}
     </div>
   );
 };

@@ -21,6 +21,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
+import CustomCard from "../components/Card";
 
 interface CommentType {
     id: number;
@@ -79,12 +80,14 @@ export default function VideoView() {
             </button> */}
             <h1>Video View</h1>
             <div className="Video_view">
+            <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
                 <Comments
                     handleInsertNode={handleInsertNode}
                     handleEditNode={handleEditNode}
                     handleDeleteNode={handleDeleteNode}
                     comments={commentsData}
                 />
+                </CustomCard>
             </div>
         </>
     );
