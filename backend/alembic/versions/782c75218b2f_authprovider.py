@@ -26,6 +26,7 @@ def upgrade() -> None:
                     user_id INTEGER NOT NULL,
                     provider VARCHAR(64) NOT NULL,
                     provider_id VARCHAR(320),
+                    user_name VARCHAR(64),
                     email VARCHAR(320),
                     hashed_password VARCHAR(60),
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
