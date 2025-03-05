@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { Button, InputLabel, Stack, Typography } from "@mui/material";
 import Input, { PasswordInput } from "../components/Input.tsx";
@@ -104,6 +104,24 @@ export default function Login() {
         loginService.registerOAuth("google");
     }
 
+
+    // UseEffect to detect if there is an error in the URL
+    // If there is an error, display it
+    // If there is no error, do nothing
+    const [errorInUrl, setErrorInUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        const error = url.searchParams.get("error");
+        if (error) {
+
+            // decode base64
+            const decodedError = atob(error);
+            setErrorInUrl(decodedError);
+        }
+    }, []);
+
+
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
             <div id="login" className="flex flex-col align-center space-y-2 gap-2">
@@ -150,6 +168,7 @@ export default function Login() {
                                 <GoogleIcon color="secondary" /> Google
                             </span>
                         </Button>
+                        <Typography variant="body1" color="error">{errorInUrl}</Typography>
                     </Stack>
                 </>
                 <>

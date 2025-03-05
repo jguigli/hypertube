@@ -24,3 +24,11 @@ class ForgotPasswordForm(BaseModel):
 class ResetPasswordForm(BaseModel):
     password: str
     password_confirmation: str
+
+
+class AuthProvider(BaseModel):
+    user_id: int
+    provider: str
+    provider_id: str | None = None
+    email: str | None = None
+    hashed_password: str | None = None
