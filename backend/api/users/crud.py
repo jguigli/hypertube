@@ -32,9 +32,9 @@ def create_user(db: Session, user: schemas.User):
         user_name=user.user_name,
         first_name=user.first_name,
         last_name=user.last_name,
-        hashed_password=security.get_password_hash(user.password),
+        # hashed_password=security.get_password_hash(user.password),
         profile_picture_path=DEFAULT_PICTURE_PATH
-        )
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
