@@ -68,11 +68,15 @@ async def report_forgotten_password(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    user = db.query(AuthProvider) \
-        .filter(AuthProvider.email == user.email).first().user
-    if not user:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    background_tasks.add_task(send_email_reset_password, user)
+    auth_provider = db.query(AuthProvider) \
+        .filter(AuthProvider.provider == "form") \
+        .filter(AuthProvider.email == user.email).first()
+    if not auth_provider:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This email is not associated with an account registered by email"
+        )
+    background_tasks.add_task(send_email_reset_password, auth_provider.user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

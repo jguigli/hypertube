@@ -184,7 +184,8 @@ export default class UserService {
         email: string,
         user_name: string,
         first_name: string,
-        last_name: string
+        last_name: string,
+        language: string
     ): Promise<{ success: boolean, error: string | null }> {
 
         try {
@@ -195,7 +196,8 @@ export default class UserService {
                     email: email,
                     user_name: user_name,
                     first_name: first_name,
-                    last_name: last_name
+                    last_name: last_name,
+                    language: language
                 },
                 {
                     headers: {

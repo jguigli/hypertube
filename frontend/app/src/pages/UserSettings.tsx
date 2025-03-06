@@ -55,7 +55,7 @@ export default function UserSettings() {
             return;
         }
 
-        const response = await userService.setInformations(token, email, username, firstName, lastName);
+        const response = await userService.setInformations(token, email, username, firstName, lastName, user.language);
         if (!response.success) {
             if (response.error === "Username already taken") {
                 setUsernameError("Username already taken");

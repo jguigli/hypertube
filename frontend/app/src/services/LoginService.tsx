@@ -23,8 +23,8 @@ export default class LoginService {
                 formData,
                 {
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
                 }
             );
 
@@ -49,14 +49,15 @@ export default class LoginService {
     async resetPassword(email: string): Promise<{ success: boolean, error: any }> {
         try {
             const response = await axios.post("/reset_password", { email: email });
-            console.log(response);
-            return { success: response.status === 200, error: null };
+            if (response.status === 204) {
+                return { success: true, error: null };
+            }
+            return { success: false, error: response.data };
         } catch (error) {
             let errorMessage = "An unexpected error occurred";
             if (axios.isAxiosError(error) && error.response) {
                 errorMessage = error.response.data.detail || errorMessage;
             }
-            console.log(errorMessage);
             return { success: false, error: { message: errorMessage } };
         }
     }
