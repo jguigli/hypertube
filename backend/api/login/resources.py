@@ -76,7 +76,17 @@ async def report_forgotten_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This email is not associated with an account registered by email"
         )
-    background_tasks.add_task(send_email_reset_password, auth_provider.user)
+    found_user = db.query(user_models.User) \
+        .filter(user_models.User.id == auth_provider.user_id).first()
+    if not found_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    auth_provider.is_resetting_password = True
+    db.commit()
+    db.refresh(found_user)
+    background_tasks.add_task(send_email_reset_password, found_user)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -106,6 +116,12 @@ async def reset_password(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
+    if not auth_provider.is_resetting_password:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You must request a password reset before changing it"
+        )
+
     if verify_password(
         password.password, auth_provider.hashed_password
     ):
@@ -115,6 +131,7 @@ async def reset_password(
         )
 
     auth_provider.hashed_password = get_password_hash(password.password)
+    auth_provider.is_resetting_password = False
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

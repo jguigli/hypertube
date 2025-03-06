@@ -25,6 +25,7 @@ async def send_email_reset_password(user: user_models.User):
     access_token, token_type = create_token_user_for_mail_link(user, ACCESS_TOKEN_EXPIRE_MINUTES_RESET_PASSWORD)
     link = f"{FRONT_URL}/?access_token={access_token}&token_type={token_type}&context=reset_password"
     html_content = html_content.replace("{{LINK}}", link)
+    print("Reset password link: ", link)
 
     msg.add_alternative(html_content, subtype="html")
 
