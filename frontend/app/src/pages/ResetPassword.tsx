@@ -29,7 +29,8 @@ export default function ResetPassword() {
             setError("");
             setResponseMessage("An email with a link to reset your password has been sent.");
         } else {
-            if (response.error) {
+            if (response.error.message) {
+                console.log(response.error.message);
                 setError(response.error.message);
             } else {
                 setError("An unexpected error occurred.");
@@ -105,6 +106,7 @@ export function ChangePassword() {
     }
 
     function handlePasswordChange(event: React.ChangeEvent<HTMLInputElement>, type: "password" | "passwordConfirmation") {
+        event.preventDefault();
         setPasswordError("");
         if (type === "password") {
             setNewPassword(event.target.value);
@@ -127,11 +129,18 @@ export function ChangePassword() {
         const authToken = `${token_type} ${access_token}`;
         const response = await loginService.changePassword(newPassword, confirmPassword, authToken);
 
+        console.log(response);
+
         if (response.success) {
             setError("");
             setSuccess(true);
-        } else if (response.error) {
-            setError(response.error);
+        } else {
+            if (response.error.message) {
+                setError(response.error.message);
+            }
+            else {
+                setError("An unexpected error occurred.");
+            }
         }
     }
 

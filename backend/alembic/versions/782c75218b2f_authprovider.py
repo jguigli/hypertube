@@ -29,6 +29,7 @@ def upgrade() -> None:
                     user_name VARCHAR(64),
                     email VARCHAR(320),
                     hashed_password VARCHAR(60),
+                    is_resetting_password BOOLEAN DEFAULT FALSE,
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     FOREIGN KEY (user_id) REFERENCES users (id)

@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, Integer, String, Date, ForeignKey, UniqueConstraint
+    Column, Integer, String, Date, ForeignKey, UniqueConstraint, Boolean
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -18,6 +18,7 @@ class AuthProvider(Base):
     provider_id = Column(String(320), default=None, nullable=True, index=True)
     user_name = Column(String(64), default=None, nullable=True)
     hashed_password = Column(String(60), default=None, nullable=True)
+    is_resetting_password = Column(Boolean, default=False, nullable=False)
     email = Column(String(320), default=None, nullable=True)
 
     created_at = Column(Date, default=datetime.now)

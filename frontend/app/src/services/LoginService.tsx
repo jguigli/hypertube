@@ -52,7 +52,7 @@ export default class LoginService {
             if (response.status === 204) {
                 return { success: true, error: null };
             }
-            return { success: false, error: response.data };
+            return { success: false, error: response.data.message };
         } catch (error) {
             let errorMessage = "An unexpected error occurred";
             if (axios.isAxiosError(error) && error.response) {
@@ -85,7 +85,8 @@ export default class LoginService {
                     },
                 }
             );
-            return { success: response.status === 200, error: null };
+            console.log(response);
+            return { success: response.status === 204, error: null };
         } catch (error) {
             let errorMessage = "An unexpected error occurred";
             if (axios.isAxiosError(error) && error.response) {
