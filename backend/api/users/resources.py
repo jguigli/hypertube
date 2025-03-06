@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import Depends, HTTPException, APIRouter, Depends, status, UploadFile, File
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+# from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+# from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import re
 

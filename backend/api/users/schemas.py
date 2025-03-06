@@ -55,6 +55,7 @@ class UserEditInfos(BaseModel):
     user_name: str
     first_name: str
     last_name: str
+    language: str
 
     class Config:
         from_attributes = True
