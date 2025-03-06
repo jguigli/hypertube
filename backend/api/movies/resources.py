@@ -131,4 +131,4 @@ async def start_streaming(
         movie.file_path = file_path
         db.commit()
 
-    return StreamingResponse(file_streamer(movie.file_path), media_type="video/mp4")
+    # return StreamingResponse(file_streamer(movie.file_path), media_type="video/mp4")

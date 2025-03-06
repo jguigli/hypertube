@@ -27,7 +27,6 @@ async def download_torrent(movie: Movie):
 
     session = lt.session()
     session.listen_on(6881, 6891)
-    session.start_dht()
 
     session.add_dht_router("router.bittorrent.com", 6881)
     session.add_dht_router("router.utorrent.com", 6881)
@@ -46,6 +45,9 @@ async def download_torrent(movie: Movie):
     handle.add_tracker({"url": "udp://tracker.opentrackr.org:1337/announce"})
     handle.add_tracker({"url": "udp://tracker.leechers-paradise.org:6969/announce"})
 
+    session.start_dht()
+    session.start_lsd()
+
     while not handle.has_metadata():
         print("Waiting for torrent metadata", flush=True)
         await asyncio.sleep(1)
@@ -62,6 +64,7 @@ async def download_torrent(movie: Movie):
     # print(f"file path : {file_path}")
 
     while os.path.exists(file_path) and os.stat(file_path).st_size < CHUNK_SIZE * CHUNK_SIZE:  # attendre 1 Mo minimum
+        print("Waiting for streaming minimum file size", flush=True)
         await asyncio.sleep(1)
 
     return file_path
