@@ -1,9 +1,9 @@
 import { Accordion, AccordionDetails, AccordionSummary, Button, Stack, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CustomCard from "./Card";
 import { Separator } from "../pages/Register";
 import { ExpandMore, PlayArrow, Search, VideoLibraryOutlined } from "@mui/icons-material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 const accordionItems = [
@@ -30,14 +30,27 @@ const accordionItems = [
 export default function LandingPage() {
 
     const [expanded, setExpanded] = useState<string | false>(false);
-
     const { setActiveLink } = useActiveLink();
+    const navigate = useNavigate();
 
     const handleChange =
         (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
             event.preventDefault();
             setExpanded(isExpanded ? panel : false);
         };
+
+    useEffect(() => {
+        // Check if there is (access_token, token_type and context) in the url params
+        // If yes, navigate to the reset password page
+        // If no, display the home page
+        const urlParams = new URLSearchParams(window.location.search);
+        const access_token = urlParams.get('access_token');
+        const token_type = urlParams.get('token_type');
+        const context = urlParams.get('context');
+        if (access_token && token_type && context === 'reset_password') {
+            navigate(`/reset-password?access_token=${access_token}&token_type=${token_type}&context=${context}`);
+        }
+    }, [navigate]);
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
