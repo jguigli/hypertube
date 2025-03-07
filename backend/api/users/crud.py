@@ -32,9 +32,9 @@ def create_user(db: Session, user: schemas.User):
         user_name=user.user_name,
         first_name=user.first_name,
         last_name=user.last_name,
-        hashed_password=security.get_password_hash(user.password),
+        # hashed_password=security.get_password_hash(user.password),
         profile_picture_path=DEFAULT_PICTURE_PATH
-        )
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -88,8 +88,10 @@ def manage_profile_picture(
     file_name_unique = f"user_{user.id}{file_extension}"
     file_location = os.path.join(PROFILE_PICTURES_FOLDER, file_name_unique)
 
+    print(file_location)
     with open(file_location, "wb") as file:
         shutil.copyfileobj(profile_picture.file, file)
+        print("file copied")
 
     user.profile_picture_path = file_location
     db.commit()

@@ -1,10 +1,105 @@
-.video-container {
+/* Le conteneur parent de la vidéo */
+.data-vjs-player {
+    position: relative; /* Important pour positionner l'overlay par rapport à ce conteneur */
     width: 100%;
-    max-width: 800px;
-    margin: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    z-index : 1;
+    background-color: black; /* Facultatif, pour afficher un fond sombre */
 }
 
-.video-js {
-    width: 100% !important;
-    height: 450px !important;
+/* La vidéo elle-même doit prendre 100% de la largeur et hauteur du conteneur */
+.data-vjs-player video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Prendre toute la largeur du conteneur */
+    height: 100%; /* Prendre toute la hauteur du conteneur */
+    object-fit: cover; /* Cela permet de maintenir le ratio de la vidéo */
+}
+
+/* L'overlay est positionné absolument par rapport au conteneur parent */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* L'overlay doit occuper toute la largeur de la vidéo */
+    height: 100%; /* L'overlay doit occuper toute la hauteur de la vidéo */
+    background-color: rgba(0, 0, 0, 0.55); /* Fond noir semi-transparent */
+    z-index: 10; /*S'assurer que l'overlay soit au-dessus de la vidéo */
+    opacity: 1; /*Initialement transparent */
+    transition: opacity 0.5s ease-in-out; /* Effet de transition pour l'overlay */
+    pointer-events: none; /* Empêche l'overlay de bloquer les interactions avec la vidéo */
+
+    display: flex;
+    align-items: center; /* Centre verticalement */
+    justify-content: flex-start; /* Aligne à gauche */
+    padding-left: 80px;
+}
+
+.overlay-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.fullscreen-overlay {
+    position: fixed !important; /* Pour couvrir toute la vidéo */
+    visibility: visible;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; /* Permettre d'interagir avec le lecteur vidéo */
+}
+
+.watching-label {
+    color: whitesmoke;
+    font-size: 0.9rem;
+    font-weight: bold;
+    width: fit-content;
+    margin-bottom: -15px;
+}
+
+.movie-title {
+    font-size: 3.3rem;
+    font-weight: bold;
+    color: whitesmoke;
+    display: inline-block;
+    margin-bottom: -15px;
+}
+
+.movie-info {
+    display: flex;
+    gap: 25px;
+    color: white;
+    width: fit-content;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.movie-info span {
+    display: flex;
+    gap: 20px;
+}
+
+.movie-info span:last-child {
+    border-right: none;
+ }
+
+.casting {
+    color: grey;
+    width: fit-content;
+    margin-top: 5px;
+}
+
+.synopsis {
+    color: white;
+    width: fit-content;
+    max-width: 50%;
+    margin-top: 10px;
 }

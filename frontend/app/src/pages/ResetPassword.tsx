@@ -4,6 +4,7 @@ import Input, { PasswordInput } from "../components/Input";
 import { Button, InputLabel, Typography } from "@mui/material";
 import CustomCard from "../components/Card";
 import LoginService from "../services/LoginService";
+import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 export default function ResetPassword() {
 
@@ -72,7 +73,10 @@ export function ChangePassword() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
 
+    const { setActiveLink } = useActiveLink();
+
     if (!access_token || !token_type || context !== 'reset_password') {
+        setActiveLink("/login")
         navigate("/login");
     }
 
