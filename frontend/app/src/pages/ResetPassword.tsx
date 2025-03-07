@@ -30,7 +30,6 @@ export default function ResetPassword() {
             setResponseMessage("An email with a link to reset your password has been sent.");
         } else {
             if (response.error.message) {
-                console.log(response.error.message);
                 setError(response.error.message);
             } else {
                 setError("An unexpected error occurred.");
@@ -128,8 +127,6 @@ export function ChangePassword() {
         const loginService = new LoginService();
         const authToken = `${token_type} ${access_token}`;
         const response = await loginService.changePassword(newPassword, confirmPassword, authToken);
-
-        console.log(response);
 
         if (response.success) {
             setError("");

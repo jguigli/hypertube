@@ -1,5 +1,5 @@
 import { KeyboardArrowUp } from "@mui/icons-material";
-import { IconButton } from "@mui/material";
+import { Fab } from "@mui/material";
 import { useEffect, useState } from "react";
 
 export default function BackToTop() {
@@ -17,13 +17,13 @@ export default function BackToTop() {
     return (
         <>
             {isOnTop ? null : (
-                <IconButton
+                <Fab
+                    color="primary"
+                    sx={{ position: "fixed", bottom: 92, right: 16 }}
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className='bottom-0 right-0 bg-gray-900 text-gray-50'
-                    sx={{ zIndex: 1000, position: 'fixed' }}
                 >
                     <KeyboardArrowUp fontSize='large' />
-                </IconButton>
+                </Fab>
             )
             }
         </>
