@@ -85,7 +85,6 @@ export default class LoginService {
                     },
                 }
             );
-            console.log(response);
             return { success: response.status === 204, error: null };
         } catch (error) {
             let errorMessage = "An unexpected error occurred";

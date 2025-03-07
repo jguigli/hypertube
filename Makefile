@@ -49,5 +49,8 @@ fclean:
 	$(DOCKER_COMPOSE) rm -f
 	docker rmi -f $(shell docker images -q)
 	docker volume rm $(shell docker volume ls -q)
+	mv ./backend/profile_pictures/default.jpg ./backend/default.jpg.tmp
+	rm -rf ./backend/profile_pictures/*
+	mv ./backend/default.jpg.tmp ./backend/profile_pictures/default.jpg
 
 re: fclean build_up
