@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, Depends, status, BackgroundTasks
+from fastapi import Depends, Response, HTTPException, APIRouter, Depends, status, BackgroundTasks, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from api.database import get_db
 from pydantic import BaseModel
@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
+import api.users.schemas as schemas
 from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -36,6 +37,9 @@ from api.users import models as user_models
 from api.mail.send_email import send_email_reset_password
 import re
 
+from PIL import Image
+import requests
+from io import BytesIO
 
 
 router = APIRouter(tags=["Login"])
@@ -105,41 +109,96 @@ oauth.register(
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     access_token_url="https://oauth2.googleapis.com/token",
     client_kwargs={"scope": "openid email profile"},
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
 )
 
 ###########################################################################################
+
+
+async def handle_oauth_callback(
+        request: Request,
+        db: Session,
+        provider: str,
+        user_info_url: str,
+        email_key: str,
+        name_key: str,
+        first_name_key: str,
+        last_name_key: str,
+        picture_key: tuple[str]
+):
+    token = await oauth.create_client(provider).authorize_access_token(request)
+    if not token:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    response = await oauth.create_client(provider).get(user_info_url, token=token)
+    if response.status_code != 200:
+        return Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    json = response.json()
+    user = user_crud.get_user_by_email(db, json[email_key])
+    if not user:
+        user_infos = schemas.UserRegister(
+            email=json[email_key], user_name=json[name_key],
+            first_name=json[first_name_key], last_name=json[last_name_key],
+            password="InsecureDPassw0rD!"
+        )
+        user = user_crud.create_user(db, user_infos)
+        picture_link = json
+        for key in picture_key:
+            picture_link = picture_link[key]
+        response = requests.get(picture_link)
+        if response.status_code == 200:
+            profile_picture = UploadFile(
+                size=len(response.content),
+                file=BytesIO(response.content),
+                filename="profile_picture.jpg",
+            )
+            user = user_crud.manage_profile_picture(db, user, profile_picture)
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"user_id": user.id}, expires_delta=access_token_expires
+    )
+    return RedirectResponse(url=f"http://localhost:3000/auth/?access_token={access_token}&token_type=Bearer")
+
+
 @router.get("/auth/42")
 async def auth_42(request: Request):
-    return await oauth.fortytwo.authorize_redirect(request, OAUTH42_REDIRECT_URI)
+    return await oauth.fortytwo.authorize_redirect(
+        request, OAUTH42_REDIRECT_URI
+    )
+
 
 @router.get("/auth/42/callback")
-async def auth_42_callback(request: Request):
-    token = await oauth.fortytwo.authorize_access_token(request)
-    # user = await oauth.fortytwo.parse_id_token(request, token)
-    user_info = token.get("userinfo")
-
-    user = user_crud.get_user_by_email(user_info["email"])
-    if not user:
-        user = user_crud.create_user(user_info["email"], user_info["name"], user_info["picture"]) ###############################
-
-    access_token = create_access_token({"username": user.name})
-    return Token(access_token=access_token, token_type="bearer")
+async def auth_42_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await handle_oauth_callback(
+        request, db, provider="fortytwo",
+        user_info_url="https://api.intra.42.fr/v2/me",
+        email_key="email", name_key="login",
+        first_name_key="first_name", last_name_key="last_name",
+        picture_key=("image", "link")
+    )
 
 
 @router.get("/auth/google")
 async def auth_google(request: Request):
-    return await oauth.google.authorize_redirect(request, OAUTH_GOOGLE_REDIRECT_URI)
+    return await oauth.google.authorize_redirect(
+        request, OAUTH_GOOGLE_REDIRECT_URI
+    )
 
 
 @router.get("/auth/google/callback")
-async def auth_google_callback(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user_info = token.get("userinfo")
+async def auth_google_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await handle_oauth_callback(
+        request, db, provider="google",
+        user_info_url="https://openidconnect.googleapis.com/v1/userinfo",
+        email_key="email", name_key="name",
+        first_name_key="given_name", last_name_key="name",
+        picture_key=("picture",)
+    )
 
-    user = user_crud.get_user_by_email(user_info["email"])
-    if not user:
-        user = user_crud.create_user(user_info["email"], user_info["name"], user_info["picture"]) ###############################
 
-    access_token = create_access_token({"username": user.name})
-    return Token(access_token=access_token, token_type="bearer")
 ###########################################################################################

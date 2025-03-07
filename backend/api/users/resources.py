@@ -27,9 +27,9 @@ async def register(
     email_regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     if not re.match(email_regex, user_infos.email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
-    # password_pattern =  "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
-    # if not re.match(password_pattern, user.password):
-    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character")
+    password_pattern = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+    if not re.match(password_pattern, user_infos.password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character")
     user = crud.create_user(db, user_infos)
     return user
 
