@@ -18,6 +18,7 @@ export const VideoJS = (props: {
 }) => {
     const videoRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
     const { options, onReady } = props;
     const [showOverlay, setShowOverlay] = useState(false);
     const [overlayTimeout, setOverlayTimeout] = useState<any>(null);
@@ -35,13 +36,13 @@ export const VideoJS = (props: {
 
             videoElement.classList.add('vjs-big-play-centered');
 
+
             videoRef.current.appendChild(videoElement);
 
             const player = playerRef.current = videojs(videoElement, options, () => {
                 videojs.log('player is ready');
                 onReady && onReady(player);
             });
-
 
             // You could update an existing player in the `else` block here
             // on prop change, for example:
@@ -53,57 +54,85 @@ export const VideoJS = (props: {
         }
     }, [options, videoRef]);
 
+    //Ajout de l'ID overlay a video-js ainsi que des enfants d'overlay.
     useEffect(() => {
         const player = playerRef.current;
         if (!player) return;
 
-        const handleUserInactivity = () => {
-            if (player.hasClass('vjs-paused') && player.hasClass('vjs-user-inactive')) {
-                if (!overlayTimeout) {
-                    const timeout = setTimeout(() => {
-                        setShowOverlay(true);
-                    }, 1000); // 10 secondes d'inactivité
-                    setOverlayTimeout(timeout);
-                }
-            }
-        };
+        if (!document.getElementById("overlay")) {
+            const overlayElement = document.createElement("div");
+            overlayElement.id = "overlay";
+            overlayElement.innerHTML = `
+                <div class="overlay-content">
+                    <div class="watching-label"> You're watching</div>
+                    <h2 class="movie-title">Nom du Film</h2>
+                    <div class="movie-info">
+                        <span>Year</span>
+                        <span>Age</span>
+                        <span>Movie time</span>
+                    </div>
+                    <div class="casting"> Avec Anthony Mackie, Harrison Ford, Danny Ramirez </div>
+                    <div class="synopsis">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tristique, dui et facilisis commodo, tellus ante tincidunt orci, eget faucibus nunc magna ac sapien. Nullam ut mi nulla. Fusce imperdiet turpis condimentum, pretium justo id, suscipit nibh. Nunc non tortor cursus mauris.</div>
+                </div>
+            `;
 
-        const handleUserActivity = () => {
-            if (overlayTimeout) {
-                clearTimeout(overlayTimeout);
-                setOverlayTimeout(null);
-            }
-            setShowOverlay(false); // Réinitialiser l'overlay si l'utilisateur est actif
-        };
+            player.el().appendChild(overlayElement);
+        }
+    }, []);
 
-        // Détecte l'activité de l'utilisateur (sur les événements du player)
-        player.on('mousemove', handleUserActivity);
-        player.on('keypress', handleUserActivity);
-        player.on('play', handleUserActivity);
-
-        // Intervalle pour vérifier l'inactivité
-        const interval = setInterval(handleUserInactivity, 1000);
-
-        // Cleanup de l'intervalle et des événements à la fin
-        return () => {
-            clearInterval(interval);
-            player.off('mousemove', handleUserActivity);
-            player.off('keypress', handleUserActivity);
-            player.off('play', handleUserActivity);
-            if (overlayTimeout) clearTimeout(overlayTimeout);
-        };
-    }, [overlayTimeout]); // Ce useEffect dépend uniquement de overlayTimeout
-
+    //Gestion de l'affichage de l'overlay.
     useEffect(() => {
-        const checkFullScreen = () => {
-            const isFullScreen = !!document.fullscreenElement;
-            // setIsFullScreen(!!document.fullscreenElement);
-            console.log("Mode plein ecran :", isFullScreen);
-            setIsFullScreen(isFullScreen);
+        const player = playerRef.current;
+        if (!player) return;
+    
+        let inactivityTimeout: any = null; // Pour gérer le délai d'inactivité
+        const overlayElement = document.getElementById("overlay");
+        if (!overlayElement) return;
+    
+        // Fonction pour afficher ou cacher l'overlay selon l'état du player
+        const updateOverlayVisibility = () => {
+            // Vérifie si la vidéo est en pause et si l'utilisateur est inactif
+            if (player.hasClass("vjs-paused") && player.hasClass("vjs-user-inactive")) {
+                if (!overlayElement.classList.contains("show")) {
+                    // Ajoute la classe "show" après 1 seconde d'inactivité
+                    inactivityTimeout = setTimeout(() => {
+                        overlayElement.classList.add("show");
+                    }, 1000); // 1 seconde d'inactivité
+                }
+            } else {
+                clearTimeout(inactivityTimeout); // Annule le délai si l'utilisateur est actif
+                overlayElement.classList.remove("show"); // Cache l'overlay immédiatement
+            }
         };
-        document.addEventListener("fullscreenchange", checkFullScreen);
+    
+        // Les événements pour l'activité de l'utilisateur
+        const handleUserActivity = () => {
+            clearTimeout(inactivityTimeout); // Réinitialise l'inactivité
+            overlayElement.classList.remove("show"); // Cache l'overlay immédiatement
+            updateOverlayVisibility(); // Vérifie si l'overlay doit apparaître
+        };
+    
+        const handleUserInactivity = () => {
+            updateOverlayVisibility(); // Vérifie si l'overlay doit apparaître
+        };
+    
+        // Écoute les événements de l'utilisateur pour détecter l'activité
+        player.on("mousemove", handleUserActivity);
+        player.on("keypress", handleUserActivity);
+        player.on("play", handleUserActivity); // Quand la vidéo commence, réinitialise l'overlay
+        player.on("pause", handleUserInactivity); // Quand la vidéo est en pause, on vérifie l'inactivité
+    
+        // Intervalle pour vérifier l'inactivité
+        const inactivityInterval = setInterval(handleUserInactivity, 1000); // Vérifie l'inactivité toutes les secondes
+    
+        // Nettoyage des événements et des intervalles lorsque le composant est démonté
         return () => {
-            document.removeEventListener("fullscreenchange", checkFullScreen);
+            clearInterval(inactivityInterval);
+            clearTimeout(inactivityTimeout);
+            player.off("mousemove", handleUserActivity);
+            player.off("keypress", handleUserActivity);
+            player.off("play", handleUserActivity);
+            player.off("pause", handleUserInactivity);
         };
     }, []);
 
@@ -122,21 +151,6 @@ export const VideoJS = (props: {
     return (
         <div data-vjs-player className="data-vjs-player">
             <div ref={videoRef} />
-            {showOverlay && (
-                <div className={`overlay ${isFullScreen ? "fullscreen-overlay" : ""}`}>
-                    <div className="overlay-content">
-                        <div className="watching-label"> You're watching</div>
-                        <h2 className="movie-title">Nom du Film</h2>
-                        <div className="movie-info">
-                            <span>Year</span>
-                            <span>Age</span>
-                            <span>Movie time</span>
-                        </div>
-                        <div className="casting"> Avec Anthony Mackie, Harrison Ford, Danny Ramirez </div>
-                        <div className="synopsis">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tristique, dui et facilisis commodo, tellus ante tincidunt orci, eget faucibus nunc magna ac sapien. Nullam ut mi nulla. Fusce imperdiet turpis condimentum, pretium justo id, suscipit nibh. Nunc non tortor cursus mauris.</div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

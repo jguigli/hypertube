@@ -20,7 +20,7 @@
 }
 
 /* L'overlay est positionné absolument par rapport au conteneur parent */
-.overlay {
+#overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -28,33 +28,18 @@
     height: 100%; /* L'overlay doit occuper toute la hauteur de la vidéo */
     background-color: rgba(0, 0, 0, 0.55); /* Fond noir semi-transparent */
     z-index: 10; /*S'assurer que l'overlay soit au-dessus de la vidéo */
-    opacity: 1; /*Initialement transparent */
-    transition: opacity 0.5s ease-in-out; /* Effet de transition pour l'overlay */
-    pointer-events: none; /* Empêche l'overlay de bloquer les interactions avec la vidéo */
-
+    opacity: 1;
     display: flex;
-    align-items: center; /* Centre verticalement */
-    justify-content: flex-start; /* Aligne à gauche */
+    align-items: center; /*Centre verticalement */
+    justify-content: flex-start; /*Aligne à gauche */
     padding-left: 80px;
+    transition: opacity 0.5s ease-in-out; /* Effet de transition pour l'overlay */
+    visibility: hidden;
+    pointer-events: none; /* Empêche l'overlay de bloquer les interactions avec la vidéo */
 }
 
-.overlay-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.fullscreen-overlay {
-    position: fixed !important; /* Pour couvrir toute la vidéo */
+#overlay.show {
     visibility: visible;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none; /* Permettre d'interagir avec le lecteur vidéo */
 }
 
 .watching-label {
@@ -62,44 +47,37 @@
     font-size: 0.9rem;
     font-weight: bold;
     width: fit-content;
-    margin-bottom: -15px;
+    margin-bottom: -5px;
 }
 
 .movie-title {
-    font-size: 3.3rem;
+    font-size: 3.5rem;
     font-weight: bold;
     color: whitesmoke;
     display: inline-block;
-    margin-bottom: -15px;
+    margin-bottom: 0px;
 }
 
 .movie-info {
     display: flex;
-    gap: 25px;
+    gap: 50px;
     color: white;
     width: fit-content;
     font-weight: bold;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
 }
-
-.movie-info span {
-    display: flex;
-    gap: 20px;
-}
-
-.movie-info span:last-child {
-    border-right: none;
- }
 
 .casting {
     color: grey;
     width: fit-content;
-    margin-top: 5px;
+    margin-top: 15px;
+    font-size: 0.9rem;
 }
 
 .synopsis {
     color: white;
     width: fit-content;
     max-width: 50%;
-    margin-top: 10px;
+    margin-top: 15px;
+    font-size: 1rem;
 }
