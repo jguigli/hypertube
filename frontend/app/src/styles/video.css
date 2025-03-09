@@ -26,13 +26,13 @@
     left: 0;
     width: 100%; /* L'overlay doit occuper toute la largeur de la vidéo */
     height: 100%; /* L'overlay doit occuper toute la hauteur de la vidéo */
-    background-color: rgba(0, 0, 0, 0.55); /* Fond noir semi-transparent */
+    background-color: rgba(0, 0, 0, 0.5); /* Fond noir semi-transparent */
     z-index: 10; /*S'assurer que l'overlay soit au-dessus de la vidéo */
     opacity: 1;
     display: flex;
     align-items: center; /*Centre verticalement */
     justify-content: flex-start; /*Aligne à gauche */
-    padding-left: 80px;
+    padding-left: 10%;
     transition: opacity 0.5s ease-in-out; /* Effet de transition pour l'overlay */
     visibility: hidden;
     pointer-events: none; /* Empêche l'overlay de bloquer les interactions avec la vidéo */
@@ -44,40 +44,38 @@
 
 .watching-label {
     color: whitesmoke;
-    font-size: 0.9rem;
+    font-size: 0.75vw;
     font-weight: bold;
     width: fit-content;
-    margin-bottom: -5px;
 }
 
 .movie-title {
-    font-size: 3.5rem;
+    font-size: 3vw;
     font-weight: bold;
     color: whitesmoke;
     display: inline-block;
-    margin-bottom: 0px;
 }
 
 .movie-info {
     display: flex;
-    gap: 50px;
+    gap: 3.14vh;
     color: white;
     width: fit-content;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1.1vw;
 }
 
 .casting {
     color: grey;
     width: fit-content;
-    margin-top: 15px;
-    font-size: 0.9rem;
+    margin-top: 0.8vw;
+    font-size: 1vw;
 }
 
 .synopsis {
     color: white;
     width: fit-content;
     max-width: 50%;
-    margin-top: 15px;
-    font-size: 1rem;
+    margin-top: 0.8vw;
+    font-size: 1.1vw;
 }

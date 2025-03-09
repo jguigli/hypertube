@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import videojs from 'video.js';
+import ReactDOM from "react-dom/client"
 import 'video.js/dist/video-js.css';
 import '../styles/video.css'
-import { set } from 'video.js/dist/types/tech/middleware';
 
 interface Player {
     autoplay: boolean;
@@ -18,11 +18,7 @@ export const VideoJS = (props: {
 }) => {
     const videoRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
     const { options, onReady } = props;
-    const [showOverlay, setShowOverlay] = useState(false);
-    const [overlayTimeout, setOverlayTimeout] = useState<any>(null);
-    const [isFullScreen, setIsFullScreen] = useState(false);
 
     useEffect(() => {
         // Make sure Video.js player is only initialized once
@@ -35,7 +31,6 @@ export const VideoJS = (props: {
             }
 
             videoElement.classList.add('vjs-big-play-centered');
-
 
             videoRef.current.appendChild(videoElement);
 
@@ -54,6 +49,22 @@ export const VideoJS = (props: {
         }
     }, [options, videoRef]);
 
+    //Contenu de l'overlay pour eviter de faire un innerHTML.
+    const overlayContent = (
+        <div className="overlay-content">
+            <div className="watching-label">You're watching</div>
+            <h2 className="movie-title">Nom du film</h2>
+            <div className="movie-info">
+                <span>Year</span>
+                <span>Age</span>
+                <span>Movie Time</span>
+            </div>
+            <div className="casting">Avec Anthony Mackie, Harrison Ford, Danny Ramirez</div>
+            <div className="synopsis">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tristique, dui et facilisis commodo, tellus ante tincidunt orci, eget faucibus nunc magna ac sapien. Nullam ut mi nulla. Fusce imperdiet turpis condimentum, pretium justo id, suscipit nibh. Nunc non tortor cursus mauris.
+            </div>
+        </div>
+    );
+
     //Ajout de l'ID overlay a video-js ainsi que des enfants d'overlay.
     useEffect(() => {
         const player = playerRef.current;
@@ -61,20 +72,10 @@ export const VideoJS = (props: {
 
         if (!document.getElementById("overlay")) {
             const overlayElement = document.createElement("div");
+            const root = ReactDOM.createRoot(overlayElement);
+            
             overlayElement.id = "overlay";
-            overlayElement.innerHTML = `
-                <div class="overlay-content">
-                    <div class="watching-label"> You're watching</div>
-                    <h2 class="movie-title">Nom du Film</h2>
-                    <div class="movie-info">
-                        <span>Year</span>
-                        <span>Age</span>
-                        <span>Movie time</span>
-                    </div>
-                    <div class="casting"> Avec Anthony Mackie, Harrison Ford, Danny Ramirez </div>
-                    <div class="synopsis">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tristique, dui et facilisis commodo, tellus ante tincidunt orci, eget faucibus nunc magna ac sapien. Nullam ut mi nulla. Fusce imperdiet turpis condimentum, pretium justo id, suscipit nibh. Nunc non tortor cursus mauris.</div>
-                </div>
-            `;
+            root.render(overlayContent);
 
             player.el().appendChild(overlayElement);
         }
@@ -97,7 +98,7 @@ export const VideoJS = (props: {
                     // Ajoute la classe "show" après 1 seconde d'inactivité
                     inactivityTimeout = setTimeout(() => {
                         overlayElement.classList.add("show");
-                    }, 1000); // 1 seconde d'inactivité
+                    }, 500); // 1 seconde d'inactivité
                 }
             } else {
                 clearTimeout(inactivityTimeout); // Annule le délai si l'utilisateur est actif
@@ -123,7 +124,7 @@ export const VideoJS = (props: {
         player.on("pause", handleUserInactivity); // Quand la vidéo est en pause, on vérifie l'inactivité
     
         // Intervalle pour vérifier l'inactivité
-        const inactivityInterval = setInterval(handleUserInactivity, 1000); // Vérifie l'inactivité toutes les secondes
+        const inactivityInterval = setInterval(handleUserInactivity, 500); // Vérifie l'inactivité toutes les secondes
     
         // Nettoyage des événements et des intervalles lorsque le composant est démonté
         return () => {
