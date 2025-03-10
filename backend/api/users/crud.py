@@ -7,6 +7,7 @@ from . import models, schemas
 from api.login import security
 from fastapi import UploadFile, File, HTTPException, status
 import re
+from api.login.models import AuthProvider
 
 
 PROFILE_PICTURES_FOLDER = "./profile_pictures"
@@ -32,9 +33,9 @@ def create_user(db: Session, user: schemas.User):
         user_name=user.user_name,
         first_name=user.first_name,
         last_name=user.last_name,
-        hashed_password=security.get_password_hash(user.password),
+        # hashed_password=security.get_password_hash(user.password),
         profile_picture_path=DEFAULT_PICTURE_PATH
-        )
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -46,6 +47,11 @@ def edit_user(
         user: models.User,
         user_infos: schemas.UserEditInfos
 ):
+
+    auth_provider = db.query(AuthProvider).filter(AuthProvider.user_id == user.id).first()
+    if not auth_provider:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
+
     if user_infos.email != user.email:
         db_user = get_user_by_email(db, user_infos.email)
         if db_user:
@@ -54,18 +60,26 @@ def edit_user(
         if not re.match(email_regex, user_infos.email):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
         user.email = user_infos.email
+        auth_provider.email = user_infos.email
 
     if user_infos.user_name != user.user_name:
         db_user = get_user_by_username(db, user_infos.user_name)
         if db_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
         user.user_name = user_infos.user_name
+        if auth_provider.provider == "form":
+            auth_provider.user_name = user_infos.user_name
 
     if user_infos.first_name != user.first_name:
         user.first_name = user_infos.first_name
 
     if user_infos.last_name != user.last_name:
         user.last_name = user_infos.last_name
+
+    if user_infos.language != user.language:
+        if user_infos.language not in ["en", "fr"]:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid language")
+        user.language = user_infos.language
 
     db.commit()
     db.refresh(user)
@@ -88,8 +102,10 @@ def manage_profile_picture(
     file_name_unique = f"user_{user.id}{file_extension}"
     file_location = os.path.join(PROFILE_PICTURES_FOLDER, file_name_unique)
 
+    print(file_location)
     with open(file_location, "wb") as file:
         shutil.copyfileobj(profile_picture.file, file)
+        print("file copied")
 
     user.profile_picture_path = file_location
     db.commit()

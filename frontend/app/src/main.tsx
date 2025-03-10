@@ -10,7 +10,7 @@ import '@fontsource/roboto/700.css';
 import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
 import { SearchProvider } from './contexts/SearchContext.tsx'
-import { VideoProvider } from './contexts/VideoContext.tsx'
+// import { VideoProvider } from './contexts/VideoContext.tsx'
 import { MoviesProvider } from './contexts/MovieContext.tsx'
 import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 
@@ -21,9 +21,9 @@ createRoot(document.getElementById('root')!).render(
                 <MoviesProvider>
                     <SearchProvider>
                         <AuthProvider>
-                            <VideoProvider>
+                            {/* <VideoProvider> */}
                                 <AppRouter />
-                            </VideoProvider>
+                            {/* </VideoProvider> */}
                         </AuthProvider>
                     </SearchProvider>
                 </MoviesProvider>

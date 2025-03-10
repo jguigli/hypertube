@@ -10,6 +10,7 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
+import UserService from "../services/UserService.tsx";
 
 
 function Logo() {
@@ -56,12 +57,27 @@ function MovieSearchBar() {
 
 export function LanguageSelection() {
 
-    const { user, changeUserLanguage } = useAuth();
+    const { user, getToken, changeUserLanguage } = useAuth();
+    const userService = new UserService();
 
     const handleChange = (event: SelectChangeEvent) => {
         const language = event.target.value;
         if (language === "en" || language === "fr") {
             changeUserLanguage(language);
+            if (user.is_logged_in && user.email && user.username && user.firstName && user.lastName) {
+                const token = getToken();
+                if (!token) {
+                    return;
+                }
+                userService.setInformations(
+                    token,
+                    user.email,
+                    user.username,
+                    user.firstName,
+                    user.lastName,
+                    language
+                );
+            }
         }
     };
 
@@ -88,8 +104,6 @@ function UserSearchBar() {
     const [userSearch, setUserSearch] = useState("");
     const { setActiveLink } = useActiveLink();
     const navigate = useNavigate()
-    const { user } = useAuth();
-    const username = user.username;
 
     function handleUserSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setUserSearch(event.target.value);
@@ -97,7 +111,7 @@ function UserSearchBar() {
 
     function handleUserSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        // Navigate to user profile
+        setUserSearch("");
         setActiveLink(`/profile`);
         navigate(`/profile/${userSearch}`);
     }

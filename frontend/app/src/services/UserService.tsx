@@ -184,28 +184,41 @@ export default class UserService {
         email: string,
         user_name: string,
         first_name: string,
-        last_name: string
+        last_name: string,
+        language: string
     ): Promise<{ success: boolean, error: string | null }> {
 
-        const response = await axios.put(
-            "/users/informations",
-            {
-                email: email,
-                user_name: user_name,
-                first_name: first_name,
-                last_name: last_name
-            },
-            {
-                headers: {
-                    Authorization: `${token}`
-                }
-            }
-        );
+        try {
 
-        if (response.status === 200) {
-            return { success: true, error: null };
+            const response = await axios.put(
+                "/users/informations",
+                {
+                    email: email,
+                    user_name: user_name,
+                    first_name: first_name,
+                    last_name: last_name,
+                    language: language
+                },
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+
+            if (response.status === 200) {
+                return { success: true, error: null };
+            }
+            return { success: false, error: response.data };
+
+        } catch (error) {
+            let errorMessage = "An unexpected error occurred";
+            if (axios.isAxiosError(error) && error.response) {
+                errorMessage = error.response.data.detail || errorMessage;
+            }
+            return { success: false, error: errorMessage };
         }
-        return { success: false, error: response.data };
+
     }
 
     // GET / users / me / picture
