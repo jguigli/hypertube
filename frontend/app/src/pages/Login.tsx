@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Button, InputLabel, Typography } from "@mui/material";
+import { Button, InputLabel, Stack, Typography } from "@mui/material";
 import Input, { PasswordInput } from "../components/Input.tsx";
 import { Link, useNavigate } from "react-router-dom";
 import GoogleIcon from '@mui/icons-material/Google';
@@ -89,9 +89,38 @@ export default function Login() {
         setUsername("");
         setError("");
 
+        setActiveLink("/");
         navigate("/");
 
     };
+
+    const loginService = new LoginService();
+
+    const handle42Login = async () => {
+        loginService.registerOAuth("42");
+    };
+
+    const handleGoogleLogin = async () => {
+        loginService.registerOAuth("google");
+    }
+
+
+    // UseEffect to detect if there is an error in the URL
+    // If there is an error, display it
+    // If there is no error, do nothing
+    const [errorInUrl, setErrorInUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        const error = url.searchParams.get("error");
+        if (error) {
+
+            // decode base64
+            const decodedError = atob(error);
+            setErrorInUrl(decodedError);
+        }
+    }, []);
+
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
@@ -126,18 +155,21 @@ export default function Login() {
                 </form>
                 <>
                     <Separator text='Or login with:' />
-                    <Button variant="outlined">
-                        <span className="flex items-center gap-2">
-                            <Icon42 />
-                            42
-                        </span>
-                    </Button>
-                    <Button variant="outlined">
-                        <span className="flex items-center gap-2">
-                            <GoogleIcon color="secondary" />
-                            Google
-                        </span>
-                    </Button>
+                    <Stack direction="column" spacing={2} className="w-full">
+                        <Button variant="outlined"
+                            onClick={handle42Login}
+                        >
+                            <span className="flex items-center gap-2">
+                                <Icon42 /> 42
+                            </span>
+                        </Button>
+                        <Button variant="outlined" onClick={handleGoogleLogin}>
+                            <span className="flex items-center gap-2">
+                                <GoogleIcon color="secondary" /> Google
+                            </span>
+                        </Button>
+                        <Typography variant="body1" color="error">{errorInUrl}</Typography>
+                    </Stack>
                 </>
                 <>
                     <Separator text="Don't have an account?" />

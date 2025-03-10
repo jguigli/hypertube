@@ -8,6 +8,7 @@ interface HomeRouterProps {
 }
 
 export default function HomeRouter({ children }: HomeRouterProps) {
+
     const { user } = useAuth();
 
     if (!user.is_logged_in) {

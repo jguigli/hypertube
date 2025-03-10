@@ -16,6 +16,8 @@ from api.users import crud as user_crud
 from api.users import models as user_models
 from api.config import SECRET_KEY, SECRET_KEY_MAIL_LINK
 
+from .models import AuthProvider
+
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
@@ -33,13 +35,19 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
+
 def authenticate_user(db, username: str, password: str):
-    user = user_crud.get_user_by_username(db, username)
-    if not user:
+    """
+    Get the user from the database if the username and password are correct
+    """
+    auth_provider = db.query(AuthProvider) \
+        .filter(AuthProvider.provider == "form") \
+        .filter(AuthProvider.user_name == username).first()
+    if not auth_provider:
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, auth_provider.hashed_password):
         return False
-    return user
+    return auth_provider.user
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -105,9 +113,9 @@ async def get_current_user_authentified_or_anonymous(
 def create_access_token_mail_link(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(tz=timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY_MAIL_LINK, algorithm=ALGORITHM)
     return encoded_jwt

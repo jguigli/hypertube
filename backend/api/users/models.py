@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 
@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 
 from api.login import security
 from api.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -15,17 +16,23 @@ class User(Base):
     user_name = Column(String(64), unique=True, index=True)
     first_name = Column(String(64))
     last_name = Column(String(64))
-    hashed_password = Column(String(60))
     profile_picture_path = Column(String(255))
-    is_resetting_password = Column(Boolean, default=False)
+    language = Column(String(5), default="en")
+    movies_watched_association = relationship("MovieWatched")
+
+    # hashed_password = Column(String(60))  # Moved in the AuthProvider model
+    # is_resetting_password = Column(Boolean, default=False)  # Unused ?
+
+    auth_providers = relationship("AuthProvider", back_populates="user")
 
     created_at = Column(Date, default=datetime.now)
-
-    movies_watched_association = relationship("MovieWatched")
+    updated_at = Column(Date, default=datetime.now, onupdate=datetime.now)
 
     @property
     def access_token(self):
-        access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token_expires = timedelta(
+            minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
         return security.create_access_token(
             data={"user_id": self.id}, expires_delta=access_token_expires
         )
@@ -33,7 +40,9 @@ class User(Base):
     @property
     def token_type(self):
         return 'Bearer'
-    
+
     @property
     def profile_picture(self):
         return FileResponse(self.profile_picture_path)
+
+
