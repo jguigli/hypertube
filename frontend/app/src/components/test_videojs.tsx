@@ -4,15 +4,6 @@ import ReactDOM from "react-dom/client"
 import 'video.js/dist/video-js.css';
 import '../styles/video.css'
 
-// interface Player {
-//     autoplay: boolean;
-//     controls: boolean;
-//     sources: {
-//         src: string;
-//         type: string;
-//     }[];
-// }
-
 export const VideoJS = (props: {
     options: any;
     onReady?: (player: any) => void;
@@ -74,7 +65,6 @@ export const VideoJS = (props: {
         if (!document.getElementById("overlay")) {
             const overlayElement = document.createElement("div");
             const root = ReactDOM.createRoot(overlayElement);
-
             overlayElement.id = "overlay";
             root.render(overlayContent);
 
@@ -106,7 +96,6 @@ export const VideoJS = (props: {
                 overlayElement.classList.remove("show"); // Cache l'overlay immédiatement
             }
         };
-
         // Les événements pour l'activité de l'utilisateur
         const handleUserActivity = () => {
             clearTimeout(inactivityTimeout); // Réinitialise l'inactivité
