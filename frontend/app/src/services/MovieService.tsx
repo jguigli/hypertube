@@ -10,10 +10,6 @@ export default class MovieService {
     // GET /api/movies/popular/:page
     async getPopularMovies(page: number, language: string = "en") {
 
-        // curl - X 'GET' \
-        // 'http://localhost:3000/api/movies/popular/1?language=en' \
-        // -H 'accept: application/json'
-
         try {
             const response = await axios.get(
                 `/movies/popular/${page}`,
@@ -25,14 +21,60 @@ export default class MovieService {
                 }
             );
             if (response.status === 200) {
-                return response.data;
+                return {
+                    success: true,
+                    data: response.data
+                };
             } else {
-                console.error(response.data);
+                return {
+                    success: false,
+                    data: response.data
+                };
             }
         }
         catch (error) {
-            console.error(error);
+            return {
+                success: false,
+                data: null
+            };
         }
     }
 
+
+    // Search movies by query
+    // GET /api/movies/search/
+    async searchMovies(query: string, language: string = "en", page: number = 1) {
+        try {
+            const response = await axios.get(
+                `/movies/search`,
+                {
+                    params: {
+                        search: query,
+                        language: language,
+                        page: page
+                    }
+                }
+            );
+            if (response.status === 200) {
+                return {
+                    success: true,
+                    data: response.data
+                }
+            } else {
+                return {
+                    success: false,
+                    data: response.data
+                }
+            }
+        }
+        catch (error) {
+            return {
+                success: false,
+                data: null
+            }
+        }
+    }
+
+
+    // Get movie details by id
 }

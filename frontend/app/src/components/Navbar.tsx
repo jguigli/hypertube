@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { useSearch } from "../contexts/SearchContext.tsx";
 import { Search } from "@mui/icons-material";
@@ -11,6 +11,9 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import UserService from "../services/UserService.tsx";
+import MovieService from "../services/MovieService.tsx";
+import { useMovies } from "../contexts/MovieContext.tsx";
+import { set } from "video.js/dist/types/tech/middleware";
 
 
 function Logo() {
@@ -31,19 +34,48 @@ function Logo() {
 
 function MovieSearchBar() {
 
-    const { searchQuery, setSearchQuery } = useSearch();
+    const { setSearchQuery } = useSearch();
+    const { user } = useAuth();
+    const { setMovies } = useMovies();
+
+    const movieService = new MovieService();
+
+    const [search, setSearch] = useState("");
+
+    async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setSearch(event.target.value);
+        setSearchQuery(event.target.value);
+    }
+
+    useEffect(() => {
+        if (search.length === 0) {
+            movieService.getPopularMovies(1, user.language)
+                .then((response) => {
+                    if (!response.success) {
+                        return;
+                    }
+                    setMovies(response.data);
+                });
+        } else {
+            movieService.searchMovies(search, user.language)
+                .then((response) => {
+                    if (!response.success) {
+                        return;
+                    }
+                    setMovies(response.data);
+                });
+        }
+    }, [search]);
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={(event) => event.preventDefault()}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={searchQuery}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            setSearchQuery(event.target.value);
-                        }}
+                        value={search}
+                        onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
                     <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">

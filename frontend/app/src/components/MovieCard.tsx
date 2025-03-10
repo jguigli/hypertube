@@ -11,15 +11,15 @@ export default function MovieCard({ movie }: { movie: Movie }) {
 
     return (
         <CustomCard
-            additionalClasses={`h-full w-full ${movie.is_watched ? "watched" : ""}`}
+            additionalClasses={`h-full w-full max-w-[350px] ${movie.is_watched ? "watched" : ""}`}
         >
             <CardActionArea className={`h-full w-full ${movie.is_watched && "Mui-focusVisible"}`}>
                 <Link to={`/watch/${movie.id}`}>
                     <div className="h-[400px] w-full flex items-center justify-center bg-gray-950 border-b border-b-neutral-800">
                         <CardMedia
                             component="img"
-                            image={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                            alt={movie.title}
+                            image={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : ""}
+                            alt={`No poster path for ${movie.title}`}
                             className="w-full h-full object-cover"
                         />
                     </div>

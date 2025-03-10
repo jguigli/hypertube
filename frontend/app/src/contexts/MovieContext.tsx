@@ -18,7 +18,10 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const fetchMovies = async () => {
             const popularMovies = await movieService.getPopularMovies(1, "en");
-            setMovies(popularMovies);
+            if (!popularMovies.success) {
+                return;
+            }
+            setMovies(popularMovies.data);
         };
         fetchMovies();
     }, []);

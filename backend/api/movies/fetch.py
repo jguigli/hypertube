@@ -30,9 +30,9 @@ def fetch_popular_movies_tmdb(language: str, page: int):
 
     return movies_data
 
-def search_movies_tmdb(search: str, language: str):
-    url = f"https://api.themoviedb.org/3/search/movie?query={search}&language={language}&page=1"
-    key_search = f"search:{search}:{language}"
+def search_movies_tmdb(search: str, language: str, page: int):
+    url = f"https://api.themoviedb.org/3/search/movie?query={search}&language={language}&page={page}"
+    key_search = f"search:{search}:{language}:{page}"
 
     headers = {
         "accept": "application/json",

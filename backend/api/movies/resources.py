@@ -37,14 +37,18 @@ router = APIRouter(tags=["Movies"])
 async def search_movies(
     search: str,
     language: str,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
+    page: int,
+    current_user: Annotated[
+        user_models.User,
+        Depends(security.get_current_user_authentified_or_anonymous)
+    ],
     db: Session = Depends(get_db)
 ):
-    cached_searches = redis_client.get(f"search:{search}:{language}")
+    cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
     if cached_searches:
         movies_data = json.loads(cached_searches)
     else:
-        movies_data = search_movies_tmdb(search, language)
+        movies_data = search_movies_tmdb(search, language, page)
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Search movie not available")
 
@@ -74,7 +78,7 @@ async def get_popular_movies(
         movies_data = fetch_popular_movies_tmdb(language, page)
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Popular movies not available")
-    
+
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
 
@@ -125,7 +129,7 @@ async def start_streaming(
     else:
         watched_movie.watched_at = datetime.now()
         db.commit()
-    
+
     if not movie.file_path:
         file_path = await download_torrent(movie)
         movie.file_path = file_path

@@ -78,7 +78,6 @@ export default function VideoView() {
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
                 Charger une nouvelle vidéo
             </button> */}
-            <h1>Video View</h1>
             <div className="Video_view">
                 <Comments
                     handleInsertNode={handleInsertNode}

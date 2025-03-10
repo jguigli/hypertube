@@ -33,7 +33,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "dev"]
       interval: 3s
       retries: 5
-    restart: unless-stopped
+    restart: always
 
   redis:
     image: redis/redis-stack-server:latest
