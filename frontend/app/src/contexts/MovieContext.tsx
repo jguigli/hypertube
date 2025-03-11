@@ -5,6 +5,8 @@ import MovieService from "../services/MovieService";
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
+    updateMovie: (id: number, newMovie: Movie) => void;
+
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -23,8 +25,16 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         fetchMovies();
     }, []);
 
+    function updateMovie(id: number, newMovie: Movie) {
+        const index = movies.findIndex(mov => mov.id === id)
+        if (index === -1) {
+            return ;
+        }
+        movies[index] = newMovie;
+    }
+
     return (
-        <MoviesContext.Provider value={{ movies, setMovies }}>
+        <MoviesContext.Provider value={{ movies, setMovies, updateMovie }}>
             {children}
         </MoviesContext.Provider>
     );

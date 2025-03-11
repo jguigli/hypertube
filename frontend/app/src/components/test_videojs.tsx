@@ -3,17 +3,20 @@ import videojs from 'video.js';
 import ReactDOM from "react-dom/client"
 import 'video.js/dist/video-js.css';
 import '../styles/video.css'
+import Movie from '../types/Movie';
+import { useMovies } from '../contexts/MovieContext';
 
-interface Player {
-    autoplay: boolean;
-    controls: boolean;
-    sources: {
-        src: string;
-        type: string;
-    }[];
-}
+// interface Player {
+//     autoplay: boolean;
+//     controls: boolean;
+//     sources: {
+//         src: string;
+//         type: string;
+//     }[];
+// }
 export const VideoJS = (props: {
     options: any;
+    movieDetail: any;
     onReady?: (player: any) => void;
 }) => {
     const videoRef = useRef<HTMLDivElement>(null);
@@ -53,15 +56,14 @@ export const VideoJS = (props: {
     const overlayContent = (
         <div className="overlay-content">
             <div className="watching-label">You're watching</div>
-            <h2 className="movie-title">Nom du film</h2>
+            <h2 className="movie-title">{ props.movieDetail?.title }</h2>
             <div className="movie-info">
                 <span>Year</span>
                 <span>Age</span>
                 <span>Movie Time</span>
             </div>
             <div className="casting">Avec Anthony Mackie, Harrison Ford, Danny Ramirez</div>
-            <div className="synopsis">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque tristique, dui et facilisis commodo, tellus ante tincidunt orci, eget faucibus nunc magna ac sapien. Nullam ut mi nulla. Fusce imperdiet turpis condimentum, pretium justo id, suscipit nibh. Nunc non tortor cursus mauris.
-            </div>
+            <div className="synopsis">{props.movieDetail?.overview}</div>
         </div>
     );
 
@@ -98,7 +100,7 @@ export const VideoJS = (props: {
                     // Ajoute la classe "show" après 1 seconde d'inactivité
                     inactivityTimeout = setTimeout(() => {
                         overlayElement.classList.add("show");
-                    }, 500); // 1 seconde d'inactivité
+                    }, 300); // 1 seconde d'inactivité
                 }
             } else {
                 clearTimeout(inactivityTimeout); // Annule le délai si l'utilisateur est actif
@@ -124,7 +126,7 @@ export const VideoJS = (props: {
         player.on("pause", handleUserInactivity); // Quand la vidéo est en pause, on vérifie l'inactivité
     
         // Intervalle pour vérifier l'inactivité
-        const inactivityInterval = setInterval(handleUserInactivity, 500); // Vérifie l'inactivité toutes les secondes
+        const inactivityInterval = setInterval(handleUserInactivity, 300); // Vérifie l'inactivité toutes les secondes
     
         // Nettoyage des événements et des intervalles lorsque le composant est démonté
         return () => {

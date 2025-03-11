@@ -35,6 +35,7 @@ const initialComments: CommentType = {
 };
 
 export default function VideoView() {
+    
     const [commentsData, setCommentsData] = useState<CommentType>(initialComments);
 
     const { insertNode, editNode, deleteNode } = useNode();
@@ -57,9 +58,16 @@ export default function VideoView() {
     };
 
     const videoID = useParams().id;
-    const { user } = useAuth();
-    const { movies } = useMovies();
-    const movie = movies.find((movie) => movie.imdb_id === videoID);
+    console.log("PARAM: ", videoID)
+
+    // gestion du videoID undefined a faire
+
+    // const { user } = useAuth();
+
+
+
+    // const { movies } = useMovies();
+    // const movie = movies.find((movie) => movie.imdb_id === videoID);
 
     // const { setVideoSource } = useVideo();
 
@@ -69,10 +77,10 @@ export default function VideoView() {
 
     return (
         <>
-            <h1>{movie?.language[user.language].title}</h1>
+            {/* <h1>{movie?.language[user.language].title}</h1> */}
 
             {/* Affichage du lecteur Video.js */}
-            <Video />
+            <Video video_ID={ +videoID }/>
 
             {/* Exemple de bouton pour changer la vidéo */}
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
