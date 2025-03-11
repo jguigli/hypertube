@@ -1,99 +1,98 @@
-import MovieCard from '../components/MovieCard.tsx';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import MovieCard from '../components/MovieCard.tsx';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import MovieService from '../services/MovieService.tsx';
 import { FilterSortMenu } from '../components/FilterSortMenu.tsx';
 import { useSearch } from '../contexts/SearchContext.tsx';
+import { Typography } from '@mui/material';
 
 
 export default function Home() {
-
     const { user } = useAuth();
     const { movies, setMovies } = useMovies();
-    const { searchQuery } = useSearch();
+    const { searchQuery, setSearchQuery } = useSearch();
 
     const movieService = new MovieService();
-
-    const [displayedMovies, setDisplayedMovies] = useState(movies);
-
-    const [page, setPage] = useState(2);
+    const [page, setPage] = useState(1);
+    const [scroll, setScroll] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-
-    const observerRef = useRef<IntersectionObserver | null>(null);
     const loadingRef = useRef<HTMLDivElement | null>(null);
+    const observerRef = useRef<IntersectionObserver | null>(null);
 
-    // Fonction pour récupérer les films depuis l'API
-    const fetchMovies = useCallback(async () => {
-        if (isLoading || !hasMore) return;
+    // Fonction pour charger les films (populaires ou via recherche)
+    const fetchMovies = useCallback(async (reset = false) => {
+        if (isLoading || !hasMore || scroll) return;
+
+        setIsLoading(true);
         try {
-            setIsLoading(true);
-            if (searchQuery) {
-                const searchMoviesResponse = await movieService.searchMovies(searchQuery, user.language, page);
-                if (!searchMoviesResponse.success) {
-                    setHasMore(false);
-                    return;
-                }
-                setDisplayedMovies([...displayedMovies, ...searchMoviesResponse.data]);
-            } else {
-                const popularMoviesResponse = await movieService.getPopularMovies(page, user.language);
-                if (!popularMoviesResponse.success) {
-                    setHasMore(false);
-                    return;
-                }
-                setDisplayedMovies([...displayedMovies, ...popularMoviesResponse.data]);
+            const response = searchQuery
+                ? await movieService.searchMovies(searchQuery, user.language, reset ? 1 : page)
+                : await movieService.getPopularMovies(reset ? 1 : page, user.language);
+
+            if (!response.success || response.data.length === 0) {
+                setHasMore(false);
+                return;
             }
+
+            setMovies(reset ? response.data : [...movies, ...response.data]);
             setPage((prevPage) => prevPage + 1);
         } catch (error) {
             console.error("Erreur lors du chargement des films", error);
         } finally {
             setIsLoading(false);
         }
-    }, [page, isLoading, hasMore, setMovies, movies, displayedMovies, searchQuery, user.language]);
+    }, [searchQuery, user.language, page, isLoading, hasMore, setMovies, movies, scroll]);
 
-    // Intersection Observer pour détecter le scroll
+    // Gestion du scroll infini
     useEffect(() => {
         if (!loadingRef.current || !hasMore) return;
         observerRef.current = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting) {
-                    fetchMovies();
-                }
+                if (entries[0].isIntersecting) fetchMovies();
             },
             { rootMargin: "50%" }
-            // Déclenche fetchMovies() en fonction de la position du scroll
         );
         observerRef.current.observe(loadingRef.current);
         return () => observerRef.current?.disconnect();
     }, [fetchMovies, hasMore]);
 
+    // Rechercher les films lorsqu'un nouveau terme de recherche est saisi
     useEffect(() => {
-        setPage(2);
+        setPage(1);
         setHasMore(true);
-        setDisplayedMovies(movies);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [movies, searchQuery]);
+        fetchMovies(true);
+        setScroll(true);
+    }, [searchQuery, user.language]);
+
+    // Reset de la recherche en quittant la page
+    useEffect(() => {
+        return () => setSearchQuery("");
+    }, []);
 
     useEffect(() => {
-        movieService.getPopularMovies(1, user.language)
-            .then((response) => {
-                if (!response.success) {
-                    return;
-                }
-                setMovies(response.data);
-            });
-    }, [user.language]);
+        if (movies.length > 0 && scroll) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setScroll(false);
+        }
+    }, [movies, scroll]);
 
     return (
         <>
-            {displayedMovies.length === 0 ? (
+            <div className="flex justify-center items-center">
+                <Typography variant="h6" color="secondary">
+                    {searchQuery ? `Search results for "${searchQuery}"` : "Popular movies"}
+                </Typography>
+            </div>
+
+            {movies.length === 0 ? (
                 <div className="flex justify-center items-center">
                     <p className="text-3xl">No movies found</p>
                 </div>
             ) : (
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
-                    {displayedMovies.map((movie, id) => (
+                    {movies.map((movie, id) => (
                         <MovieCard movie={movie} key={id} />
                     ))}
                 </div>
@@ -101,7 +100,7 @@ export default function Home() {
 
             {hasMore && (
                 <div ref={loadingRef} className="flex justify-center py-4">
-                    {isLoading && (<p>Loading...</p>)}
+                    {isLoading && <p>Loading...</p>}
                 </div>
             )}
 

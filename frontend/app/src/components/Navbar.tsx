@@ -13,7 +13,6 @@ import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import UserService from "../services/UserService.tsx";
 import MovieService from "../services/MovieService.tsx";
 import { useMovies } from "../contexts/MovieContext.tsx";
-import { set } from "video.js/dist/types/tech/middleware";
 
 
 function Logo() {
@@ -34,38 +33,11 @@ function Logo() {
 
 function MovieSearchBar() {
 
-    const { setSearchQuery } = useSearch();
-    const { user } = useAuth();
-    const { setMovies } = useMovies();
-
-    const movieService = new MovieService();
-
-    const [search, setSearch] = useState("");
+    const { searchQuery, setSearchQuery } = useSearch();
 
     async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearch(event.target.value);
         setSearchQuery(event.target.value);
     }
-
-    useEffect(() => {
-        if (search.length === 0) {
-            movieService.getPopularMovies(1, user.language)
-                .then((response) => {
-                    if (!response.success) {
-                        return;
-                    }
-                    setMovies(response.data);
-                });
-        } else {
-            movieService.searchMovies(search, user.language)
-                .then((response) => {
-                    if (!response.success) {
-                        return;
-                    }
-                    setMovies(response.data);
-                });
-        }
-    }, [search]);
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
@@ -74,7 +46,7 @@ function MovieSearchBar() {
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={search}
+                        value={searchQuery}
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />

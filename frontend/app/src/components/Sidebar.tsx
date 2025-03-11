@@ -13,7 +13,7 @@ export default function Sidebar() {
     const { user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const {activeLink, setActiveLink} = useActiveLink();
+    const { activeLink, setActiveLink } = useActiveLink();
 
     // // UseEffect to set the active link when the page loads
     // useEffect(() => {
