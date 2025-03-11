@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import videojs from "video.js";
-import VideoJS from './test_videojs'; 
-import { useMovies } from '../contexts/MovieContext';
-import Movie from '../types/Movie';
-import MovieService from '../services/MovieService';
-import { useAuth } from '../contexts/AuthContext';
+import VideoJS from './test_videojs';
+
 
 
 export default function Video(
@@ -13,21 +10,6 @@ props: {
 }) {
 
     const playerRef = React.useRef(null);
-    const {getToken} = useAuth();
-    const movieService = new MovieService();
-    const [movieDetail, setMovieDetail] = useState<any>(undefined);
-    
-    useEffect(() => {
-        async function getMovieInfo() {
-            const response = await movieService.getMovieInfo(props.video_ID, getToken());
-            if (!response.success) {
-                return ;
-            }
-            setMovieDetail(response.data);
-            console.log("Movie detail ok")
-        }
-        getMovieInfo();
-    }, []);
 
     const videoJsOptions = {
         autoplay: false,
@@ -36,6 +18,7 @@ props: {
         fluid: true,
         sources: [{
             src: 'https://vjs.zencdn.net/v/oceans.mp4',
+            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
             type: 'video/mp4'
         }],
         tracks: [
@@ -69,7 +52,7 @@ props: {
 
     return (
         <div className="video-container w-full">
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieDetail={movieDetail}/>
+            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID}/>
         </div>
     );
 

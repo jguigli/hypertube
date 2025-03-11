@@ -15,7 +15,7 @@
 // import React, { useEffect } from "react";
 // import VideoJS from "../components/VideoJS";
 // import { useVideo } from "../contexts/VideoContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMovies } from "../contexts/MovieContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
@@ -35,7 +35,7 @@ const initialComments: CommentType = {
 };
 
 export default function VideoView() {
-    
+
     const [commentsData, setCommentsData] = useState<CommentType>(initialComments);
 
     const { insertNode, editNode, deleteNode } = useNode();
@@ -57,8 +57,15 @@ export default function VideoView() {
         setCommentsData(finalStructure ?? commentsData);
     };
 
-    const videoID = useParams().id;
-    console.log("PARAM: ", videoID)
+    const videoID: string | undefined = useParams().id;
+    const navigate = useNavigate();
+
+    // Redirection vers la page d'accueil si le videoID est undefined
+    if (videoID === undefined) {
+        navigate("/");
+        return;
+    }
+
 
     // gestion du videoID undefined a faire
 
@@ -86,7 +93,7 @@ export default function VideoView() {
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
                 Charger une nouvelle vidéo
             </button> */}
-            <h1>Video View</h1>
+
             <div className="Video_view">
                 <Comments
                     handleInsertNode={handleInsertNode}
