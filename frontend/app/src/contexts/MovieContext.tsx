@@ -5,6 +5,7 @@ import MovieService from "../services/MovieService";
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
+    fetchMovies: (page: number, searchQuery: string, language: string, reset?: boolean) => void;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -14,20 +15,31 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     const [movies, setMovies] = useState<Movie[]>([]);
 
-    // Fetch popular movies on component mount
-    useEffect(() => {
-        const fetchMovies = async () => {
-            const popularMovies = await movieService.getPopularMovies(1, "en");
-            if (!popularMovies.success) {
-                return;
+    async function fetchMovies(
+        page: number,
+        searchQuery: string,
+        language: string,
+    ) {
+        const response = searchQuery
+                ? await movieService.searchMovies(searchQuery, language, page)
+                : await movieService.getPopularMovies(page, language);
+
+        if (response.success) {
+            if (page === 1) {
+                setMovies(response.data);
+            } else {
+                setMovies([...movies, ...response.data]);
             }
-            setMovies(popularMovies.data);
-        };
-        fetchMovies();
-    }, []);
+        }
+    }
+
+    // // Fetch popular movies on component mount
+    // useEffect(() => {
+    //     fetchMovies(1, "", user.language);
+    // }, []);
 
     return (
-        <MoviesContext.Provider value={{ movies, setMovies }}>
+        <MoviesContext.Provider value={{ movies, setMovies, fetchMovies }}>
             {children}
         </MoviesContext.Provider>
     );

@@ -1,68 +1,50 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import MovieCard from '../components/MovieCard.tsx';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
-import MovieService from '../services/MovieService.tsx';
 import { FilterSortMenu } from '../components/FilterSortMenu.tsx';
 import { useSearch } from '../contexts/SearchContext.tsx';
 import { Typography } from '@mui/material';
 
 
 export default function Home() {
+
     const { user } = useAuth();
-    const { movies, setMovies } = useMovies();
+    const { movies, fetchMovies } = useMovies();
     const { searchQuery, setSearchQuery } = useSearch();
 
-    const movieService = new MovieService();
+    // const movieService = new MovieService();
+
     const [page, setPage] = useState(1);
     const [scroll, setScroll] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const loadingRef = useRef<HTMLDivElement | null>(null);
     const observerRef = useRef<IntersectionObserver | null>(null);
 
-    // Fonction pour charger les films (populaires ou via recherche)
-    const fetchMovies = useCallback(async (reset = false) => {
-        if (isLoading || !hasMore || scroll) return;
-
-        setIsLoading(true);
-        try {
-            const response = searchQuery
-                ? await movieService.searchMovies(searchQuery, user.language, reset ? 1 : page)
-                : await movieService.getPopularMovies(reset ? 1 : page, user.language);
-
-            if (!response.success || response.data.length === 0) {
-                setHasMore(false);
-                return;
-            }
-
-            setMovies(reset ? response.data : [...movies, ...response.data]);
-            setPage((prevPage) => prevPage + 1);
-        } catch (error) {
-            console.error("Erreur lors du chargement des films", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [searchQuery, user.language, page, isLoading, hasMore, setMovies, movies, scroll]);
-
     // Gestion du scroll infini
     useEffect(() => {
-        if (!loadingRef.current || !hasMore) return;
+        if (!loadingRef.current || !hasMore || searchQuery) return;
         observerRef.current = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting) fetchMovies();
+                if (entries[0].isIntersecting) {
+                    console.log("Intersecting");
+                    // Append more movies
+                    setPage((prevPage) => prevPage + 1);
+                    fetchMovies(page, searchQuery, user.language);
+                }
             },
             { rootMargin: "50%" }
         );
         observerRef.current.observe(loadingRef.current);
         return () => observerRef.current?.disconnect();
-    }, [fetchMovies, hasMore]);
+    }, [fetchMovies, hasMore, searchQuery, loadingRef]);
 
     // Rechercher les films lorsqu'un nouveau terme de recherche est saisi
     useEffect(() => {
         setPage(1);
         setHasMore(true);
-        fetchMovies(true);
+        fetchMovies(page, searchQuery, user.language, true);
         setScroll(true);
     }, [searchQuery, user.language]);
 
@@ -71,12 +53,13 @@ export default function Home() {
         return () => setSearchQuery("");
     }, []);
 
+    // Revemir en haut de la page en cas de recherche
     useEffect(() => {
-        if (movies.length > 0 && scroll) {
+        if (scroll) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setScroll(false);
         }
-    }, [movies, scroll]);
+    }, [scroll]);
 
     return (
         <>
@@ -100,7 +83,7 @@ export default function Home() {
 
             {hasMore && (
                 <div ref={loadingRef} className="flex justify-center py-4">
-                    {isLoading && <p>Loading...</p>}
+                    {/* {isLoading && <p>Loading...</p>} */}
                 </div>
             )}
 

@@ -18,15 +18,13 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ActiveLinkProvider>
             <ThemeProvider theme={theme}>
-                <MoviesProvider>
-                    <SearchProvider>
-                        <AuthProvider>
-                            {/* <VideoProvider> */}
-                                <AppRouter />
-                            {/* </VideoProvider> */}
-                        </AuthProvider>
-                    </SearchProvider>
-                </MoviesProvider>
+                <AuthProvider>
+                    <MoviesProvider>
+                        <SearchProvider>
+                            <AppRouter />
+                        </SearchProvider>
+                    </MoviesProvider>
+                </AuthProvider>
             </ThemeProvider>
         </ActiveLinkProvider>
     </StrictMode>,
