@@ -8,6 +8,7 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
+import FilterSortOptions from "../types/FilterSortOptions";
 
 const genres = [
     "Action",
@@ -39,23 +40,22 @@ const sortOptions = [
     { label: "IMDb rating (lowest first)", value: "rating_asc" }
 ];
 
-export function FilterSortMenu({ onApply }: { onApply: (filters: any) => void }) {
+export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptions) => void }) {
+
     const [open, setOpen] = useState(false);
-    const [name, setName] = useState("");
     const [selectedGenre, setSelectedGenre] = useState("");
-    const [yearRange, setYearRange] = useState([1950, 2025]);
-    const [rating, setRating] = useState([0, 10]);
+    const [yearRange, setYearRange] = useState<number[]>([1950, new Date().getFullYear()]);
+    const [rating, setRating] = useState<number[]>([0, 10]);
     const [sortBy, setSortBy] = useState("");
 
     const toggleDrawer = () => setOpen(!open);
 
     const handleApply = () => {
-        onApply({ name, selectedGenre, yearRange, rating, sortBy });
+        onApply({ selectedGenre, yearRange, rating, sortBy });
         toggleDrawer();
     };
 
     const handleReset = () => {
-        setName("");
         setSelectedGenre("");
         setYearRange([1950, 2025]);
         setRating([0, 10]);
@@ -74,16 +74,8 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: any) => void })
 
             <Drawer anchor="bottom" open={open} onClose={toggleDrawer}>
                 <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }} className="bg-gray-950">
-                    <Typography variant="h6">Filters</Typography>
 
-                    <TextField
-                        label="Name"
-                        variant="outlined"
-                        fullWidth
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        size="small"
-                    />
+                    <Typography variant="h6">Filters</Typography>
 
                     <FormControl fullWidth>
                         <InputLabel

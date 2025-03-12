@@ -25,6 +25,11 @@ export default class MovieService {
                     success: true,
                     data: response.data
                 };
+            } else if (response.status === 204) {
+                return {
+                    success: true,
+                    data: []
+                }
             } else {
                 return {
                     success: false,
@@ -59,6 +64,11 @@ export default class MovieService {
                 return {
                     success: true,
                     data: response.data
+                }
+            } else if (response.status === 204) {
+                return {
+                    success: true,
+                    data: []
                 }
             } else {
                 return {

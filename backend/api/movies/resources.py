@@ -50,7 +50,7 @@ async def search_movies(
     else:
         movies_data = search_movies_tmdb(search, language, page)
         if not movies_data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Search movie not available")
+            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
 
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
@@ -60,7 +60,7 @@ async def search_movies(
 
     movies = [map_to_movie_display(movie) for movie in movies_data]
     if not movies:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Search movie not available")
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
     return movies
 
 
@@ -77,7 +77,7 @@ async def get_popular_movies(
     else:
         movies_data = fetch_popular_movies_tmdb(language, page)
         if not movies_data:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Popular movies not available")
+            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
 
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
@@ -86,6 +86,9 @@ async def get_popular_movies(
             movie["is_watched"] = movie["id"] in watched_movies
 
     movies = [map_to_movie_display(movie) for movie in movies_data]
+    if not movies:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
+
     return movies
 
 

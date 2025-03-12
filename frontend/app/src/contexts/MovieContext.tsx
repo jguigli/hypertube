@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
-import { set } from "video.js/dist/types/tech/middleware";
 
 interface MoviesContextType {
     movies: Movie[];
@@ -32,22 +31,28 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                 : await movieService.getPopularMovies(page, language);
 
             if (response.success) {
-                if (page === 1) {
-                    setMovies(response.data);
+                if (response.data.length > 0) {
+                    setHasMore(true);
+                    if (page === 1) {
+                        setMovies(response.data);
+                    } else {
+                        setMovies((prevMovies) => [...prevMovies, ...response.data]);
+                    }
                 } else {
-                    setMovies((prevMovies) => [...prevMovies, ...response.data]);
+                    // No more movies to fetch
+                    setHasMore(false);
+                    if (searchQuery && page === 1) {
+                        // No results found for search query
+                        setMovies([]);
+                    }
                 }
+                return response.data || [];
             } else {
                 setHasMore(false);
-                if (response.error === "No more movies available" && searchQuery && page === 1) {
-                    setMovies([]);
-                    return [];
-                } else {
-                    return [];
-                }
+                return [];
             }
-            return response.data || [];
         } catch (error) {
+            setHasMore(false);
             console.log(error);
             return [];
         }
