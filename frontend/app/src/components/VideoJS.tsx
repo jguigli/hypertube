@@ -3,7 +3,11 @@ import videojs from "video.js";
 import VideoJS from './test_videojs';
 
 
-export default function Video() {
+
+export default function Video(
+props: {
+    video_ID: number;
+}) {
 
     const playerRef = React.useRef(null);
 
@@ -14,6 +18,7 @@ export default function Video() {
         fluid: true,
         sources: [{
             src: 'https://vjs.zencdn.net/v/oceans.mp4',
+            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
             type: 'video/mp4'
         }],
         tracks: [
@@ -47,7 +52,7 @@ export default function Video() {
 
     return (
         <div className="video-container w-full">
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} />
+            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID}/>
         </div>
     );
 

@@ -76,5 +76,37 @@ export default class MovieService {
     }
 
 
-    // Get movie details by id
+    async getMovieInfo(id: number, token: string | null) {
+        try {
+            if (token) {
+                const response = await axios.get(
+                    `/movies/${id}`,
+                    {
+                        headers: {
+                            Authorization: `${token}`
+                        },
+                        params: {
+                            movie_id: id
+                        }
+                    }
+                );
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.data
+                    }
+                }
+            }
+            return {
+                success: false,
+                data: null
+            }
+        }
+        catch (error) {
+            return {
+                success: false,
+                data: null
+            }
+        }
+    }
 }
