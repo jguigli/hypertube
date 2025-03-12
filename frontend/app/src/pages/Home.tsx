@@ -1,65 +1,61 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import MovieCard from '../components/MovieCard.tsx';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
 import { FilterSortMenu } from '../components/FilterSortMenu.tsx';
 import { useSearch } from '../contexts/SearchContext.tsx';
 import { Typography } from '@mui/material';
-
+import { set } from 'video.js/dist/types/tech/middleware';
 
 export default function Home() {
-
     const { user } = useAuth();
-    const { movies, fetchMovies } = useMovies();
+    const { movies, fetchMovies, hasMore, setHasMore } = useMovies();
     const { searchQuery, setSearchQuery } = useSearch();
-
-    // const movieService = new MovieService();
-
     const [page, setPage] = useState(1);
+
     const [scroll, setScroll] = useState(false);
-    // const [isLoading, setIsLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
+    const [loading, setLoading] = useState(false);
     const loadingRef = useRef<HTMLDivElement | null>(null);
-    const observerRef = useRef<IntersectionObserver | null>(null);
 
-    // Gestion du scroll infini
     useEffect(() => {
-        if (!loadingRef.current || !hasMore || searchQuery) return;
-        observerRef.current = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    console.log("Intersecting");
-                    // Append more movies
-                    setPage((prevPage) => prevPage + 1);
-                    fetchMovies(page, searchQuery, user.language);
-                }
-            },
-            { rootMargin: "50%" }
-        );
-        observerRef.current.observe(loadingRef.current);
-        return () => observerRef.current?.disconnect();
-    }, [fetchMovies, hasMore, searchQuery, loadingRef]);
-
-    // Rechercher les films lorsqu'un nouveau terme de recherche est saisi
-    useEffect(() => {
+        setLoading(true);
+        if (searchQuery) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        setLoading(false);
         setPage(1);
         setHasMore(true);
-        fetchMovies(page, searchQuery, user.language, true);
         setScroll(true);
-    }, [searchQuery, user.language]);
+    }, [searchQuery]);
 
-    // Reset de la recherche en quittant la page
+    const fetchMoviesCallback = useCallback(() => {
+        setLoading(true);
+        fetchMovies(page, searchQuery, user.language).then((newMovies) => {
+            setHasMore(newMovies?.length > 0);
+            setLoading(false);
+        });
+    }, [page, searchQuery, user.language]);
+
+    useEffect(() => {
+        fetchMoviesCallback();
+    }, [fetchMoviesCallback]);
+
+
+    const handleScroll = useCallback(() => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !loading) {
+            setPage((prevPage) => prevPage + 1);
+        }
+    }, [loading]);
+
+    useEffect(() => {
+        if (!loadingRef.current || !hasMore) return;
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [hasMore, handleScroll]);
+
     useEffect(() => {
         return () => setSearchQuery("");
     }, []);
-
-    // Revemir en haut de la page en cas de recherche
-    useEffect(() => {
-        if (scroll) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setScroll(false);
-        }
-    }, [scroll]);
 
     return (
         <>
@@ -83,7 +79,7 @@ export default function Home() {
 
             {hasMore && (
                 <div ref={loadingRef} className="flex justify-center py-4">
-                    {/* {isLoading && <p>Loading...</p>} */}
+                    {loading && <p>Loading...</p>}
                 </div>
             )}
 
