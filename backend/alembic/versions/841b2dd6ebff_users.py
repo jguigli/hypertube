@@ -1,7 +1,7 @@
 """users
 
 Revision ID: 841b2dd6ebff
-Revises: 
+Revises:
 Create Date: 2025-02-24 14:25:26.328384
 
 """
@@ -22,15 +22,15 @@ def upgrade() -> None:
         text(
             """
                 CREATE TABLE users (
-                    id BIGSERIAL PRIMARY KEY,
+                    id SERIAL PRIMARY KEY,
                     email VARCHAR(320) UNIQUE NOT NULL,
-                    user_name VARCHAR(64),
+                    user_name VARCHAR(64) UNIQUE NOT NULL,
                     first_name VARCHAR(64),
                     last_name VARCHAR(64),
-                    hashed_password VARCHAR(60),
                     profile_picture_path VARCHAR(255),
-                    is_resetting_password BOOLEAN,
-                    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+                    language VARCHAR(5) DEFAULT 'en',
+                    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
                 );
             """
         )

@@ -12,6 +12,7 @@ import Logout from "../pages/Logout.tsx";
 import PublicProfile from "../pages/Profile.tsx";
 import UserSettings from "../pages/UserSettings.tsx";
 import HomeRouter from "./HomeRouter.tsx";
+import Auth from "../utils/Auth.tsx";
 
 const router = createBrowserRouter([
     {
@@ -35,18 +36,10 @@ const router = createBrowserRouter([
                 )
             },
             {
-                path: "/auth/google/callback",
+                path: "/auth/",
                 element: (
                     <PublicRoute>
-                        <></>
-                    </PublicRoute>
-                )
-            },
-            {
-                path: "/auth/42/callback",
-                element: (
-                    <PublicRoute>
-                        <></>
+                        <Auth />
                     </PublicRoute>
                 )
             },

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { useSearch } from "../contexts/SearchContext.tsx";
 import { Search } from "@mui/icons-material";
@@ -10,6 +10,9 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
+import UserService from "../services/UserService.tsx";
+import MovieService from "../services/MovieService.tsx";
+import { useMovies } from "../contexts/MovieContext.tsx";
 
 
 function Logo() {
@@ -32,17 +35,19 @@ function MovieSearchBar() {
 
     const { searchQuery, setSearchQuery } = useSearch();
 
+    async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setSearchQuery(event.target.value);
+    }
+
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={(event) => event.preventDefault()}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
                         value={searchQuery}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            setSearchQuery(event.target.value);
-                        }}
+                        onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
                     <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
@@ -56,12 +61,27 @@ function MovieSearchBar() {
 
 export function LanguageSelection() {
 
-    const { user, changeUserLanguage } = useAuth();
+    const { user, getToken, changeUserLanguage } = useAuth();
+    const userService = new UserService();
 
     const handleChange = (event: SelectChangeEvent) => {
         const language = event.target.value;
         if (language === "en" || language === "fr") {
             changeUserLanguage(language);
+            if (user.is_logged_in && user.email && user.username && user.firstName && user.lastName) {
+                const token = getToken();
+                if (!token) {
+                    return;
+                }
+                userService.setInformations(
+                    token,
+                    user.email,
+                    user.username,
+                    user.firstName,
+                    user.lastName,
+                    language
+                );
+            }
         }
     };
 
@@ -88,8 +108,6 @@ function UserSearchBar() {
     const [userSearch, setUserSearch] = useState("");
     const { setActiveLink } = useActiveLink();
     const navigate = useNavigate()
-    const { user } = useAuth();
-    const username = user.username;
 
     function handleUserSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setUserSearch(event.target.value);
@@ -97,7 +115,7 @@ function UserSearchBar() {
 
     function handleUserSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        // Navigate to user profile
+        setUserSearch("");
         setActiveLink(`/profile`);
         navigate(`/profile/${userSearch}`);
     }

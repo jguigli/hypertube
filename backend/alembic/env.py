@@ -8,6 +8,8 @@ from alembic import context
 from api.config import DATABASE_URL
 from api.database import Base
 
+from api.login.models import AuthProvider
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

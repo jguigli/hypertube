@@ -19,20 +19,21 @@ def fetch_popular_movies_tmdb(language: str, page: int):
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         return None
-    
+
     movies_data = response.json()["results"]
+
     redis_client.setex(key_popular_movies, 86400, json.dumps(movies_data))
 
     for movie in movies_data:
         movie_id = movie["id"]
         key_movie = f"movie:{movie_id}"
         redis_client.setex(key_movie, 86400, json.dumps(movie))
-    
+
     return movies_data
 
-def search_movies_tmdb(search: str, language: str):
-    url = f"https://api.themoviedb.org/3/search/movie?query={search}&language={language}&page=1"
-    key_search = f"search:{search}:{language}"
+def search_movies_tmdb(search: str, language: str, page: int):
+    url = f"https://api.themoviedb.org/3/search/movie?query={search}&language={language}&page={page}"
+    key_search = f"search:{search}:{language}:{page}"
 
     headers = {
         "accept": "application/json",
@@ -42,7 +43,7 @@ def search_movies_tmdb(search: str, language: str):
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         return None
-    
+
     movies_data = response.json()["results"]
     redis_client.setex(key_search, 86400, json.dumps(movies_data))
 
@@ -68,15 +69,19 @@ def get_magnet_link_piratebay(title, year):
     response = requests.get(url)
     if response.status_code != 200:
         return None
-    
+
     movies_metadata = response.json()
     if not movies_metadata:
         return None
-    
+
     first_movie_metadata = movies_metadata[0]
+    print(f"MOVIE MEDATA : {first_movie_metadata}")
+    if int(first_movie_metadata['id']) == 0:
+        return None
+    
     info_hash = first_movie_metadata["info_hash"]
     name = first_movie_metadata["name"]
-    
+
     # print(f"MOVIE MEDATA : {movies_metadata}")
     # print(f"NAME : {name}")
 

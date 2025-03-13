@@ -9,7 +9,7 @@ const ActiveLinkContext = createContext<ActiveLinkContextType | undefined>(undef
 
 export function ActiveLinkProvider({ children }: { children: React.ReactNode }) {
 
-    const [activeLink, setActiveLink] = useState("");
+    const [activeLink, setActiveLink] = useState(window.location.pathname);
 
     return (
         <ActiveLinkContext.Provider value={{ activeLink, setActiveLink }}>

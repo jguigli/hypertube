@@ -13,13 +13,12 @@ export default function Sidebar() {
     const { user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const {activeLink, setActiveLink} = useActiveLink();
+    const { activeLink, setActiveLink } = useActiveLink();
 
-    setActiveLink(window.location.pathname);
-
-    useEffect(() => {
-        setActiveLink(window.location.pathname);
-    }, [window.location.pathname]);
+    // // UseEffect to set the active link when the page loads
+    // useEffect(() => {
+    //     setActiveLink(window.location.pathname);
+    // }, [setActiveLink]);
 
     const links = [
         {
@@ -49,12 +48,14 @@ export default function Sidebar() {
         !user.is_logged_in ? {
             name: "Login",
             url: "/login",
-            icon: LoginOutlined
+            icon: LoginOutlined,
+            activeLink: "/login"
         } : null,
         !user.is_logged_in ? {
             name: "Register",
             url: "/register",
-            icon: AppRegistrationOutlined
+            icon: AppRegistrationOutlined,
+            activeLink: "/register"
         } : null,
     ].filter(Boolean);
 
@@ -66,7 +67,7 @@ export default function Sidebar() {
             onMouseLeave={() => setMenuOpen(false)}
         >
             {links.map((link) => link && (
-                <Link to={link.url} onClick={() => setActiveLink(link.url)} className='w-full' key={link.url}>
+                <Link to={link.url} onClick={() => setActiveLink(link.activeLink)} className='w-full' key={link.url}>
 
                     {
                         menuOpen ?
@@ -77,7 +78,7 @@ export default function Sidebar() {
                                     className='w-full flex justify-start sidebar-open'
                                     startIcon={<link.icon fontSize='small' className='sidebar-icon' />}
                                     sx={{
-                                        backgroundColor: activeLink === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        backgroundColor: activeLink === link.activeLink ? "oklch(0.278 0.033 256.847992)" : "transparent",
                                         width: 'calc(100% - 10px)',
                                         margin: "0 5px",
                                         display: "flex",
@@ -92,7 +93,7 @@ export default function Sidebar() {
                                     startIcon={<link.icon fontSize='small' />}
                                     size='small'
                                     sx={{
-                                        backgroundColor: activeLink === link.url ? "oklch(0.278 0.033 256.847992)" : "transparent",
+                                        backgroundColor: activeLink === link.activeLink ? "oklch(0.278 0.033 256.847992)" : "transparent",
                                         width: 'calc(100% - 10px)',
                                         margin: "0 5px",
                                         display: "flex",

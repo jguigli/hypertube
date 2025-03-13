@@ -26,7 +26,7 @@ def upgrade() -> None:
                     movie_id INTEGER NOT NULL,
                     user_id INTEGER NOT NULL,
                     watched_at DATE DEFAULT CURRENT_DATE,
-                    FOREIGN KEY (movie_id) REFERENCES movies(id),
+                    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 );
             """

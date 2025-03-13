@@ -1,14 +1,17 @@
 FROM python:3.11.3
 
-RUN apt-get update && apt-get install -y gettext
+RUN apt-get update && apt-get install -y \
+    gettext \
+    ffmpeg
 
 WORKDIR /app
 
+COPY . .
 COPY alembic.ini.template .
 
-COPY . .
-
-RUN pip install -r requirements.txt
+# Use an entrypoint script to run the pip install and uvicorn commands
+# Virtual environment is created in /app/venv and shared with the host
+COPY ./entrypoint.sh /entrypoint.sh
 
 EXPOSE 8000
 
@@ -16,7 +19,6 @@ EXPOSE 8000
 # CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 # CMD ["/app/entrypoint.sh"]
 
-CMD ["sh", "-c", \
-    "envsubst < /app/alembic.ini.template > /app/alembic.ini && \
-    alembic upgrade heads && \
-    uvicorn api.main:app --host 0.0.0.0 --port 8000 --root-path /api/ --reload"]
+ENV PATH /app/venv/bin:$PATH
+
+ENTRYPOINT [ "sh", "/entrypoint.sh" ]
