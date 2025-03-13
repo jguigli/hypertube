@@ -1,6 +1,8 @@
 FROM python:3.11.3
 
-RUN apt-get update && apt-get install -y gettext
+RUN apt-get update && apt-get install -y \
+    gettext \
+    ffmpeg
 
 WORKDIR /app
 

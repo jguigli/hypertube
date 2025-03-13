@@ -7,7 +7,6 @@ Create Date: 2025-03-04 19:49:13.860873
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '782c75218b2f'
@@ -49,7 +48,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     conn = op.get_bind()
     conn.execute(
-        text(
+        sa.text(
             """
                 DROP TABLE auth_providers;
             """

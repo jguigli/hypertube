@@ -18,3 +18,5 @@ requests
 apscheduler
 aiosmtplib
 pillow
+aiofiles
+ffmpeg-python
