@@ -21,8 +21,13 @@ import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
+<<<<<<< HEAD
 import Video from "../components/VideoJS";
 import CustomCard from "../components/Card";
+=======
+import CustomCard from "../components/Card";
+import Video from "../components/VideoJS";
+>>>>>>> fa01fe63 (updates)
 
 interface CommentType {
     id: number;
