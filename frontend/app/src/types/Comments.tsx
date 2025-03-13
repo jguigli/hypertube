@@ -4,12 +4,12 @@ export default interface Comments {
     movie_id: number;
     comment: string;
     date: string;
-    user: {
-        id: number;
-        username: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        avatar: string;
-    };
+    // user: {
+    //     id: number;
+    //     username: string;
+    //     email: string;
+    //     firstName: string;
+    //     lastName: string;
+    //     avatar: string;
+    // };
 }

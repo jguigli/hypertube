@@ -14,20 +14,23 @@ from api.movies.crud import get_movie_by_id
 
 router = APIRouter(tags=["Comments"])
 
+class CommentRequest(BaseModel):
+    content: str
 
 @router.post('/comments/{movie_id}')
 async def post_movie_comment(
     movie_id: int,
-    content: str,
+    content:  CommentRequest,
     current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
-    if not len(content) or len(content) > 500:
+    if not len(content.content) or len(content.content) > 500:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid comment format")
-    create_comment(db, current_user.id, movie_id, content)
+    create_comment(db, current_user.id, movie_id, content.content)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

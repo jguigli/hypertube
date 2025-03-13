@@ -18,26 +18,38 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useMovies } from "../contexts/MovieContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
 import CustomCard from "../components/Card";
 import Video from "../components/VideoJS";
+import MovieService from "../services/MovieService";
 
 interface CommentType {
     id: number;
-    name?: string;
-    items: CommentType[];
-}
+    // name?: string;
+    user_id?: number;
+    user_name?: string;
+    // avatarUrl?: string;
+    // timestamp: number;
+    content?:string;
+    // items?: CommentType[];
+  }
 
-const initialComments: CommentType = {
-    id: 1,
-    items: []
-};
+// comments: list[comments_schemas.Comment]
+
+// const initialComments: CommentType = {
+    // id: 1,
+    // user_id: 1,
+    // user_name: "user",
+    // content: "content",
+    // items: [],
+    // timestamp: Date.now(),
+// };
 
 export default function VideoView() {
 
-    const [commentsData, setCommentsData] = useState<CommentType>(initialComments);
+    const [commentsData, setCommentsData] = useState<CommentType[]>([]);
 
     const { insertNode, editNode, deleteNode } = useNode();
 
@@ -61,11 +73,31 @@ export default function VideoView() {
     const videoID: string | undefined = useParams().id;
     const navigate = useNavigate();
 
+    const movieService = new MovieService();
+    const { getToken } = useAuth();
+
+
+    //Ajout de l'ID overlay a video-js ainsi que des enfants d'overlay.
+    useEffect(() => {
+        
+        async function getMovieInfo() {
+            if (videoID === undefined) {
+                navigate("/");
+                return;
+            }
+            const response = await movieService.getMovieInfo(+videoID, getToken());
+            if (!response.success) {
+                return;
+            }
+            setCommentsData(response.data.comments);
+            console.log(response.data.comments);
+        }
+
+        getMovieInfo();
+
+    }, [videoID, getToken]); 
+    
     // Redirection vers la page d'accueil si le videoID est undefined
-    if (videoID === undefined) {
-        navigate("/");
-        return;
-    }
 
 
     // gestion du videoID undefined a faire
@@ -97,13 +129,15 @@ export default function VideoView() {
             </button> */}
             <div className="Video_view">
             <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
+
                 <Comments
+                    comments={commentsData}
                     handleInsertNode={handleInsertNode}
                     handleEditNode={handleEditNode}
                     handleDeleteNode={handleDeleteNode}
-                    comments={commentsData}
-                />
+                    />
                 </CustomCard>
+
             </div>
         </>
     );

@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
 import ActionComments from "./ActionComments";
 import { ArrowDropUp, ArrowDropDown } from "@mui/icons-material";
 import { Button, Stack, Avatar } from "@mui/material";
 import CustomCard from "./Card";
+import CommentService from "../services/CommentService";
+import { useAuth } from "../contexts/AuthContext";
 
 interface CommentType {
   id: number;
   name?: string;
+  username?: string;
   avatarUrl?: string;
   timestamp: number;
   items?: CommentType[];
@@ -29,6 +33,8 @@ const formatTimeAgo = (timestamp: number): string => {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   return `${Math.floor(diffInSeconds / 86400)} days ago`;
 };
+
+const commentService = new CommentService();
 
 export const useNode = () => {
   const insertNode = (tree: CommentType, commentId: number, item: string): CommentType => {
@@ -71,7 +77,12 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   const [showInput, setShowInput] = useState<boolean>(false);
   const [expand, setExpand] = useState<boolean>(false);
   const inputRef = useRef<HTMLSpanElement | null>(null);
+  const { getToken } = useAuth();
 
+  const videoID: string | undefined = useParams().id;
+  if (!videoID) {
+    console.error("Error: video_id is undefined")
+  }
   useEffect(() => {
     if (editMode && inputRef.current) {
       inputRef.current.focus();
@@ -83,21 +94,38 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     setShowInput(true);
   };
 
-  const onAddComment = () => {
+  const onAddComment = async () => {
     if (editMode) {
       handleEditNode(comments.id, inputRef.current?.innerText ?? "");
       setEditMode(false);
     } else {
       if (input.trim() === "") return;
       setExpand(true);
+      const token = getToken();
+      if (!token) { console.error("Error: Missing authentication token"); return; }
+      if (!videoID) {
+        console.error("Error: video_id is undefined");
+        return;
+      }
+      console.log("Making API request with:", {
+        video_id: videoID,
+        content: input,
+        token,
+      });
       handleInsertNode(comments.id, input);
+      try {
+        const response = await commentService.postComments(+videoID, input, token);
+        console.log("Comment posted successfully:", response);
+        console.log(response);
+      } catch (error) {
+        console.error("Failed to post comment:", error);
+      }
       setShowInput(false);
       setInput("");
     }
   };
 
   return (
-    // <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
     <div className="comment-wrapper">
       <div className={comments.id === 1 ? "inputcontainer" : "commentContainer"}>
         {comments.id === 1 ? (
@@ -118,6 +146,12 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
             <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Avatar src={comments.avatarUrl} alt={comments.name} />
+                <Link
+                  to={`/profile/${comments.username || "tmichel-"}`}
+                  style={{ textDecoration: "none", fontWeight: "bold", color: "#1DA1F2" }}
+                >
+                  {comments.username || "tmichel-"}
+                </Link>
                 <span
                   contentEditable={editMode}
                   suppressContentEditableWarning={editMode}
@@ -189,11 +223,6 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
           <Comments key={cmnt.id} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} comments={cmnt} />
         ))}
       </div>
-      {/* {comments.id !== 1 ? ( 
-        </CustomCard>
-      ) : null } */}
-      {/* </div> */}
-      {/* </CustomCard> */}
     </div>
   );
 };
