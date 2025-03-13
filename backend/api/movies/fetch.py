@@ -74,6 +74,10 @@ def get_magnet_link_piratebay(title, year):
         return None
 
     first_movie_metadata = movies_metadata[0]
+    print(f"MOVIE MEDATA : {first_movie_metadata}")
+    if int(first_movie_metadata['id']) == 0:
+        return None
+    
     info_hash = first_movie_metadata["info_hash"]
     name = first_movie_metadata["name"]
 

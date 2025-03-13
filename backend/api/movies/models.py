@@ -23,7 +23,7 @@ class Movie(Base):
     file_path = Column(String(200))
     created_at = Column(Date, default=datetime.now)
 
-    comments_association = relationship("Comment", back_populates="movie_association", cascade="all, delete")
+    comments_association = relationship("Comment", back_populates="movie_association", cascade="all, delete-orphan")
     movies_watched_association = relationship("MovieWatched", cascade="all, delete-orphan")
 
     @property
@@ -36,9 +36,9 @@ class MovieWatched(Base):
     __tablename__ = "movies_watched"
 
     id = Column(Integer, primary_key=True, index=True)
-    movie_id = Column(Integer, ForeignKey("movies.id"), nullable=False)
+    movie_id = Column(Integer, ForeignKey("movies.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     watched_at = Column(Date, default=datetime.now)
 
-    movie = relationship("Movie")
+    movie = relationship("Movie", back_populates="movies_watched_association")
     user = relationship("User", overlaps="movies_watched_association")
