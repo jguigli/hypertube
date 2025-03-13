@@ -3,68 +3,97 @@ import time
 import asyncio
 from sqlalchemy.orm import Session
 from api.database import get_db
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 import os
+import aiofiles
+import subprocess
+import ffmpeg
+from api.redis_client import redis_client
 
 from .models import Movie
 
-CHUNK_SIZE = 1024
-DOWNLOAD_MOVIES_FOLDER = "./downloads/"
+CHUNK_SIZE = 524288
+DOWNLOAD_MOVIES_FOLDER = "./downloads"
 
-async def file_streamer(file_path: str):
-    with open(file_path, 'rb') as f:
-        while True:
-            piece = f.read(CHUNK_SIZE * CHUNK_SIZE) # 1Mo
-            if not piece:
+async def file_streamer(file_path: str, start: int, end: int):
+    async with aiofiles.open(file_path, 'rb') as f:
+        await f.seek(start)
+        remaining = end - start + 1
+        while remaining > 0:
+            chunk_size = min(CHUNK_SIZE, remaining)
+            chunk = await f.read(chunk_size)
+            if not chunk:
                 break
-            yield piece
-            time.sleep(0.1)
+            yield chunk
+            remaining -= len(chunk)
 
 
-async def download_torrent(movie: Movie):
-
-    file_path = f"{DOWNLOAD_MOVIES_FOLDER}/movie_{movie.id}"
+async def download_torrent(magnet_link: str, movie_id: int):
 
     session = lt.session()
     session.listen_on(6881, 6891)
+    session.apply_settings({
+        'listen_interfaces': '0.0.0.0:6881',
+        'announce_to_all_trackers': True,
+        'announce_to_all_tiers': True,
+    })
+    # session.add_extension('ut_metadata')
+    # session.add_extension('ut_pex')
+    # session.add_extension('lt_trackers')
+    session.start_dht()
+    session.start_lsd()
+    
 
-    session.add_dht_router("router.bittorrent.com", 6881)
-    session.add_dht_router("router.utorrent.com", 6881)
-    session.add_dht_router("dht.transmissionbt.com", 6881)
-    session.add_dht_router("dht.aelitis.com", 6881)
-    session.add_dht_router("router.bitcomet.com", 6881)
+    for router in [
+        ("router.bittorrent.com", 6881),
+        ("router.utorrent.com", 6881),
+        ("dht.transmissionbt.com", 6881),
+        ("dht.aelitis.com", 6881),
+        ("router.bitcomet.com", 6881)
+    ]:
+        session.add_dht_router(*router)
 
     params = {
-        "save_path": file_path,
+        "save_path": DOWNLOAD_MOVIES_FOLDER,
         "storage_mode": lt.storage_mode_t.storage_mode_sparse
     }
 
-    handle = lt.add_magnet_uri(session, movie.magnet_link, params)
+    handle = lt.add_magnet_uri(session, magnet_link, params)
 
-    handle.add_tracker({"url": "udp://tracker.openbittorrent.com:80/announce"})
-    handle.add_tracker({"url": "udp://tracker.opentrackr.org:1337/announce"})
-    handle.add_tracker({"url": "udp://tracker.leechers-paradise.org:6969/announce"})
+    trackers = [
+        "http://tracker.openbittorrent.com:80/announce",
+        "http://tracker.opentrackr.org:1337/announce",
+        "http://tracker.leechers-paradise.org:6969/announce"
+    ]
 
-    session.start_dht()
-    session.start_lsd()
+    for tracker in trackers:
+        handle.add_tracker({"url": tracker})
+
 
     while not handle.has_metadata():
         print("Waiting for torrent metadata", flush=True)
+        alerts = session.pop_alerts()
+        for a in alerts:
+                print(a)
         await asyncio.sleep(1)
-
-    # while not handle.is_seed():
-    #     status = handle.status()
-    #     print(f"Progression : {status.progress * 100:.2f}%")
-    #     time.sleep(1)
-
+    
     torrent_info = handle.get_torrent_info()
-    print(torrent_info)
 
-    # file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER + torrent_info.files().file_path(0))
-    # print(f"file path : {file_path}")
-
-    while os.path.exists(file_path) and os.stat(file_path).st_size < CHUNK_SIZE * CHUNK_SIZE:  # attendre 1 Mo minimum
-        print("Waiting for streaming minimum file size", flush=True)
+    while handle.status().progress < 0.1:
+        print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)
         await asyncio.sleep(1)
+    
+    file_path = ""
+    for index in range(torrent_info.num_files()):
+        file_entry = torrent_info.files().file_path(index)
+    
+        if file_entry.endswith(".mp4") or file_entry.endswith(".mkv"):
+            file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER, file_entry)
+            break
+    
+    key_movie = f"movie_path:{movie_id}"
+    redis_client.setex(key_movie, 60, file_path)
 
-    return file_path
+    while not handle.is_seed():
+        print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)
+        await asyncio.sleep(1)

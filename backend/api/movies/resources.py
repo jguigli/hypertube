@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, status
+from fastapi import Depends, Response, HTTPException, APIRouter, status, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import json
@@ -29,6 +29,9 @@ from .crud import (
 
 from . import schemas, models
 from .download import download_torrent, file_streamer
+import os
+import asyncio
+import time
 
 router = APIRouter(tags=["Movies"])
 
@@ -104,7 +107,8 @@ async def get_movie_informations(
 @router.get('/movies/{movie_id}/stream')
 async def start_streaming(
     movie_id: int,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
+    request: Request,
+    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
     db: Session = Depends(get_db)
 ):
     movie = get_movie_by_id(db, movie_id)
@@ -119,16 +123,50 @@ async def start_streaming(
         movie.magnet_link = magnet_link
         db.commit()
 
-    watched_movie = get_watched_movie(db, current_user.id, movie_id)
-    if not watched_movie:
-        mark_movie_as_watched(db, current_user.id, movie_id)
-    else:
-        watched_movie.watched_at = datetime.now()
-        db.commit()
+    # watched_movie = get_watched_movie(db, current_user.id, movie_id)
+    # if not watched_movie:
+    #     mark_movie_as_watched(db, current_user.id, movie_id)
+    # else:
+    #     watched_movie.watched_at = datetime.now()
+    #     db.commit()
     
     if not movie.file_path:
-        file_path = await download_torrent(movie)
-        movie.file_path = file_path
+        # file_path = await download_torrent(movie.magnet_link, movie.id)
+        asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
+        while not redis_client.get(f"movie_path:{movie_id}"):
+            await asyncio.sleep(1)
+        movie.file_path = redis_client.get(f"movie_path:{movie_id}")
         db.commit()
 
-    # return StreamingResponse(file_streamer(movie.file_path), media_type="video/mp4")
+    file_size = os.path.getsize(movie.file_path)
+    range_header = request.headers.get("range") # EDIT TO "Range"
+
+    if range_header:
+        print(range_header)
+        try:
+            start, end = range_header.replace("bytes=", "").split("-")
+            start = int(start)
+            end = int(end) if end else file_size - 1
+            end = min(end, file_size - 1)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid Range request")
+
+        return StreamingResponse(
+            file_streamer(movie.file_path, start, end),
+            status_code=206,
+            media_type="video/mp4",
+            headers={
+                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                "Accept-Ranges": "bytes",
+                "Content-Length": str(end - start + 1),
+            }
+        )
+    
+    return StreamingResponse(
+        file_streamer(movie.file_path, 0, file_size - 1),
+        media_type="video/mp4",
+        headers={
+            "Content-Length": str(file_size),
+            "Accept-Ranges": "bytes",
+        }
+    )
