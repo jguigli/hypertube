@@ -21,6 +21,7 @@ def fetch_popular_movies_tmdb(language: str, page: int):
         return None
 
     movies_data = response.json()["results"]
+
     redis_client.setex(key_popular_movies, 86400, json.dumps(movies_data))
 
     for movie in movies_data:

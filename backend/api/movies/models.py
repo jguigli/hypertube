@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, ARRAY
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 
@@ -15,6 +15,7 @@ class Movie(Base):
     poster_path = Column(String(64))
     backdrop_path = Column(String(64))
     release_date = Column(String(10))
+    category = Column(ARRAY(Integer))
     title = Column(String(64))
     vote_average = Column(Integer)
     vote_count = Column(Integer)

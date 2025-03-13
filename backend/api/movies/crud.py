@@ -15,6 +15,7 @@ def map_to_movie_display(tmdb_movie):
         "id": tmdb_movie["id"],
         "title": tmdb_movie["title"],
         "release_date": tmdb_movie["release_date"],
+        "category": tmdb_movie.get("genre_ids", None),
         "vote_average": tmdb_movie["vote_average"],
         "poster_path": tmdb_movie.get("poster_path", None),
         "is_watched": tmdb_movie.get("is_watched", False)
@@ -31,6 +32,7 @@ def map_to_movie(tmdb_movie):
         "poster_path": tmdb_movie.get("poster_path", None),
         "backdrop_path": tmdb_movie.get("backdrop_path", None),
         "release_date": tmdb_movie["release_date"],
+        "category": tmdb_movie.get("genre_ids", None),
         "title": tmdb_movie["title"],
         "vote_average": tmdb_movie["vote_average"],
         "vote_count": tmdb_movie["vote_count"],
@@ -53,6 +55,7 @@ def create_movie(db: Session, movie: Movie):
         poster_path=movie.poster_path,
         backdrop_path=movie.backdrop_path,
         release_date=movie.release_date,
+        category=movie.category,
         title=movie.title,
         vote_average=movie.vote_average,
         vote_count=movie.vote_count
