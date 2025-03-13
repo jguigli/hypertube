@@ -21,11 +21,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
-<<<<<<< HEAD
 import CustomCard from "../components/Card";
-=======
 import Video from "../components/VideoJS";
->>>>>>> 310e95b1298124d9f429f3b12092e5bb54e875e0
 
 interface CommentType {
     id: number;
@@ -91,11 +88,8 @@ export default function VideoView() {
             {/* <h1>{movie?.language[user.language].title}</h1> */}
 
             {/* Affichage du lecteur Video.js */}
-<<<<<<< HEAD
             {/* <VideoJS /> */}
-=======
             <Video video_ID={ +videoID }/>
->>>>>>> 310e95b1298124d9f429f3b12092e5bb54e875e0
 
             {/* Exemple de bouton pour changer la vidéo */}
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
