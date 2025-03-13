@@ -17,8 +17,8 @@ props: {
         responsive: true,
         fluid: true,
         sources: [{
-            src: 'https://vjs.zencdn.net/v/oceans.mp4',
-            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
+            // src: 'https://vjs.zencdn.net/v/oceans.mp4',
+            src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
             type: 'video/mp4'
         }],
         tracks: [
