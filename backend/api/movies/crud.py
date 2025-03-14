@@ -87,3 +87,21 @@ def mark_movie_as_watched(db: Session, user_id: int, movie_id: int):
     db.commit()
     db.refresh(db_movie_watched)
     return db_movie_watched
+
+
+from .fetch import fetch_popular_movies_tmdb
+
+
+def populate_movies(db: Session):
+    languages = ["en", "fr"]
+    for language in languages:
+        max_pages = 10
+        for page in range(1, max_pages + 1):
+            movies_data = fetch_popular_movies_tmdb(language, page)
+            if not movies_data:
+                break
+            for movie in movies_data:
+                movie_db = get_movie_by_id(db, movie["id"])
+                if not movie_db:
+                    movie_db = create_movie(db, map_to_movie(movie))
+            return movies_data

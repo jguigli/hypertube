@@ -82,6 +82,15 @@ async def get_popular_movies(
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
 
+        # # Save to database
+        # for movie in movies_data:
+        #     movie_db = get_movie_by_id(db, movie["id"])
+        #     if not movie_db:
+        #         create_movie(db, map_to_movie(movie))
+        #     else:
+        #         # Update movie
+        #         pass
+
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
 
@@ -139,7 +148,7 @@ async def start_streaming(
 
     if not movie.file_path:
         # file_path = await download_torrent(movie.magnet_link, movie.id)
-        asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
+        # asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
         while not redis_client.get(f"movie_path:{movie_id}"):
             await asyncio.sleep(1)
         movie.file_path = redis_client.get(f"movie_path:{movie_id}")
