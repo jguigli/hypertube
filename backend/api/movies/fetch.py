@@ -7,6 +7,25 @@ from api.config import TMDB_API_BEARER_TOKEN
 
 ##################### TMDB #####################
 
+def fetch_genres_movies_tmdb(language: str):
+    url = f"https://api.themoviedb.org/3/genre/movie/list?language={language}"
+    key_genres_movies = f"genres_movies:{language}"
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return None
+
+    genres = response.json()["genres"]
+
+    redis_client.setex(key_genres_movies, 86400, json.dumps(genres))
+
+    return genres
+
 def fetch_popular_movies_tmdb(language: str, page: int):
     url = f"https://api.themoviedb.org/3/movie/popular?language={language}&page={page}"
     key_popular_movies = f"popular_movies:{page}:{language}"
@@ -23,11 +42,6 @@ def fetch_popular_movies_tmdb(language: str, page: int):
     movies_data = response.json()["results"]
 
     redis_client.setex(key_popular_movies, 86400, json.dumps(movies_data))
-
-    for movie in movies_data:
-        movie_id = movie["id"]
-        key_movie = f"movie:{movie_id}"
-        redis_client.setex(key_movie, 86400, json.dumps(movie))
 
     return movies_data
 
@@ -47,13 +61,24 @@ def search_movies_tmdb(search: str, language: str, page: int):
     movies_data = response.json()["results"]
     redis_client.setex(key_search, 86400, json.dumps(movies_data))
 
-    for movie in movies_data:
-        movie_id = movie["id"]
-        key_movie = f"movie:{movie_id}"
-        if redis_client.setnx(key_movie, json.dumps(movie)):
-            redis_client.expire(key_movie, 86400)
-
     return movies_data
+
+
+def fetch_movie_detail_tmdb(movie_id: int, language: str):
+    url = f"https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=credits&language={language}"
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
+    }
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return None
+
+    detailed_movie_data = response.json()
+
+    return detailed_movie_data
 
 
 ##################### ApiBay (ThePirateBay) #####################
