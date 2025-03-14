@@ -6,19 +6,12 @@ import { Button, Stack, Avatar } from "@mui/material";
 import CustomCard from "./Card";
 import CommentService from "../services/CommentService";
 import { useAuth } from "../contexts/AuthContext";
+import { CommentType } from "../pages/VideoView";
 
-interface CommentType {
-  id: number;
-  name?: string;
-  username?: string;
-  avatarUrl?: string;
-  timestamp: number;
-  items?: CommentType[];
-}
 
 
 interface CommentsProps {
-  comments: CommentType;
+  comments: CommentType[];
   handleInsertNode: (commentId: number, item: string) => void;
   handleEditNode: (commentId: number, value: string) => void;
   handleDeleteNode: (commentId: number) => void;
@@ -37,26 +30,26 @@ const formatTimeAgo = (timestamp: number): string => {
 const commentService = new CommentService();
 
 export const useNode = () => {
-  const insertNode = (tree: CommentType, commentId: number, item: string): CommentType => {
+  const insertNode = (tree: CommentType, commentId: number, item: string, videoId: number): CommentType => {
     if (tree.id === commentId) {
       return {
         ...tree,
-        items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [] }],
+        items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [], video_id : videoId }],
       };
     }
     return {
       ...tree,
-      items: tree.items ? tree.items.map((node) => insertNode(node, commentId, item)) : [],
+      items: tree.items ? tree.items.map((node) => insertNode(node, commentId, item, videoId)) : [],
     };
   };
 
-  const editNode = (tree: CommentType, commentId: number, value: string): CommentType => {
+  const editNode = (tree: CommentType, commentId: number, value: string, videoId: number): CommentType => {
     if (tree.id === commentId) {
       return { ...tree, name: value };
     }
     return {
       ...tree,
-      items: tree.items ? tree.items.map((node) => editNode(node, commentId, value)) : [],
+      items: tree.items ? tree.items.map((node) => editNode(node, commentId, value, videoId)) : [],
     };
   };
 
@@ -127,30 +120,27 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
   return (
     <div className="comment-wrapper">
-      <div className={comments.id === 1 ? "inputcontainer" : "commentContainer"}>
-        {comments.id === 1 ? (
-          <>
-            <input
-              type="text"
-              className="inputContainer__input first_input"
-              autoFocus
-              value={input}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-              placeholder="Type your comment here"
-              style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
-            />
-            <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
-          </>
-        ) : (
-          <>
+
+      {comments.map((comment, index) => (
+        <li key={index}>{comment.content}</li>
+
+
+        // ICI ABRUTI
+        // Placer les commentaires ici, pour tout demute, il va falloir acceder a la map donc plus comments.id mais comment.id
+
+      ))}
+
+      {/* <div className={comments.id === 1 ? "inputcontainer" : "commentContainer"}> */}
+
+          {/* <>
             <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <Avatar src={comments.avatarUrl} alt={comments.name} />
                 <Link
-                  to={`/profile/${comments.username || "tmichel-"}`}
+                  to={`/profile/${comments.user_name || "tmichel-"}`}
                   style={{ textDecoration: "none", fontWeight: "bold", color: "#1DA1F2" }}
                 >
-                  {comments.username || "tmichel-"}
+                  {comments.user_name || "tmichel-"}
                 </Link>
                 <span
                   contentEditable={editMode}
@@ -196,10 +186,10 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
               </div>
             </CustomCard>
           </>
-        )}
-      </div>
+        
+      </div> */}
 
-      <div style={{ display: expand ? "block" : "none", paddingLeft: "20px" }}>
+      {/* <div style={{ display: expand ? "block" : "none", paddingLeft: "20px" }}>
         {showInput && (
           <div style={{ display: "flex", marginTop: "20px" }}>
             <Stack direction="column" spacing={1} className="inputContainer">
@@ -222,7 +212,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
         {comments.items?.map((cmnt) => (
           <Comments key={cmnt.id} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} comments={cmnt} />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

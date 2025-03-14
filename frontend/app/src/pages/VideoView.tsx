@@ -31,28 +31,33 @@ import Video from "../components/VideoJS";
 >>>>>>> fa01fe63 (updates)
 =======
 import MovieService from "../services/MovieService";
+<<<<<<< HEAD
 >>>>>>> 211d518d (init link front / back comments)
+=======
+import CommentService from "../services/CommentService";
+import { Button } from "@mui/material";
+>>>>>>> 0f1ef6a7 (call backend comments)
 
-interface CommentType {
+export interface CommentType {
     id: number;
+    user_id: number;
+    user_name: string;
+    content: string;
+    timestamp?: number;
     // name?: string;
-    user_id?: number;
-    user_name?: string;
+    // video_id: number
     // avatarUrl?: string;
-    // timestamp: number;
-    content?:string;
-    // items?: CommentType[];
-  }
+    items?: CommentType[];
+}
 
-// comments: list[comments_schemas.Comment]
 
 // const initialComments: CommentType = {
-    // id: 1,
-    // user_id: 1,
-    // user_name: "user",
-    // content: "content",
-    // items: [],
-    // timestamp: Date.now(),
+//     id: 1,
+//     user_id: 1,
+//     user_name: "user",
+//     content: "content",
+//     items: [],
+//     timestamp: Date.now(),
 // };
 
 export default function VideoView() {
@@ -62,49 +67,93 @@ export default function VideoView() {
     const { insertNode, editNode, deleteNode } = useNode();
 
     const handleInsertNode = (commentId: number, value: string): void => {
-        if (!value.trim()) return;
-        const finalStructure = insertNode(commentsData, commentId, value);
-        setCommentsData(finalStructure);
+        if (!value.trim() || !videoID) return;
+        const rootComment = commentsData.length > 0 ? commentsData[0] : null;
+        if (!rootComment) return;
+
+        const finalStructure = insertNode(rootComment, commentId, value, +videoID);
+        setCommentsData(Array.isArray(finalStructure) ? finalStructure : [finalStructure]);
     };
 
     const handleEditNode = (commentId: number, value: string): void => {
-        if (!value.trim()) return;
-        const finalStructure = editNode(commentsData, commentId, value);
-        setCommentsData(finalStructure);
+        if (!value.trim() || !videoID) return;
+        const rootComment = commentsData.length > 0 ? commentsData[0] : null;
+        if (!rootComment) return;
+
+        const finalStructure = editNode(rootComment, commentId, value, +videoID);
+        setCommentsData(Array.isArray(finalStructure) ? finalStructure : [finalStructure]);
     };
 
     const handleDeleteNode = (commentId: number): void => {
-        const finalStructure = deleteNode(commentsData, commentId);
-        setCommentsData(finalStructure ?? commentsData);
+        const rootComment = commentsData.length > 0 ? commentsData[0] : null;
+        if (!rootComment) return;
+
+        const finalStructure = deleteNode(rootComment, commentId);
+        setCommentsData(finalStructure ? (Array.isArray(finalStructure) ? finalStructure : [finalStructure]) : commentsData);
     };
 
-    const videoID: string | undefined = useParams().id;
+    const { id } = useParams<{ id: string }>();
+    const videoID = id ? parseInt(id, 10) : null;
     const navigate = useNavigate();
 
-    const movieService = new MovieService();
-    const { getToken } = useAuth();
+    const { getToken, user } = useAuth();
 
+    // const buildCommentTree = (comments: CommentType[]): CommentType[] => {
+    //     const commentMap: { [key: number]: CommentType } = {};
+    //     let rootComment: CommentType = {
+    //         id: 1,
+    //         user_id: 1,
+    //         user_name: "user",
+    //         // video_id: 0,
+    //         content: "Root comment",
+    //         timestamp: Date.now(),
+    //         items: [],
+    //     };
 
-    //Ajout de l'ID overlay a video-js ainsi que des enfants d'overlay.
+    //     comments.forEach(comment => {
+    //         comment.items = [];
+    //         commentMap[comment.id] = comment;
+
+    //         if (comment.id === 1) {
+    //             rootComment = comment;
+    //         }
+    //     });
+
+    //     comments.forEach(comment => {
+    //         if (comment.user_id && commentMap[comment.user_id]) {
+    //             commentMap[comment.user_id].items?.push(comment);
+    //         }
+    //     });
+
+    //     return rootComment;
+    // };
+
     useEffect(() => {
-        
+
         async function getMovieInfo() {
-            if (videoID === undefined) {
+            const movieService = new MovieService();
+
+            if (!videoID) {
                 navigate("/");
                 return;
             }
             const response = await movieService.getMovieInfo(+videoID, getToken());
             if (!response.success) {
+                console.error("Failed to fetch comments", response);
                 return;
             }
+            console.log("Fetched comments:", response.data.comments);
+        
             setCommentsData(response.data.comments);
-            console.log(response.data.comments);
+
+            // setCommentsData((prev) => [...prev, response.data.comments]);
+            // setCommentsData([response.data.comments]);;
         }
 
         getMovieInfo();
 
-    }, [videoID, getToken]); 
-    
+    }, [getToken, navigate, videoID])
+
     // Redirection vers la page d'accueil si le videoID est undefined
 
 
@@ -123,6 +172,35 @@ export default function VideoView() {
     //     setVideoSource("https://vjs.zencdn.net/v/oceans.mp4");
     // }, []);
 
+    const commentService = new CommentService();
+    const [input, setInput] = useState<string>("");
+
+
+
+    const onAddComment = async () => {
+        try {
+            const token = getToken();
+            if (!videoID || !token) {
+                return;
+            }
+            const response = await commentService.postComments(+videoID, input, token);
+            if (response.success) {
+                const newComment: CommentType = {
+                    id: 42,
+                    user_id: 42,
+                    user_name: user.username || "",
+                    // timestamp: Date.now(),
+                    content: input
+                };
+                setCommentsData((prev) => [...prev, newComment]);
+            }
+        } catch (error) {
+            console.error("Failed to post comment:", error);
+        }
+    };
+
+
+
     return (
         <>
             {/* <h1>{movie?.language[user.language].title}</h1> */}
@@ -135,13 +213,26 @@ export default function VideoView() {
                 Charger une nouvelle vidéo
             </button> */}
             <div className="Video_view">
-            <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
+                <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
 
-                <Comments
-                    comments={commentsData}
-                    handleInsertNode={handleInsertNode}
-                    handleEditNode={handleEditNode}
-                    handleDeleteNode={handleDeleteNode}
+                    <>
+                        <input
+                            type="text"
+                            className="inputContainer__input first_input"
+                            autoFocus
+                            value={input}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                            placeholder="Type your comment here"
+                            style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
+                        />
+                        <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
+                    </>
+
+                    <Comments
+                        comments={commentsData}
+                        handleInsertNode={handleInsertNode}
+                        handleEditNode={handleEditNode}
+                        handleDeleteNode={handleDeleteNode}
                     />
                 </CustomCard>
 
