@@ -30,7 +30,7 @@ from .crud import (
 )
 
 from . import schemas, models
-from .download import download_torrent, file_streamer
+from .download import download_torrent, file_streamer, file_streamer_mkv
 import os
 import asyncio
 import time
@@ -181,21 +181,21 @@ async def start_streaming(
             raise HTTPException(status_code=400, detail="Invalid Range request")
 
         return StreamingResponse(
-            file_streamer(movie.file_path, start, end),
+            file_streamer(movie.file_path, start, end) if movie.file_path.endswith(".mp4") else file_streamer_mkv(movie.file_path, start, end),
             status_code=206,
             media_type="video/mp4",
             headers={
-                "Content-Range": f"bytes {start}-{end}/{file_size}",
+                # "Content-Range": f"bytes {start}-{end}/{file_size}",
                 "Accept-Ranges": "bytes",
                 "Content-Length": str(end - start + 1),
             }
         )
 
     return StreamingResponse(
-        file_streamer(movie.file_path, 0, file_size - 1),
+        file_streamer(movie.file_path, 0, file_size - 1) if movie.file_path.endswith(".mp4") else file_streamer_mkv(movie.file_path, 0, file_size - 1),
         media_type="video/mp4",
         headers={
-            "Content-Length": str(file_size),
+            # "Content-Length": str(file_size),
             "Accept-Ranges": "bytes",
         }
     )
