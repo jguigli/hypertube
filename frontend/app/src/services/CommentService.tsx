@@ -7,6 +7,7 @@ axios.defaults.baseURL = `http://${hostname}:3000/api`;
 export default class CommentService {
 
     async postComments(movie_id: number, content: string, token: string) {
+        console.log("Posting comment with:", { movie_id, content, token });
 
         try {
             const response = await axios.post(
@@ -21,7 +22,7 @@ export default class CommentService {
             );
 
             return {
-                success: response.status === 200,
+                success: response.status === 204,
                 data: response.data,
             };
         }
@@ -65,6 +66,11 @@ export default class CommentService {
             }
         }
         catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.error("Error posting comment:", error.response?.data || error.message);
+            } else {
+                console.error("Unexpected error:", error);
+            }
             return {
                 success: false,
                 data: null
