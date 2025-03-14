@@ -42,7 +42,7 @@ async def download_torrent(magnet_link: str, movie_id: int):
     # session.add_extension('lt_trackers')
     session.start_dht()
     session.start_lsd()
-    
+
 
     for router in [
         ("router.bittorrent.com", 6881),
@@ -76,23 +76,25 @@ async def download_torrent(magnet_link: str, movie_id: int):
         for a in alerts:
                 print(a)
         await asyncio.sleep(1)
-    
+
     torrent_info = handle.get_torrent_info()
 
     while handle.status().progress < 0.1:
         print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)
         await asyncio.sleep(1)
-    
+
     file_path = ""
     for index in range(torrent_info.num_files()):
         file_entry = torrent_info.files().file_path(index)
-    
+
         if file_entry.endswith(".mp4") or file_entry.endswith(".mkv"):
             file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER, file_entry)
             break
-    
+
     key_movie = f"movie_path:{movie_id}"
     redis_client.setex(key_movie, 60, file_path)
+
+    os.chmod(file_path, 0o666)
 
     while not handle.is_seed():
         print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)

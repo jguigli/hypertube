@@ -33,20 +33,29 @@ function Logo() {
 
 function MovieSearchBar() {
 
+    const [search, setSearch] = useState("");
+
     const { searchQuery, setSearchQuery } = useSearch();
 
     async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearchQuery(event.target.value);
+        setSearch(event.target.value);
+        // setSearchQuery(event.target.value);
+    }
+
+    async function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setSearchQuery(search);
+        setSearch("");
     }
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={(event) => event.preventDefault()}>
+            <form onSubmit={handleSearchSubmit}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={searchQuery}
+                        value={search}
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />

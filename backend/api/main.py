@@ -57,6 +57,32 @@ def delete_one_month_movie(db: Session):
 
 scheduler = BackgroundScheduler()
 
+
+from api.movies.fetch import fetch_popular_movies_tmdb
+from api.movies.crud import get_movie_by_id, create_movie, map_to_movie
+from .database import SessionLocal
+
+def populate_movies(db: Session):
+    languages = ["en", "fr"]
+    for language in languages:
+        page = 1
+        while page <= 20:
+            movies_data = fetch_popular_movies_tmdb(language, page)
+            if not movies_data:
+                break
+            print(f"Processing page {page}")
+            print(f"Movies found: {len(movies_data)}")
+            for movie in movies_data:
+                try:
+                    print(f"Processing movie {movie['id']}")
+                    movie_db = get_movie_by_id(db, movie["id"])
+                    if not movie_db:
+                        movie_db = create_movie(db, map_to_movie(movie))
+                except Exception as e:
+                    print(f"Error processing movie {movie['id']}: {e}")
+            page += 1
+
+
 @app.on_event("startup")
 def start_scheduler():
     scheduler.add_job(
@@ -65,6 +91,14 @@ def start_scheduler():
         args=[get_db()]
     )
     scheduler.start()
+
+
+@app.on_event("startup")
+async def startup_event():
+    with SessionLocal() as session:
+        populate_movies(session)
+
+
 
 @app.on_event("shutdown")
 def shutdown_scheduler():

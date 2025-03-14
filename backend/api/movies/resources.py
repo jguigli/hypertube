@@ -51,15 +51,27 @@ async def search_movies(
     if cached_searches:
         movies_data = json.loads(cached_searches)
     else:
-        movies_data = search_movies_tmdb(search, language, page)
+        # movies_data = search_movies_tmdb(search, language, page)
+        # if not movies_data:
+        #     raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+
+        # Search movies in database
+        movies_data = db.query(models.Movie) \
+                        .filter(models.Movie.title.ilike(f"%{search}%")) \
+                        .offset((page - 1) * 20) \
+                        .limit(20) \
+                        .all()
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
 
+        # Add to cache
+        # redis_client.set(f"search:{search}:{language}:{page}", json.dumps(movies_data))
+
+
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
-
         for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+            movie.is_watched = movie.id in watched_movies
 
     movies = [map_to_movie_display(movie) for movie in movies_data]
     if not movies:
@@ -74,22 +86,24 @@ async def get_popular_movies(
     current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
     db: Session = Depends(get_db)
 ):
+
     cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
     if cached_movies:
         movies_data = json.loads(cached_movies)
     else:
-        movies_data = fetch_popular_movies_tmdb(language, page)
-        if not movies_data:
-            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
+        # Get movies from db
+        movies_data = db.query(models.Movie).offset((page - 1) * 20).limit(20).all()
+        # Add to cache
+        redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
 
-        # # Save to database
-        # for movie in movies_data:
-        #     movie_db = get_movie_by_id(db, movie["id"])
-        #     if not movie_db:
-        #         create_movie(db, map_to_movie(movie))
-        #     else:
-        #         # Update movie
-        #         pass
+    # Every 1 hour :
+    # 1. Fetch popular movies from TMDB
+    # 2. Save to database
+
+    # When user request movies : (page, language, filters, sort)
+    # get the data from database
+    # Apply filters and sort
+    # Send the data to user
 
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)

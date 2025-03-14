@@ -9,14 +9,14 @@ class Movie(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     original_language = Column(String(3))
-    original_title = Column(String(64))
+    original_title = Column(String(512))
     overview = Column(String(1024))
     popularity = Column(Integer)
     poster_path = Column(String(64))
     backdrop_path = Column(String(64))
     release_date = Column(String(10))
     category = Column(ARRAY(Integer))
-    title = Column(String(64))
+    title = Column(String(512))
     vote_average = Column(Integer)
     vote_count = Column(Integer)
 
