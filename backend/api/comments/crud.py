@@ -5,10 +5,17 @@ from .models import Comment
 def get_comment_by_id(db: Session, comment_id: int, user_id: int):
     return db.query(Comment).filter(Comment.id == comment_id).filter(Comment.user_id == user_id).first()
 
-def create_comment(db: Session, user_id: int, movie_id: int, content: str):
+def create_comment(
+        db: Session,
+        user_id: int,
+        movie_id: int,
+        parent_id: int | None,
+        content: str
+):
     db_comment = Comment(
         movie_id=movie_id,
         user_id=user_id,
+        parent_id=parent_id,
         content=content,
         )
     db.add(db_comment)
