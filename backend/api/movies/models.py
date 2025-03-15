@@ -32,7 +32,7 @@ class Movie(Base):
 
     @property
     def comments(self):
-        return [{"id": com.id, "user_id": com.user_id, "user_name": com.user_name, "content": com.content} for com in self.comments_association]
+        return [{"id": com.id, "user_id": com.user_id, "user_name": com.user_name, "parent_id": com.parent_id, "content": com.content, "replies": com.replies} for com in self.comments_association if com.parent_id is None]
 
 
 
