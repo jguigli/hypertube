@@ -25,8 +25,10 @@ def upgrade() -> None:
                     id BIGSERIAL PRIMARY KEY,
                     movie_id INTEGER NOT NULL,
                     user_id INTEGER NOT NULL,
+                    parent_id INTEGER,
                     content VARCHAR(500),
                     created_at DATE DEFAULT CURRENT_DATE,
+                    FOREIGN KEY (parent_id) REFERENCES comments(id),
                     FOREIGN KEY (movie_id) REFERENCES movies(id),
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 );

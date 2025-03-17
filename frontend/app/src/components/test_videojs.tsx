@@ -24,6 +24,7 @@ export const VideoJS = (props: {
     const videoRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
     const { options, onReady } = props;
+    const [movieDuration, setmovieDuration] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         // Make sure Video.js player is only initialized once
@@ -38,6 +39,12 @@ export const VideoJS = (props: {
             const player = playerRef.current = videojs(videoElement, options, () => {
                 videojs.log('player is ready');
                 onReady && onReady(player);
+            });
+
+            player.on("loadedmetadata", () => {
+                const duration = player.duration();
+                console.log("Duree de la video: ", duration, "secondes");
+                setmovieDuration(duration);
             });
             // You could update an existing player in the `else` block here
             // on prop change, for example:
@@ -70,6 +77,15 @@ export const VideoJS = (props: {
 
     const rootRef = useRef<any>(null);
 
+    const formatDuration = (seconds: number): string => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return `${hrs}h${mins}min${secs}s`;
+    }
+
+
     // Move overlay content creation and rendering to a separate useEffect
     useEffect(() => {
         //Contenu de l'overlay pour eviter de faire un innerHTML.
@@ -83,7 +99,7 @@ export const VideoJS = (props: {
                 <div className="movie-info">
                     <span>{new Date(movieDetail?.release_date || "").getFullYear() || 'N/A'}</span>
                     <span>Age</span>
-                    <span>Movie Time</span>
+                    <span>{movieDuration ? formatDuration(movieDuration) : 'Chargement...'}</span>
                 </div>
                 <div className="casting">Avec Anthony Mackie, Harrison Ford, Danny Ramirez</div>
                 <div className="synopsis">{movieDetail?.overview}</div>
@@ -107,7 +123,7 @@ export const VideoJS = (props: {
             rootRef.current = ReactDOM.createRoot(newOverlayElement);
             rootRef.current.render(overlayContent);
         }
-    }, [movieDetail]); // Add movieDetail as a dependency to re-run the effect when movieDetail changes
+    }, [movieDetail, movieDuration]); // Add movieDetail as a dependency to re-run the effect when movieDetail changes
 
     //Gestion de l'affichage de l'overlay.
     useEffect(() => {

@@ -10,12 +10,21 @@ from .models import Movie, MovieWatched
 from .schemas import MovieDisplay, MovieInfo
 
 
-def map_to_movie_display(tmdb_movie):
+def map_to_movie_display(tmdb_movie, genres):
+    categories = []
+    genre_ids = tmdb_movie.get("genre_ids", None)
+    if genre_ids:
+        for genre in genres:
+            if genre['id'] in genre_ids:
+                categories.append(genre['name'])
+    else:
+        categories = None
+
     data = {
         "id": tmdb_movie["id"],
         "title": tmdb_movie["title"],
         "release_date": tmdb_movie["release_date"],
-        "category": tmdb_movie.get("genre_ids", None),
+        "category": categories,
         "vote_average": tmdb_movie["vote_average"],
         "poster_path": tmdb_movie.get("poster_path", None),
         "is_watched": tmdb_movie.get("is_watched", False)
@@ -23,8 +32,30 @@ def map_to_movie_display(tmdb_movie):
     return MovieDisplay(**data)
 
 def map_to_movie(tmdb_movie):
+    genres_list = tmdb_movie.get("genres", None)
+    if genres_list:
+        genres = [genre['name'] for genre in genres_list]
+    else:
+        genres = None
+
+    casts = []
+    credit = tmdb_movie.get("credits", None)
+    casts_list = credit['cast']
+    if casts_list:
+        casts = [{'name': cast['name'], 'role': cast['known_for_department']} for cast in casts_list]
+    else:
+        casts = None
+
+    crew = []
+    crew_list = credit['crew']
+    if crew_list:
+        crew = [{'name': cast['name'], 'role': cast['known_for_department']} for cast in crew_list]
+    else:
+        crew = None
+
     data = {
         "id": tmdb_movie["id"],
+        "adult": tmdb_movie["adult"],
         "original_language": tmdb_movie["original_language"],
         "original_title": tmdb_movie["original_title"],
         "overview": tmdb_movie["overview"],
@@ -32,10 +63,12 @@ def map_to_movie(tmdb_movie):
         "poster_path": tmdb_movie.get("poster_path", None),
         "backdrop_path": tmdb_movie.get("backdrop_path", None),
         "release_date": tmdb_movie["release_date"],
-        "category": tmdb_movie.get("genre_ids", None),
+        "category": genres,
         "title": tmdb_movie["title"],
         "vote_average": tmdb_movie["vote_average"],
         "vote_count": tmdb_movie["vote_count"],
+        "casting": casts,
+        "crew": crew,
     }
     return Movie(**data)
 
@@ -48,6 +81,7 @@ def get_movie_by_id(db: Session, movie_id: int):
 def create_movie(db: Session, movie: Movie):
     db_movie = Movie(
         id=movie.id,
+        adult=movie.adult,
         original_language=movie.original_language,
         original_title=movie.original_title,
         overview=movie.overview,
@@ -58,7 +92,9 @@ def create_movie(db: Session, movie: Movie):
         category=movie.category,
         title=movie.title,
         vote_average=movie.vote_average,
-        vote_count=movie.vote_count
+        vote_count=movie.vote_count,
+        casting=movie.casting,
+        crew=movie.crew
     )
     db.add(db_movie)
     db.commit()
