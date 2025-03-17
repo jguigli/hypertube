@@ -42,12 +42,13 @@ export interface CommentType {
     id: number;
     user_id: number;
     user_name: string;
+    parent_id: number | null;
     content: string;
+    replies: CommentType[];
     timestamp?: number;
     // name?: string;
     // video_id: number
     // avatarUrl?: string;
-    items?: CommentType[];
 }
 
 
@@ -98,6 +99,7 @@ export default function VideoView() {
 
     const { getToken, user } = useAuth();
 
+
     // const buildCommentTree = (comments: CommentType[]): CommentType[] => {
     //     const commentMap: { [key: number]: CommentType } = {};
     //     let rootComment: CommentType = {
@@ -133,24 +135,24 @@ export default function VideoView() {
         async function getMovieInfo() {
             const movieService = new MovieService();
 
-            if (!videoID) {
+            if (!videoID || isNaN(videoID)) {
                 navigate("/");
                 return;
             }
-            const response = await movieService.getMovieInfo(+videoID, getToken());
+            const response = await movieService.getMovieInfo(+videoID, getToken(), user.language);
             if (!response.success) {
                 console.error("Failed to fetch comments", response);
                 return;
             }
             console.log("Fetched comments:", response.data.comments);
-        
+
             setCommentsData(response.data.comments);
 
-            const maxId = response.data.comments.length > 0 
-            ? Math.max(...response.data.comments.map((comment: CommentType) => comment.id)) 
-            : 0;
+            // const maxId = response.data.comments.length > 0
+            //     ? Math.max(...response.data.comments.map((comment: CommentType) => comment.id))
+            //     : 0;
 
-            setCommentId(maxId + 1);
+            // setCommentId(maxId + 1);
 
             // setCommentsData((prev) => [...prev, response.data.comments]);
             // setCommentsData([response.data.comments]);;
@@ -181,7 +183,7 @@ export default function VideoView() {
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");
 
-    const [commentId, setCommentId] = useState<number>(0)
+    // const [commentId, setCommentId] = useState<number>(0)
 
 
     const onAddComment = async () => {
@@ -193,11 +195,13 @@ export default function VideoView() {
             const response = await commentService.postComments(+videoID, input, token);
             if (response.success) {
                 const newComment: CommentType = {
-                    id: commentId,
-                    user_id: -1,
+                    id: response.data.id,
+                    user_id: response.data.user_id,
                     user_name: user.username || "",
+                    parent_id: response.data.parent_id,
                     // timestamp: Date.now(),
-                    content: input
+                    content: input,
+                    replies: []
                 };
                 setCommentsData((prev) => [...prev, newComment]);
             }
@@ -207,6 +211,11 @@ export default function VideoView() {
     };
 
 
+
+    if (!videoID || isNaN(videoID)) {
+        console.error("Invalid videoID:", id);
+        return navigate("/")
+    }
 
     return (
         <>
@@ -218,7 +227,7 @@ export default function VideoView() {
             {/* Exemple de bouton pour changer la vidéo */}
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
                 Charger une nouvelle vidéo
-            </button> */}
+                </button> */}
             <div className="Video_view">
                 <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
 
@@ -240,6 +249,7 @@ export default function VideoView() {
                         handleInsertNode={handleInsertNode}
                         handleEditNode={handleEditNode}
                         handleDeleteNode={handleDeleteNode}
+                        setCommentsData={setCommentsData}
                     />
                 </CustomCard>
 
