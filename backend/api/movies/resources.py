@@ -15,6 +15,8 @@ from .fetch import (
     fetch_popular_movies_tmdb,
     search_movies_tmdb,
     get_magnet_link_piratebay,
+    fetch_genres_movies_tmdb,
+    fetch_movie_detail_tmdb
 )
 from .crud import (
     mark_movie_as_watched,
@@ -81,6 +83,14 @@ async def get_popular_movies(
         movies_data = fetch_popular_movies_tmdb(language, page)
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
+        
+    cached_genres = redis_client.get(f"genres_movies:{page}:{language}")
+    if cached_genres:
+        genres = json.loads(cached_genres)
+    else:
+        genres = fetch_genres_movies_tmdb(language)
+        if not genres:
+            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Genres for movies not available")
 
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
@@ -88,7 +98,7 @@ async def get_popular_movies(
         for movie in movies_data:
             movie["is_watched"] = movie["id"] in watched_movies
 
-    movies = [map_to_movie_display(movie) for movie in movies_data]
+    movies = [map_to_movie_display(movie, genres) for movie in movies_data]
     if not movies:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
 
@@ -98,26 +108,27 @@ async def get_popular_movies(
 @router.get('/movies/{movie_id}', response_model=schemas.MovieInfo)
 async def get_movie_informations(
     movie_id: int,
+    language: str,
     current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
     movie = get_movie_by_id(db, movie_id)
     if not movie:
-        movie_cached = redis_client.get(f"movie:{movie_id}")
-        if not movie_cached:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Movie not available")
-        movie_cached = json.loads(movie_cached)
-        movie = create_movie(db, map_to_movie(movie_cached))
+        detailed_movie = fetch_movie_detail_tmdb(movie_id, language)
+        if not detailed_movie:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Detailed movie not available")
+        movie = create_movie(db, map_to_movie(detailed_movie))
     return movie
 
 
-@router.get('/movies/{movie_id}/stream')
+@router.get('/movies/{movie_id}/stream/{token}')
 async def start_streaming(
     movie_id: int,
+    token: str,
     request: Request,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
     db: Session = Depends(get_db)
 ):
+    current_user = security.get_current_user_streaming(token, db)
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
@@ -130,15 +141,14 @@ async def start_streaming(
         movie.magnet_link = magnet_link
         db.commit()
 
-    # watched_movie = get_watched_movie(db, current_user.id, movie_id)
-    # if not watched_movie:
-    #     mark_movie_as_watched(db, current_user.id, movie_id)
-    # else:
-    #     watched_movie.watched_at = datetime.now()
-    #     db.commit()
+    watched_movie = get_watched_movie(db, current_user.id, movie_id)
+    if not watched_movie:
+        mark_movie_as_watched(db, current_user.id, movie_id)
+    else:
+        watched_movie.watched_at = datetime.now()
+        db.commit()
 
     if not movie.file_path:
-        # file_path = await download_torrent(movie.magnet_link, movie.id)
         asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
         while not redis_client.get(f"movie_path:{movie_id}"):
             await asyncio.sleep(1)
@@ -146,10 +156,9 @@ async def start_streaming(
         db.commit()
 
     file_size = os.path.getsize(movie.file_path)
-    range_header = request.headers.get("range") # EDIT TO "Range"
+    range_header = request.headers.get("range")
 
     if range_header:
-        print(range_header)
         try:
             start, end = range_header.replace("bytes=", "").split("-")
             start = int(start)
