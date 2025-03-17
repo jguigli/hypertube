@@ -6,13 +6,16 @@ axios.defaults.baseURL = `http://${hostname}:3000/api`;
 
 export default class CommentService {
 
-    async postComments(movie_id: number, content: string, token: string) {
-        console.log("Posting comment with:", { movie_id, content, token });
+    async postComments(movie_id: number, content: string, token: string, parent_id: number | null = null) {
+        console.log("Posting comment with:", { movie_id, content, token, parent_id });
 
         try {
             const response = await axios.post(
                 `/comments/${movie_id}`,
-                { content },
+                {
+                    content,
+                    parent_id
+                },
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -20,9 +23,9 @@ export default class CommentService {
                     }
                 }
             );
-
+            console.log(response)
             return {
-                success: response.status === 204,
+                success: response.status === 200,
                 data: response.data,
             };
         }
@@ -32,49 +35,6 @@ export default class CommentService {
                 success: false,
                 data: null,
             };
-        }
-    }
-
-
-    // Search comments by query
-    // GET /api/movies/search/
-
-    async getMovieInfo(id: number, token: string | null) {
-        try {
-            if (token) {
-                const response = await axios.get(
-                    `/movies/${id}`,
-                    {
-                        headers: {
-                            Authorization: `${token}`
-                        },
-                        params: {
-                            movie_id: id
-                        }
-                    }
-                );
-                if (response.status === 200) {
-                    return {
-                        success: true,
-                        data: response.data
-                    }
-                }
-            }
-            return {
-                success: false,
-                data: null
-            }
-        }
-        catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.error("Error posting comment:", error.response?.data || error.message);
-            } else {
-                console.error("Unexpected error:", error);
-            }
-            return {
-                success: false,
-                data: null
-            }
         }
     }
 }

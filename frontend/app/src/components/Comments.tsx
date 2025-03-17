@@ -15,6 +15,7 @@ interface CommentsProps {
   handleInsertNode: (commentId: number, item: string) => void;
   handleEditNode: (commentId: number, value: string) => void;
   handleDeleteNode: (commentId: number) => void;
+  setCommentsData: (commentData: CommentType[]) => void;
 }
 
 const formatTimeAgo = (timestamp: number): string => {
@@ -34,7 +35,7 @@ export const useNode = () => {
     if (tree.id === commentId) {
       return {
         ...tree,
-        items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [], video_id : videoId }],
+        items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [], video_id: videoId }],
       };
     }
     return {
@@ -64,13 +65,13 @@ export const useNode = () => {
   return { insertNode, editNode, deleteNode };
 };
 
-const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleEditNode, handleDeleteNode }) => {
+const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleEditNode, handleDeleteNode, setCommentsData }) => {
   const [input, setInput] = useState<string>("");
   const [editMode, setEditMode] = useState<boolean>(false);
   const [showInput, setShowInput] = useState<boolean>(false);
-  const [expand, setExpand] = useState<boolean>(false);
+  const [expand, setExpand] = useState<boolean>(true);
   const inputRef = useRef<HTMLSpanElement | null>(null);
-  const { getToken } = useAuth();
+  const { getToken, user } = useAuth();
 
   const videoID: string | undefined = useParams().id;
   if (!videoID) {
@@ -83,11 +84,24 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   }, [editMode]);
 
   const handleNewComment = () => {
-    setExpand(!expand);
+    // setExpand(!expand);
     setShowInput(true);
   };
 
-  const onAddComment = async () => {
+  const insertReply = (comments: CommentType[], parentId: number, newReply: CommentType): CommentType[] => {
+    return comments.map(comment => {
+      if (comment.id === parentId) {
+        return { ...comment, replies: [...comment.replies, newReply] };
+      } else if (comment.replies.length > 0) {
+        return { ...comment, replies: insertReply(comment.replies, parentId, newReply) };
+      }
+      return comment;
+    });
+  };
+
+
+  const onReplyComment = async (event: React.MouseEvent<HTMLButtonElement>, parent_id: number) => {
+    event.preventDefault()
     if (editMode) {
       handleEditNode(comments.id, inputRef.current?.innerText ?? "");
       setEditMode(false);
@@ -107,7 +121,20 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
       });
       handleInsertNode(comments.id, input);
       try {
-        const response = await commentService.postComments(+videoID, input, token);
+        console.log(parent_id)
+        const response = await commentService.postComments(+videoID, input, token, parent_id);
+        if (response.success) {
+          const newReply: CommentType = {
+            id: response.data.id,
+            user_id: response.data.user_id,
+            user_name: user.username || "",
+            parent_id: parent_id,
+            // timestamp: Date.now(),
+            content: input,
+            replies: []
+          };
+          setCommentsData(prev => insertReply(prev, parent_id, newReply));
+        }
         console.log("Comment posted successfully:", response);
         console.log(response);
       } catch (error) {
@@ -120,7 +147,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
   return (
     <div className="comment-wrapper">
-          {comments.map((comment) => (
+      {comments.map((comment) => (
         <div key={comment.id} className="comment-container">
           <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -153,116 +180,20 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                   <Stack direction="column" spacing={1} className="inputContainer">
                     <input type="text" className="inputContainer__input" autoFocus onChange={(e) => setInput(e.target.value)} placeholder="Type your reply here" />
                     <Stack direction="row" spacing={2}>
-                      <Button variant="contained" onClick={() => onAddComment(comment.id)}>Add reply</Button>
-                      <Button variant="outlined" className="reply comment" onClick={() => setShowInput(false)}>Cancel</Button>
+                      <Button variant="contained" size='small' onClick={(event) => onReplyComment(event, comment.id)}>Add reply</Button>
+                      <Button variant="outlined" size='small' className="p-2" onClick={() => setShowInput(false)}>Cancel</Button>
                     </Stack>
                   </Stack>
                 </div>
               )}
-              {comment.items?.map((subComment) => (
-                <Comments key={subComment.id} comments={[subComment]} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} />
+              {comment.replies?.map((subComment) => (
+                <Comments key={subComment.id} comments={[subComment]} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} setCommentsData={setCommentsData} />
               ))}
             </div>
           )}
         </div>
       ))}
     </div>
-
-
-      // {comments.map((comment, index) => (
-      //   <li key={index}>{comment.content}</li>
-
-
-      //   // ICI ABRUTI
-      //   // Placer les commentaires ici, pour tout demute, il va falloir acceder a la map donc plus comments.id mais comment.id
-
-
-      // ))}
-
-      // {/* <div className={comments.id === 1 ? "inputcontainer" : "commentContainer"}> */}
-
-      //     {/* <>
-      //       <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
-      //         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      //           <Avatar src={comments.avatarUrl} alt={comments.name} />
-      //           <Link
-      //             to={`/profile/${comments.user_name || "tmichel-"}`}
-      //             style={{ textDecoration: "none", fontWeight: "bold", color: "#1DA1F2" }}
-      //           >
-      //             {comments.user_name || "tmichel-"}
-      //           </Link>
-      //           <span
-      //             contentEditable={editMode}
-      //             suppressContentEditableWarning={editMode}
-      //             style={{ wordWrap: "break-word" }}
-      //             ref={inputRef}
-      //           >
-      //             {comments.name}
-      //           </span>
-      //         </div>
-
-      //         <span style={{ fontSize: "12px", color: "#bbb", marginTop: "4px", display: "block" }}>
-      //           {formatTimeAgo(comments.timestamp)}
-      //         </span>
-
-      //         <div style={{ display: "flex", marginTop: "20px" }}>
-      //           {editMode ? (
-      //             <Stack direction="column" spacing={1} alignItems="flex-start">
-      //               <Stack direction="row" spacing={1.5}>
-      //                 <ActionComments className="reply" type="Save" handleClick={onAddComment} />
-      //                 <Button
-      //                   variant="outlined"
-      //                   className="reply"
-      //                   onClick={() => {
-      //                     if (inputRef.current) inputRef.current.innerText = comments.name ?? "";
-      //                     setEditMode(false);
-      //                   }}>Cancel</Button>
-      //               </Stack>
-      //             </Stack>
-      //           ) : (
-      //             <Stack direction="column" spacing={1} alignItems="flex-start">
-      //               <Stack direction="row" spacing={1.5}>
-      //                 <ActionComments
-      //                   className="reply"
-      //                   type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>}
-      //                   handleClick={handleNewComment}
-      //                 />
-      //                 <ActionComments className="reply" type="Edit" handleClick={() => setEditMode(true)} />
-      //                 <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comments.id)} />
-      //               </Stack>
-      //             </Stack>
-      //           )}
-      //         </div>
-      //       </CustomCard>
-      //     </>
-        
-      // </div> */}
-
-      // {/* <div style={{ display: expand ? "block" : "none", paddingLeft: "20px" }}>
-      //   {showInput && (
-      //     <div style={{ display: "flex", marginTop: "20px" }}>
-      //       <Stack direction="column" spacing={1} className="inputContainer">
-      //         <input
-      //           type="text"
-      //           className="inputContainer__input"
-      //           autoFocus
-      //           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-      //           placeholder="Type your reply here"
-      //         />
-      //         <div style={{ display: "flex", marginTop: "20px" }}>
-      //           <Stack direction="row" spacing={2}>
-      //             <Button variant="contained" onClick={onAddComment}>Add reply</Button>
-      //             <Button variant="outlined" className="reply comment" onClick={() => setShowInput(false)}>Cancel</Button>
-      //           </Stack>
-      //         </div>
-      //       </Stack>
-      //     </div>
-      //   )}
-      //   {comments.items?.map((cmnt) => (
-      //     <Comments key={cmnt.id} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} comments={cmnt} />
-      //   ))}
-      // </div> */}
-    // </div>
   );
 };
 
