@@ -146,6 +146,12 @@ export default function VideoView() {
         
             setCommentsData(response.data.comments);
 
+            const maxId = response.data.comments.length > 0 
+            ? Math.max(...response.data.comments.map((comment: CommentType) => comment.id)) 
+            : 0;
+
+            setCommentId(maxId + 1);
+
             // setCommentsData((prev) => [...prev, response.data.comments]);
             // setCommentsData([response.data.comments]);;
         }
@@ -175,6 +181,7 @@ export default function VideoView() {
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");
 
+    const [commentId, setCommentId] = useState<number>(0)
 
 
     const onAddComment = async () => {
@@ -186,8 +193,8 @@ export default function VideoView() {
             const response = await commentService.postComments(+videoID, input, token);
             if (response.success) {
                 const newComment: CommentType = {
-                    id: 42,
-                    user_id: 42,
+                    id: commentId,
+                    user_id: -1,
                     user_name: user.username || "",
                     // timestamp: Date.now(),
                     content: input
