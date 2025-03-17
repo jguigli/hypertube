@@ -17,6 +17,9 @@ from api.movies.crud import get_watched_movies
 from api.movies.models import Movie, MovieWatched
 from api.database import get_db
 import shutil
+from api.movies.fetch import fetch_popular_movies_tmdb
+from api.movies.crud import get_movie_by_id, create_movie, map_to_movie
+from .database import SessionLocal
 
 app = FastAPI()
 
@@ -57,11 +60,6 @@ def delete_one_month_movie(db: Session):
 
 scheduler = BackgroundScheduler()
 
-
-from api.movies.fetch import fetch_popular_movies_tmdb
-from api.movies.crud import get_movie_by_id, create_movie, map_to_movie
-from .database import SessionLocal
-
 def populate_movies(db: Session):
     languages = ["en", "fr"]
     for language in languages:
@@ -70,11 +68,8 @@ def populate_movies(db: Session):
             movies_data = fetch_popular_movies_tmdb(language, page)
             if not movies_data:
                 break
-            print(f"Processing page {page}")
-            print(f"Movies found: {len(movies_data)}")
             for movie in movies_data:
                 try:
-                    print(f"Processing movie {movie['id']}")
                     movie_db = get_movie_by_id(db, movie["id"])
                     if not movie_db:
                         movie_db = create_movie(db, map_to_movie(movie))

@@ -6,7 +6,8 @@ import json
 from typing import List
 from datetime import datetime
 from fastapi.responses import StreamingResponse
-
+from .models import Movie
+from .schemas import MovieDisplay
 from api.redis_client import redis_client
 from api.database import get_db
 from api.users import models as user_models
@@ -26,12 +27,12 @@ from .crud import (
     map_to_movie_display,
     map_to_movie
 )
-
 from . import schemas, models
 from .download import download_torrent, file_streamer
 import os
 import asyncio
 import time
+
 
 router = APIRouter(tags=["Movies"])
 
@@ -47,37 +48,51 @@ async def search_movies(
     ],
     db: Session = Depends(get_db)
 ):
-    cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
-    if cached_searches:
-        movies_data = json.loads(cached_searches)
-    else:
-        # movies_data = search_movies_tmdb(search, language, page)
-        # if not movies_data:
-        #     raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+    # cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
+    # if cached_searches:
+    #     movies_data = json.loads(cached_searches)
+    # else:
+    #     movies_data = search_movies_tmdb(search, language, page)
+    #     if not movies_data:
+    #         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
 
-        # Search movies in database
-        movies_data = db.query(models.Movie) \
-                        .filter(models.Movie.title.ilike(f"%{search}%")) \
-                        .offset((page - 1) * 20) \
-                        .limit(20) \
-                        .all()
-        if not movies_data:
-            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+    # Search movies in database
+    movies_data = db.query(models.Movie) \
+                    .filter(models.Movie.title.ilike(f"%{search}%")) \
+                    .offset((page - 1) * 20) \
+                    .limit(20) \
+                    .all()
 
-        # Add to cache
-        # redis_client.set(f"search:{search}:{language}:{page}", json.dumps(movies_data))
-
-
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
-        for movie in movies_data:
-            movie.is_watched = movie.id in watched_movies
-
-    movies = [map_to_movie_display(movie) for movie in movies_data]
-    if not movies:
+    if not movies_data:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
-    return movies
 
+    #     # # Add to cache
+    #     # redis_client.set(f"search:{search}:{language}:{page}", json.dumps(movies_data))
+
+    # if current_user:
+    #     watched_movies = get_watched_movies_id(db, current_user.id)
+    #     for movie in movies_data:
+    #         movie['is_watched'] = movie['id'] in watched_movies
+
+    # movies = [map_to_movie_display(movie) for movie in movies_data]
+    # # if not movies:
+    # #     raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+    # # return movies
+    # return movies
+    watched_movies = get_watched_movies_id(db, current_user.id) \
+        if current_user \
+        else []
+    movies = [
+        MovieDisplay(**{
+            "id": movie.id,
+            "title": movie.title,
+            "release_date": movie.release_date,
+            "vote_average": movie.vote_average,
+            "poster_path": movie.poster_path,
+            "is_watched": movie.id in watched_movies
+        }) for movie in movies_data
+    ]
+    return movies
 
 @router.get('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
 async def get_popular_movies(
@@ -87,14 +102,18 @@ async def get_popular_movies(
     db: Session = Depends(get_db)
 ):
 
-    cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
-    if cached_movies:
-        movies_data = json.loads(cached_movies)
-    else:
-        # Get movies from db
-        movies_data = db.query(models.Movie).offset((page - 1) * 20).limit(20).all()
-        # Add to cache
-        redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
+    # cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
+    # if cached_movies:
+    #     movies_data = json.loads(cached_movies)
+    # else:
+    movies_data: list[Movie] = db.query(models.Movie) \
+        .offset((page - 1) * 20) \
+        .limit(20).all()
+    if not movies_data:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
+
+    # Add to cache
+    # redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
 
     # Every 1 hour :
     # 1. Fetch popular movies from TMDB
@@ -105,15 +124,35 @@ async def get_popular_movies(
     # Apply filters and sort
     # Send the data to user
 
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
+    watched_movies = get_watched_movies_id(db, current_user.id) \
+        if current_user \
+        else []
 
-        for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+    movies = [
+        MovieDisplay(**{
+            "id": movie.id,
+            "title": movie.title,
+            "release_date": movie.release_date,
+            "vote_average": movie.vote_average,
+            "poster_path": movie.poster_path,
+            "is_watched": movie.id in watched_movies
+        }) for movie in movies_data
+    ]
 
-    movies = [map_to_movie_display(movie) for movie in movies_data]
-    if not movies:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
+    # for movie in movies_data:
+    #     movie_map = {
+    #         "id": movie.id,
+    #         "title": movie.title,
+    #         "release_date": movie.release_date,
+    #         "vote_average": movie.vote_average,
+    #         "poster_path": movie.poster_path,
+    #         "is_watched": movie.id in watched_movies
+    #     }
+    #     movies.append(MovieDisplay(**movie_map))
+
+    # movies = [map_to_movie_display(movie) for movie in movies_data]
+    # if not movies:
+    #     raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
 
     return movies
 
