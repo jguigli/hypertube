@@ -26,7 +26,7 @@ from .crud import (
     get_movie_by_id,
     create_movie,
     map_to_movie_display,
-    map_to_movie
+    map_to_movie_info
 )
 
 from . import schemas, models
@@ -43,9 +43,7 @@ async def search_movies(
     search: str,
     language: str,
     page: int,
-    current_user: Annotated[
-        user_models.User,
-        Depends(security.get_current_user_authentified_or_anonymous)
+    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)
     ],
     db: Session = Depends(get_db)
 ):
@@ -56,6 +54,14 @@ async def search_movies(
         movies_data = search_movies_tmdb(search, language, page)
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+        
+    cached_genres = redis_client.get(f"genres_movies:{language}")
+    if cached_genres:
+        genres = json.loads(cached_genres)
+    else:
+        genres = fetch_genres_movies_tmdb(language)
+        if not genres:
+            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Genres for movies not available")
 
     if current_user:
         watched_movies = get_watched_movies_id(db, current_user.id)
@@ -63,9 +69,10 @@ async def search_movies(
         for movie in movies_data:
             movie["is_watched"] = movie["id"] in watched_movies
 
-    movies = [map_to_movie_display(movie) for movie in movies_data]
+    movies = [map_to_movie_display(movie, genres) for movie in movies_data]
     if not movies:
         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+    
     return movies
 
 
@@ -84,7 +91,7 @@ async def get_popular_movies(
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
         
-    cached_genres = redis_client.get(f"genres_movies:{page}:{language}")
+    cached_genres = redis_client.get(f"genres_movies:{language}")
     if cached_genres:
         genres = json.loads(cached_genres)
     else:
@@ -112,13 +119,19 @@ async def get_movie_informations(
     current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
-    movie = get_movie_by_id(db, movie_id)
-    if not movie:
+    cached_detailed_movie = redis_client.get(f"detailed_movie:{movie_id}:{language}")
+    if cached_detailed_movie:
+        detailed_movie = json.loads(cached_detailed_movie)
+    else:
         detailed_movie = fetch_movie_detail_tmdb(movie_id, language)
         if not detailed_movie:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Detailed movie not available")
-        movie = create_movie(db, map_to_movie(detailed_movie))
-    return movie
+        
+    db_movie = get_movie_by_id(db, movie_id)
+    if not db_movie:
+        db_movie = create_movie(db, detailed_movie['id'], detailed_movie['original_title'], detailed_movie['release_date'])
+
+    return map_to_movie_info(detailed_movie, db_movie)
 
 
 @router.get('/movies/{movie_id}/stream/{token}')

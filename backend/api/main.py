@@ -51,7 +51,6 @@ def delete_one_month_movie(db: Session):
     for movie in unwatched_movies:
         shutil.rmtree(movie.file_path)
         db.delete(movie)
-        print(f"Movie {movie.title} deleted.")
 
     db.commit()
 
