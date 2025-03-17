@@ -23,20 +23,8 @@ def upgrade() -> None:
             """
                 CREATE TABLE movies (
                     id INTEGER PRIMARY KEY,
-                    adult BOOLEAN,
-                    original_language VARCHAR(3),
                     original_title VARCHAR(64),
-                    overview VARCHAR(1024),
-                    popularity INTEGER,
-                    poster_path VARCHAR(64),
-                    backdrop_path VARCHAR(64),
                     release_date VARCHAR(10),
-                    category TEXT[],
-                    title VARCHAR(64),
-                    vote_average INTEGER,
-                    vote_count INTEGER,
-                    casting JSONB,
-                    crew JSONB,
                     magnet_link VARCHAR(300),
                     file_path VARCHAR(200),
                     created_at DATE DEFAULT CURRENT_DATE

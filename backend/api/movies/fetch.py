@@ -66,6 +66,7 @@ def search_movies_tmdb(search: str, language: str, page: int):
 
 def fetch_movie_detail_tmdb(movie_id: int, language: str):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=credits&language={language}"
+    key_detailed_movie = f"detailed_movie:{movie_id}:{language}"
 
     headers = {
         "accept": "application/json",
@@ -77,6 +78,7 @@ def fetch_movie_detail_tmdb(movie_id: int, language: str):
         return None
 
     detailed_movie_data = response.json()
+    redis_client.setex(key_detailed_movie, 86400, json.dumps(detailed_movie_data))
 
     return detailed_movie_data
 
@@ -98,16 +100,21 @@ def get_magnet_link_piratebay(title, year):
     movies_metadata = response.json()
     if not movies_metadata:
         return None
-
-    first_movie_metadata = movies_metadata[0]
-    print(f"MOVIE MEDATA : {first_movie_metadata}")
-    if int(first_movie_metadata['id']) == 0:
+    
+    if int(movies_metadata[0]['id']) == 0:
         return None
     
-    info_hash = first_movie_metadata["info_hash"]
-    name = first_movie_metadata["name"]
+    word_to_check = title.split()
+    word_to_check.append(str(year))
 
-    # print(f"MOVIE MEDATA : {movies_metadata}")
-    # print(f"NAME : {name}")
+    for index in range(len(movies_metadata)):
+        movie_metadata = movies_metadata[index]
+        info_hash = movie_metadata["info_hash"]
+        name = movie_metadata["name"]
+
+        if all(word in name for word in word_to_check):
+            break
+
+    print(f"MOVIE MEDATA : {movie_metadata}")
 
     return generate_magnet_link(info_hash, name)
