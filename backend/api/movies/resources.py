@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import json
 from typing import List
 from datetime import datetime
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 
 from api.redis_client import redis_client
 from api.database import get_db
@@ -30,10 +30,11 @@ from .crud import (
 )
 
 from . import schemas, models
-from .download import download_torrent, file_streamer, file_streamer_mkv
+from .download import download_torrent, file_streamer
 import os
 import asyncio
 import time
+from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 
 router = APIRouter(tags=["Movies"])
 
@@ -134,14 +135,14 @@ async def get_movie_informations(
     return map_to_movie_info(detailed_movie, db_movie)
 
 
-@router.get('/movies/{movie_id}/stream/{token}')
+@router.get('/movies/{movie_id}/stream/{resolution}/{token}')
 async def start_streaming(
     movie_id: int,
+    resolution: str,
     token: str,
-    request: Request,
     db: Session = Depends(get_db)
 ):
-    current_user = security.get_current_user_streaming(token, db)
+    # current_user = security.get_current_user_streaming(token, db)
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
@@ -154,12 +155,12 @@ async def start_streaming(
         movie.magnet_link = magnet_link
         db.commit()
 
-    watched_movie = get_watched_movie(db, current_user.id, movie_id)
-    if not watched_movie:
-        mark_movie_as_watched(db, current_user.id, movie_id)
-    else:
-        watched_movie.watched_at = datetime.now()
-        db.commit()
+    # watched_movie = get_watched_movie(db, current_user.id, movie_id)
+    # if not watched_movie:
+    #     mark_movie_as_watched(db, current_user.id, movie_id)
+    # else:
+    #     watched_movie.watched_at = datetime.now()
+    #     db.commit()
 
     if not movie.file_path:
         asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
@@ -168,34 +169,32 @@ async def start_streaming(
         movie.file_path = redis_client.get(f"movie_path:{movie_id}")
         db.commit()
 
-    file_size = os.path.getsize(movie.file_path)
-    range_header = request.headers.get("range")
+    dir_hls_path = f"{HLS_MOVIES_FOLDER}/movie_{movie_id}"
+    if not os.path.isdir(dir_hls_path):
+        asyncio.create_task(convert_to_hls(movie.file_path, movie.id, resolution))
 
-    if range_header:
-        try:
-            start, end = range_header.replace("bytes=", "").split("-")
-            start = int(start)
-            end = int(end) if end else file_size - 1
-            end = min(end, file_size - 1)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid Range request")
+    file_path = f"{dir_hls_path}/resolution_{resolution}/playlist_{resolution}.m3u8"
+    while not os.path.exists(file_path):
+        await asyncio.sleep(1)
+    return FileResponse(file_path, media_type="application/vnd.apple.mpegurl")
 
-        return StreamingResponse(
-            file_streamer(movie.file_path, start, end) if movie.file_path.endswith(".mp4") else file_streamer_mkv(movie.file_path, start, end),
-            status_code=206,
-            media_type="video/mp4",
-            headers={
-                # "Content-Range": f"bytes {start}-{end}/{file_size}",
-                "Accept-Ranges": "bytes",
-                "Content-Length": str(end - start + 1),
-            }
-        )
 
-    return StreamingResponse(
-        file_streamer(movie.file_path, 0, file_size - 1) if movie.file_path.endswith(".mp4") else file_streamer_mkv(movie.file_path, 0, file_size - 1),
-        media_type="video/mp4",
-        headers={
-            # "Content-Length": str(file_size),
-            "Accept-Ranges": "bytes",
-        }
-    )
+@router.get('/movies/{movie_id}/stream/{resolution}/{token}/{segment}')
+async def get_segment_stream(
+    movie_id: int,
+    resolution: str,
+    token: str,
+    segment: str,
+    db: Session = Depends(get_db)
+):
+    # current_user = security.get_current_user_streaming(token, db)
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
+
+    file_path = f"{HLS_MOVIES_FOLDER}/movie_{movie_id}/resolution_{resolution}/{segment}"
+    while not os.path.exists(file_path):
+        await asyncio.sleep(1)
+    # if not os.path.exists(file_path):
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Segment not available")
+    return FileResponse(file_path, media_type="video/MP2T")
