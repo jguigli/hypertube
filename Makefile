@@ -47,8 +47,12 @@ clean:
 fclean:
 	$(DOCKER_COMPOSE) down
 	$(DOCKER_COMPOSE) rm -f
-	docker rmi -f $(shell docker images -q)
-	docker volume rm $(shell docker volume ls -q)
+	@if [ -n "$(shell docker volume ls -q)" ]; then \
+		docker volume rm $(shell docker volume ls -q); \
+	fi
+	@if [ -n "$(shell docker images -q)" ]; then \
+		docker rmi -f $(shell docker images -q); \
+	fi
 	mv ./backend/profile_pictures/default.jpg ./backend/default.jpg.tmp
 	rm -rf ./backend/profile_pictures/*
 	mv ./backend/default.jpg.tmp ./backend/profile_pictures/default.jpg
