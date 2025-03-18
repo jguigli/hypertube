@@ -24,6 +24,7 @@ def upgrade() -> None:
                 CREATE TABLE movies (
                     id INTEGER PRIMARY KEY,
                     original_language VARCHAR(3),
+                    language VARCHAR(3),
                     original_title VARCHAR(512),
                     overview VARCHAR(1024),
                     popularity INTEGER,

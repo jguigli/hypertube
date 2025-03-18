@@ -57,8 +57,12 @@ async def search_movies(
     #         raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
 
     # Search movies in database
-    movies_data = db.query(models.Movie) \
+    movies_data = db.query(models.Movie.id, models.Movie.title,
+                           models.Movie.release_date,
+                           models.Movie.vote_average,
+                           models.Movie.poster_path) \
                     .filter(models.Movie.title.ilike(f"%{search}%")) \
+                    .filter(models.Movie.language == language) \
                     .offset((page - 1) * 20) \
                     .limit(20) \
                     .all()
@@ -94,6 +98,7 @@ async def search_movies(
     ]
     return movies
 
+
 @router.get('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
 async def get_popular_movies(
     page: int,
@@ -106,11 +111,20 @@ async def get_popular_movies(
     # if cached_movies:
     #     movies_data = json.loads(cached_movies)
     # else:
-    movies_data: list[Movie] = db.query(models.Movie) \
-        .offset((page - 1) * 20) \
-        .limit(20).all()
+    movies_data = db.query(
+        models.Movie.id,
+        models.Movie.title,
+        models.Movie.release_date,
+        models.Movie.vote_average,
+        models.Movie.poster_path
+    ).filter(models.Movie.language == language) \
+        .offset((page - 1) * 20).limit(20).all()
+
     if not movies_data:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No movies found"
+        )
 
     # Add to cache
     # redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))

@@ -22,10 +22,11 @@ def map_to_movie_display(tmdb_movie):
     }
     return MovieDisplay(**data)
 
-def map_to_movie(tmdb_movie):
+def map_to_movie(tmdb_movie, language):
     data = {
         "id": tmdb_movie["id"],
         "original_language": tmdb_movie["original_language"],
+        "language": language,
         "original_title": tmdb_movie["original_title"],
         "overview": tmdb_movie["overview"],
         "popularity": tmdb_movie["popularity"],
@@ -49,6 +50,7 @@ def create_movie(db: Session, movie: Movie):
     db_movie = Movie(
         id=movie.id,
         original_language=movie.original_language,
+        language=movie.language,
         original_title=movie.original_title,
         overview=movie.overview,
         popularity=movie.popularity,

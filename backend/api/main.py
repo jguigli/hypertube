@@ -58,13 +58,15 @@ def delete_one_month_movie(db: Session):
 
     db.commit()
 
+
 scheduler = BackgroundScheduler()
+
 
 def populate_movies(db: Session):
     languages = ["en", "fr"]
     for language in languages:
         page = 1
-        while page <= 20:
+        while page <= 50:
             movies_data = fetch_popular_movies_tmdb(language, page)
             if not movies_data:
                 break
@@ -72,7 +74,7 @@ def populate_movies(db: Session):
                 try:
                     movie_db = get_movie_by_id(db, movie["id"])
                     if not movie_db:
-                        movie_db = create_movie(db, map_to_movie(movie))
+                        movie_db = create_movie(db, map_to_movie(movie, language))
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
             page += 1
@@ -92,7 +94,6 @@ def start_scheduler():
 async def startup_event():
     with SessionLocal() as session:
         populate_movies(session)
-
 
 
 @app.on_event("shutdown")

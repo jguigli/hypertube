@@ -4,15 +4,13 @@ import { IconButton, InputBase, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { useSearch } from "../contexts/SearchContext.tsx";
-import { Search } from "@mui/icons-material";
+import { Clear, Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import UserService from "../services/UserService.tsx";
-import MovieService from "../services/MovieService.tsx";
-import { useMovies } from "../contexts/MovieContext.tsx";
 
 
 function Logo() {
@@ -35,7 +33,7 @@ function MovieSearchBar() {
 
     const [search, setSearch] = useState("");
 
-    const { searchQuery, setSearchQuery } = useSearch();
+    const { setSearchQuery } = useSearch();
 
     async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setSearch(event.target.value);
@@ -45,7 +43,12 @@ function MovieSearchBar() {
     async function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setSearchQuery(search);
+        // setSearch("");
+    }
+
+    function handleClearSearch() {
         setSearch("");
+        setSearchQuery("");
     }
 
     return (
@@ -59,6 +62,11 @@ function MovieSearchBar() {
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
+                    { search.length > 0 && (
+                        <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
+                            <Clear />
+                        </IconButton>
+                    )}
                     <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
                         <Search />
                     </IconButton>

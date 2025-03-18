@@ -9,6 +9,7 @@ class Movie(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     original_language = Column(String(3))
+    language = Column(String(3))
     original_title = Column(String(512))
     overview = Column(String(1024))
     popularity = Column(Integer)
