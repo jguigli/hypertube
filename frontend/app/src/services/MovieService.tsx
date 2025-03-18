@@ -1,4 +1,5 @@
 import axios from "axios";
+import { SortOptions } from "../types/FilterSortOptions";
 
 // Axios configuration
 const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
@@ -8,16 +9,16 @@ export default class MovieService {
 
     // Get popular movies by page
     // GET /api/movies/popular/:page
-    async getPopularMovies(page: number, language: string = "en") {
+    async getPopularMovies(page: number, language: string = "en", sortOptions: SortOptions) {
 
         try {
-            const response = await axios.get(
+
+            const response = await axios.post(
                 `/movies/popular/${page}`,
                 {
-                    params: {
-                        page: page,
-                        language: language
-                    }
+                    page: page,
+                    language: language,
+                    sort_options: sortOptions
                 }
             );
             if (response.status === 200) {
@@ -31,6 +32,7 @@ export default class MovieService {
                     data: []
                 }
             } else {
+                console.log(response.data);
                 return {
                     success: false,
                     data: response.data

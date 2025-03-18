@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List
 from api.comments import schemas as comments_schemas
+from enum import Enum
 
 
 # class MovieInfo(BaseModel):
@@ -50,3 +50,21 @@ class MovieInfo(BaseModel):
     class Config:
         from_attributes = True
         # orm_mode = True
+
+
+class SortType(Enum):
+    NONE = "none"
+    NAME = "name"
+    PRODUCTION_YEAR = "production_year"
+    IMDB_RATING = "imdb_rating"
+
+
+class SortOption(BaseModel):
+    type: SortType
+    ascending: bool
+
+
+class PopularMovieBody(BaseModel):
+    page: int
+    language: str
+    sort_options: SortOption

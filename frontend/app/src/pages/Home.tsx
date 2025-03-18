@@ -17,6 +17,11 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
+    const [sortOptions, setSortOptions] = useState<SortOptions>({
+        type: "none",
+        ascending: false
+    });
+
     // Reset state when searchQuery changes
     useEffect(() => {
         setPage(1);
@@ -27,7 +32,7 @@ export default function Home() {
     useEffect(() => {
         setLoading(true);
         window.scrollTo(0, 0);
-    }, [searchQuery, user.language]);
+    }, [searchQuery, user.language, sortOptions]);
 
     // Reset searchQuery when language changes
     useEffect(() => {
@@ -36,7 +41,7 @@ export default function Home() {
 
     // Fetch movies when page, searchQuery or language changes
     const fetchMoviesCallback = useCallback(() => {
-        fetchMovies(page, searchQuery, user.language).then(
+        fetchMovies(page, searchQuery, user.language, sortOptions).then(
             () => { setLoading(false); }
         );
     }, [page, searchQuery, user.language]);
@@ -64,28 +69,27 @@ export default function Home() {
     useEffect(() => {
         return () => {
             setSearchQuery("");
-            fetchMovies(1, "", user.language);
+            fetchMovies(1, "", user.language, { type: "none", ascending: false });
         }
     }, []);
 
     const applyFilterSort = (filters: FilterSortOptions) => {
 
-        const filterOptions: FilterOptions = {
-            genre: filters.selectedGenre,
-            yearRange: filters.yearRange,
-            rating: filters.rating
-        };
-
-        const sortOptions: SortOptions = {
-            type: filters.sortBy,
-            ascending: true
-        };
+        const { filterOptions, sortOptions } = filters;
 
         console.log(filterOptions);
         console.log(sortOptions);
 
         // Fetch movies with filters and sort options
 
+        setLoading(true);
+        setSortOptions(sortOptions);
+        setPage(1);
+        setHasMore(true);
+
+        fetchMovies(page, searchQuery, user.language, sortOptions).then(() => {
+            setLoading(false);
+        });
     };
 
     return (

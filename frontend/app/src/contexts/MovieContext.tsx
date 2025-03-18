@@ -2,11 +2,12 @@ import { createContext, useContext, useState, useEffect } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
+import { SortOptions } from "../types/FilterSortOptions";
 
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
-    fetchMovies: (page: number, searchQuery: string, language: string) => Promise<Movie[]>;
+    fetchMovies: (page: number, searchQuery: string, language: string, sortOptions: SortOptions) => Promise<Movie[]>;
     hasMore: boolean;
     setHasMore: (hasMore: boolean) => void;
 }
@@ -23,12 +24,13 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         page: number,
         searchQuery: string,
         language: string,
+        sortOptions: SortOptions
     ): Promise<Movie[]> {
 
         try {
             const response = searchQuery
                 ? await movieService.searchMovies(searchQuery, language, page)
-                : await movieService.getPopularMovies(page, language);
+                : await movieService.getPopularMovies(page, language, sortOptions);
 
             if (response.success) {
                 if (response.data.length > 0) {
@@ -61,7 +63,8 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     // Fetch popular movies on component mount
     useEffect(() => {
-        fetchMovies(1, "", user.language);
+        const sortOptions: SortOptions = { type: "none", ascending: false };
+        fetchMovies(1, "", user.language, sortOptions);
     }, [user.language]);
 
     return (

@@ -1,37 +1,28 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, status, Request
+from fastapi import Depends, HTTPException, APIRouter, status, Request
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 import json
 from typing import List
 from datetime import datetime
 from fastapi.responses import StreamingResponse
-from .models import Movie
 from .schemas import MovieDisplay
 from api.redis_client import redis_client
 from api.database import get_db
 from api.users import models as user_models
 from api.login import security
 from .fetch import (
-    fetch_popular_movies_tmdb,
-    search_movies_tmdb,
     get_magnet_link_piratebay,
 )
 from .crud import (
-    mark_movie_as_watched,
-    get_watched_movie,
-    get_watched_movies,
     get_watched_movies_id,
     get_movie_by_id,
     create_movie,
-    map_to_movie_display,
     map_to_movie
 )
 from . import schemas, models
-from .download import download_torrent, file_streamer
+from .download import file_streamer
 import os
 import asyncio
-import time
 
 
 router = APIRouter(tags=["Movies"])
@@ -99,18 +90,33 @@ async def search_movies(
     return movies
 
 
-@router.get('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
+@router.post('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
 async def get_popular_movies(
-    page: int,
-    language: str,
+    popularMovieBody: schemas.PopularMovieBody,
+    # page: int,
+    # language: str,
+    # sort_options: schemas.SortOption,
     current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
     db: Session = Depends(get_db)
 ):
+
+    page = popularMovieBody.page
+    language = popularMovieBody.language
+    sort_options = popularMovieBody.sort_options
+
+    print("Sort options: ", sort_options)
 
     # cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
     # if cached_movies:
     #     movies_data = json.loads(cached_movies)
     # else:
+    sort_column = {
+        "name": models.Movie.title,
+        "production_year": models.Movie.release_date,
+        "imdb_rating": models.Movie.vote_average,
+        "none": models.Movie.popularity
+    }.get(sort_options.type.value, models.Movie.popularity)
+
     movies_data = db.query(
         models.Movie.id,
         models.Movie.title,
@@ -118,6 +124,10 @@ async def get_popular_movies(
         models.Movie.vote_average,
         models.Movie.poster_path
     ).filter(models.Movie.language == language) \
+        .order_by(
+            sort_column.asc() if sort_options.ascending
+            else sort_column.desc()
+        ) \
         .offset((page - 1) * 20).limit(20).all()
 
     if not movies_data:

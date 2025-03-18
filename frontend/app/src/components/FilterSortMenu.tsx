@@ -8,7 +8,7 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
-import FilterSortOptions from "../types/FilterSortOptions";
+import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
 
 const genres = [
     "Action",
@@ -31,13 +31,14 @@ const genres = [
     "War",
     "Western"
 ];
-const sortOptions = [
-    { label: "Name (A-Z)", value: "name_asc" },
-    { label: "Name (Z-A)", value: "name_desc" },
-    { label: "Production year (newest first)", value: "year_desc" },
-    {label: "Production year (oldest first)", value: "year_asc" },
-    { label: "IMDb rating (highest first)", value: "rating_desc" },
-    { label: "IMDb rating (lowest first)", value: "rating_asc" }
+const sortOptionsLabels = [
+    { label: "None", value: "none" },
+    { label: "Name (A-Z)", value: "name.asc" },
+    { label: "Name (Z-A)", value: "name.desc" },
+    { label: "Production year (newest first)", value: "production_year.desc" },
+    { label: "Production year (oldest first)", value: "production_year.asc" },
+    { label: "IMDb rating (highest first)", value: "imdb_rating.desc" },
+    { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
 export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptions) => void }) {
@@ -46,20 +47,43 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
     const [selectedGenre, setSelectedGenre] = useState("");
     const [yearRange, setYearRange] = useState<number[]>([1950, new Date().getFullYear()]);
     const [rating, setRating] = useState<number[]>([0, 10]);
-    const [sortBy, setSortBy] = useState("");
+
+    const [sortOptions, setSortOptions] = useState<string>("none");
 
     const toggleDrawer = () => setOpen(!open);
 
     const handleApply = () => {
-        onApply({ selectedGenre, yearRange, rating, sortBy });
+
+        console.log("Applying filters");
+        console.log(sortOptions);
+
+        const splitted_sortOptions = sortOptions.split(".");
+        const type = splitted_sortOptions[0];
+        const ascending = splitted_sortOptions[1] === "asc";
+        const sortOptionsValue: SortOptions = {
+            type: type,
+            ascending: ascending
+        };
+
+        onApply(
+            {
+                filterOptions: {
+                    genre: selectedGenre,
+                    yearRange: yearRange,
+                    rating: rating
+                },
+                sortOptions: sortOptionsValue
+            }
+        );
         toggleDrawer();
     };
 
+
     const handleReset = () => {
         setSelectedGenre("");
-        setYearRange([1950, 2025]);
+        setYearRange([1950, new Date().getFullYear()]);
         setRating([0, 10]);
-        setSortBy("");
+        setSortOptions("none");
     };
 
     return (
@@ -75,7 +99,7 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
             <Drawer anchor="bottom" open={open} onClose={toggleDrawer}>
                 <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }} className="bg-gray-950">
 
-                    <Typography variant="h6">Filters</Typography>
+                    {/* <Typography variant="h6">Filters</Typography>
 
                     <FormControl fullWidth>
                         <InputLabel
@@ -115,7 +139,7 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                         max={10}
                         step={0.1}
                         size="small"
-                    />
+                    /> */}
 
                     <Typography variant="h6">Sort</Typography>
 
@@ -125,12 +149,12 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                             sx={{ bgcolor: "background.paper"}}
                         >Sort by</InputLabel>
                         <Select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            value={sortOptions}
+                            onChange={(e) => (setSortOptions(e.target.value))}
                             size="small"
                         >
-                            {sortOptions.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
+                            {sortOptionsLabels.map((option) => (
+                                <MenuItem key={option.label} value={option.value}>
                                     {option.label}
                                 </MenuItem>
                             ))}
