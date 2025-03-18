@@ -2,12 +2,12 @@ import { createContext, useContext, useState, useEffect } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
-import { SortOptions } from "../types/FilterSortOptions";
+import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
-    fetchMovies: (page: number, searchQuery: string, language: string, sortOptions: SortOptions) => Promise<Movie[]>;
+    fetchMovies: (page: number, searchQuery: string, language: string, filterOptions: FilterOptions, sortOptions: SortOptions) => Promise<Movie[]>;
     hasMore: boolean;
     setHasMore: (hasMore: boolean) => void;
 }
@@ -24,13 +24,14 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         page: number,
         searchQuery: string,
         language: string,
+        filterOptions: FilterOptions,
         sortOptions: SortOptions
     ): Promise<Movie[]> {
 
         try {
             const response = searchQuery
-                ? await movieService.searchMovies(searchQuery, language, page)
-                : await movieService.getPopularMovies(page, language, sortOptions);
+                ? await movieService.searchMovies(searchQuery, language, page, filterOptions, sortOptions)
+                : await movieService.getPopularMovies(page, language, filterOptions, sortOptions);
 
             if (response.success) {
                 if (response.data.length > 0) {
@@ -64,7 +65,12 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // Fetch popular movies on component mount
     useEffect(() => {
         const sortOptions: SortOptions = { type: "none", ascending: false };
-        fetchMovies(1, "", user.language, sortOptions);
+        const filterOtptions: FilterOptions = {
+            genre: "",
+            yearRange: [1950, new Date().getFullYear()],
+            rating: [0, 10]
+        };
+        fetchMovies(1, "", user.language, filterOtptions, sortOptions);
     }, [user.language]);
 
     return (

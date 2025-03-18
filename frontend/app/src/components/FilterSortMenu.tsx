@@ -1,5 +1,5 @@
 import {
-    Box, Drawer, Button, Fab, TextField, Slider, Typography,
+    Box, Drawer, Button, Fab, Slider, Typography,
     FormControl,
     InputLabel,
     Select,
@@ -41,14 +41,14 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptions) => void }) {
+export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filters: FilterSortOptions) => void, sortOptionsLabel: string }) {
 
     const [open, setOpen] = useState(false);
     const [selectedGenre, setSelectedGenre] = useState("");
-    const [yearRange, setYearRange] = useState<number[]>([1950, new Date().getFullYear()]);
-    const [rating, setRating] = useState<number[]>([0, 10]);
+    const [yearRange, setYearRange] = useState<number[] | number>([1950, new Date().getFullYear()]);
+    const [rating, setRating] = useState<number[] | number>([0, 10]);
 
-    const [sortOptions, setSortOptions] = useState<string>("none");
+    const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
 
     const toggleDrawer = () => setOpen(!open);
 
@@ -69,8 +69,8 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
             {
                 filterOptions: {
                     genre: selectedGenre,
-                    yearRange: yearRange,
-                    rating: rating
+                    yearRange: typeof(yearRange) === "number" ? [yearRange, yearRange] : yearRange,
+                    rating: typeof(rating) === "number" ? [rating, rating] : rating
                 },
                 sortOptions: sortOptionsValue
             }
@@ -99,7 +99,7 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
             <Drawer anchor="bottom" open={open} onClose={toggleDrawer}>
                 <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }} className="bg-gray-950">
 
-                    {/* <Typography variant="h6">Filters</Typography>
+                    <Typography variant="h6">Filters</Typography>
 
                     <FormControl fullWidth>
                         <InputLabel
@@ -139,7 +139,7 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                         max={10}
                         step={0.1}
                         size="small"
-                    /> */}
+                    />
 
                     <Typography variant="h6">Sort</Typography>
 

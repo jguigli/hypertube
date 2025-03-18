@@ -87,7 +87,7 @@ export default function Home() {
         setPage(1);
         setHasMore(true);
 
-        fetchMovies(page, searchQuery, user.language, sortOptions).then(() => {
+        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions).then(() => {
             setLoading(false);
         });
     };
@@ -122,7 +122,9 @@ export default function Home() {
                             </div>
                         )}
 
-                        <FilterSortMenu onApply={applyFilterSort} />
+                        <FilterSortMenu onApply={applyFilterSort} sortOptionsLabel={
+                            sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
+                        } />
                     </>
                 )
             }

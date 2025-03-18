@@ -64,7 +64,22 @@ class SortOption(BaseModel):
     ascending: bool
 
 
+class FilterOption(BaseModel):
+    production_year_low: int
+    production_year_high: int
+    imdb_rating_low: float
+    imdb_rating_high: float
+
+
 class PopularMovieBody(BaseModel):
     page: int
     language: str
+    filter_options: FilterOption
+    sort_options: SortOption
+
+
+class SearchMovieBody(BaseModel):
+    search: str
+    language: str
+    page: int
     sort_options: SortOption

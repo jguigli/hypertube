@@ -28,17 +28,27 @@ import asyncio
 router = APIRouter(tags=["Movies"])
 
 
-@router.get('/movies/search', response_model=List[schemas.MovieDisplay])
+@router.post('/movies/search', response_model=List[schemas.MovieDisplay])
 async def search_movies(
-    search: str,
-    language: str,
-    page: int,
+    searchBody: schemas.SearchMovieBody,
     current_user: Annotated[
         user_models.User,
         Depends(security.get_current_user_authentified_or_anonymous)
     ],
     db: Session = Depends(get_db)
 ):
+
+    search = searchBody.search
+    language = searchBody.language
+    page = searchBody.page
+    sort_options = searchBody.sort_options
+
+    sort_column = {
+        "name": models.Movie.title,
+        "production_year": models.Movie.release_date,
+        "imdb_rating": models.Movie.vote_average,
+        "none": models.Movie.popularity
+    }.get(sort_options.type.value, models.Movie.popularity)
     # cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
     # if cached_searches:
     #     movies_data = json.loads(cached_searches)
@@ -54,6 +64,9 @@ async def search_movies(
                            models.Movie.poster_path) \
                     .filter(models.Movie.title.ilike(f"%{search}%")) \
                     .filter(models.Movie.language == language) \
+                    .order_by(
+                        sort_column.asc() if sort_options.ascending
+                        else sort_column.desc()) \
                     .offset((page - 1) * 20) \
                     .limit(20) \
                     .all()
@@ -102,9 +115,10 @@ async def get_popular_movies(
 
     page = popularMovieBody.page
     language = popularMovieBody.language
+    filter_options = popularMovieBody.filter_options
     sort_options = popularMovieBody.sort_options
 
-    print("Sort options: ", sort_options)
+    print("Filter options: ", filter_options)
 
     # cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
     # if cached_movies:

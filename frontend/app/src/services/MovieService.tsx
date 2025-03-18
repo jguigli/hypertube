@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SortOptions } from "../types/FilterSortOptions";
+import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 
 // Axios configuration
 const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
@@ -9,7 +9,12 @@ export default class MovieService {
 
     // Get popular movies by page
     // GET /api/movies/popular/:page
-    async getPopularMovies(page: number, language: string = "en", sortOptions: SortOptions) {
+    async getPopularMovies(
+        page: number,
+        language: string = "en",
+        filterOptions: FilterOptions,
+        sortOptions: SortOptions
+    ) {
 
         try {
 
@@ -18,6 +23,12 @@ export default class MovieService {
                 {
                     page: page,
                     language: language,
+                    filter_options: {
+                        production_year_low: filterOptions.yearRange[0],
+                        production_year_high: filterOptions.yearRange[1],
+                        imdb_rating_low: filterOptions.rating[0],
+                        imdb_rating_high: filterOptions.rating[1],
+                    },
                     sort_options: sortOptions
                 }
             );
@@ -50,16 +61,27 @@ export default class MovieService {
 
     // Search movies by query
     // GET /api/movies/search/
-    async searchMovies(query: string, language: string = "en", page: number = 1) {
+    async searchMovies(
+        query: string,
+        language: string = "en",
+        page: number = 1,
+        filterOptions: FilterOptions,
+        sortOptions: SortOptions
+    ) {
         try {
-            const response = await axios.get(
+            const response = await axios.post(
                 `/movies/search`,
                 {
-                    params: {
-                        search: query,
-                        language: language,
-                        page: page
-                    }
+                    search: query,
+                    language: language,
+                    page: page,
+                    filter_options: {
+                        production_year_low: filterOptions.yearRange[0],
+                        production_year_high: filterOptions.yearRange[1],
+                        imdb_rating_low: filterOptions.rating[0],
+                        imdb_rating_high: filterOptions.rating[1],
+                    },
+                    sort_options: sortOptions
                 }
             );
             if (response.status === 200) {
