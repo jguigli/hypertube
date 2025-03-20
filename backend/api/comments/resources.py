@@ -18,7 +18,8 @@ router = APIRouter(tags=["Comments"])
 
 class CommentRequest(BaseModel):
     content: str
-    parent_id: Optional[int] = None,
+    parent_id: Optional[int] = None
+    timestamp: int
 
 @router.post('/comments/{movie_id}')
 async def post_movie_comment(
@@ -34,13 +35,14 @@ async def post_movie_comment(
     
     content = comment_data.content
     parent_id = comment_data.parent_id
+    timestamp = comment_data.timestamp
     
     print(f"parent id is {parent_id}")
+    print(f"timestamp is {timestamp}")
 
     if not len(content) or len(content) > 500:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid comment format")
-    comment = create_comment(db, current_user.id, movie_id, parent_id, content)
-    # return Response(status_code=status.HTTP_204_NO_CONTENT)
+    comment = create_comment(db, current_user.id, movie_id, parent_id, content, timestamp)
     return comment
 
 
