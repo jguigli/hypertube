@@ -4,7 +4,7 @@ export default interface FilterSortOptions {
 };
 
 export interface FilterOptions {
-    genre: string;
+    // genre: string;
     yearRange: number[];
     rating: number[];
 };

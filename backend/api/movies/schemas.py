@@ -82,4 +82,5 @@ class SearchMovieBody(BaseModel):
     search: str
     language: str
     page: int
+    filter_options: FilterOption
     sort_options: SortOption

@@ -106,16 +106,13 @@ async def search_movies(
 @router.post('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
 async def get_popular_movies(
     popularMovieBody: schemas.PopularMovieBody,
-    # page: int,
-    # language: str,
-    # sort_options: schemas.SortOption,
     current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
     db: Session = Depends(get_db)
 ):
 
     page = popularMovieBody.page
     language = popularMovieBody.language
-    filter_options = popularMovieBody.filter_options
+    filter_options: schemas.FilterOption = popularMovieBody.filter_options
     sort_options = popularMovieBody.sort_options
 
     print("Filter options: ", filter_options)
@@ -129,7 +126,7 @@ async def get_popular_movies(
         "production_year": models.Movie.release_date,
         "imdb_rating": models.Movie.vote_average,
         "none": models.Movie.popularity
-    }.get(sort_options.type.value, models.Movie.popularity)
+    }.get(sort_options.type.value, models.Movie.id)
 
     movies_data = db.query(
         models.Movie.id,
@@ -137,12 +134,22 @@ async def get_popular_movies(
         models.Movie.release_date,
         models.Movie.vote_average,
         models.Movie.poster_path
-    ).filter(models.Movie.language == language) \
+    ).filter(
+        models.Movie.language == language,
+        ) \
+        .filter(
+                models.Movie.vote_average >= filter_options.imdb_rating_low,
+                models.Movie.vote_average <= filter_options.imdb_rating_high,
+                models.Movie.release_date >= f"{filter_options.production_year_low}-01-01",
+                models.Movie.release_date <= f"{filter_options.production_year_high}-12-31"
+            ) \
         .order_by(
             sort_column.asc() if sort_options.ascending
             else sort_column.desc()
         ) \
-        .offset((page - 1) * 20).limit(20).all()
+        .offset((page - 1) * 20) \
+        .limit(20) \
+        .all()
 
     if not movies_data:
         raise HTTPException(

@@ -22,10 +22,21 @@ export default function Home() {
         ascending: false
     });
 
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+        // genres: [],
+        yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()],
+        rating: [0, 10]
+    });
+
     // Reset state when searchQuery changes
     useEffect(() => {
         setPage(1);
         setHasMore(true);
+        setFilterOptions({
+            // genres: [],
+            yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()],
+            rating: [0, 10]
+        });
     }, [searchQuery]);
 
     // Reset state when searchQuery or language changes
@@ -41,7 +52,7 @@ export default function Home() {
 
     // Fetch movies when page, searchQuery or language changes
     const fetchMoviesCallback = useCallback(() => {
-        fetchMovies(page, searchQuery, user.language, sortOptions).then(
+        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions).then(
             () => { setLoading(false); }
         );
     }, [page, searchQuery, user.language]);
@@ -69,7 +80,7 @@ export default function Home() {
     useEffect(() => {
         return () => {
             setSearchQuery("");
-            fetchMovies(1, "", user.language, { type: "none", ascending: false });
+            fetchMovies(1, "", user.language, { rating: [0, 10], yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()] }, { type: "none", ascending: false });
         }
     }, []);
 
@@ -77,17 +88,14 @@ export default function Home() {
 
         const { filterOptions, sortOptions } = filters;
 
-        console.log(filterOptions);
-        console.log(sortOptions);
-
-        // Fetch movies with filters and sort options
-
         setLoading(true);
+        setFilterOptions(filterOptions);
         setSortOptions(sortOptions);
         setPage(1);
         setHasMore(true);
+        fetchMovies(1, searchQuery, user.language, filterOptions, sortOptions
 
-        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions).then(() => {
+        ).then(() => {
             setLoading(false);
         });
     };

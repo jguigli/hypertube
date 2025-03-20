@@ -68,7 +68,7 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
         onApply(
             {
                 filterOptions: {
-                    genre: selectedGenre,
+                    // genre: selectedGenre,
                     yearRange: typeof(yearRange) === "number" ? [yearRange, yearRange] : yearRange,
                     rating: typeof(rating) === "number" ? [rating, rating] : rating
                 },
