@@ -9,28 +9,8 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
 import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
+import { useMovies } from "../contexts/MovieContext";
 
-const genres = [
-    "Action",
-    "Adventure",
-    "Animation",
-    "Comedy",
-    "Crime",
-    "Documentary",
-    "Drama",
-    "Family",
-    "Fantasy",
-    "History",
-    "Horror",
-    "Music",
-    "Mystery",
-    "Romance",
-    "Science Fiction",
-    "TV Movie",
-    "Thriller",
-    "War",
-    "Western"
-];
 const sortOptionsLabels = [
     { label: "None", value: "none" },
     { label: "Name (A-Z)", value: "name.asc" },
@@ -41,22 +21,23 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filters: FilterSortOptions) => void, sortOptionsLabel: string }) {
+export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, initialRating }: {
+    onApply: (filters: FilterSortOptions) => void,
+    sortOptionsLabel: string,
+    initialYearRange: number[],
+    initialRating: number[]
+}) {
 
+    const { moviesInformation } = useMovies();
     const [open, setOpen] = useState(false);
     const [selectedGenre, setSelectedGenre] = useState("");
-    const [yearRange, setYearRange] = useState<number[] | number>([1950, new Date().getFullYear()]);
-    const [rating, setRating] = useState<number[] | number>([0, 10]);
-
+    const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
+    const [rating, setRating] = useState<number[] | number>(initialRating);
     const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
 
     const toggleDrawer = () => setOpen(!open);
 
     const handleApply = () => {
-
-        console.log("Applying filters");
-        console.log(sortOptions);
-
         const splitted_sortOptions = sortOptions.split(".");
         const type = splitted_sortOptions[0];
         const ascending = splitted_sortOptions[1] === "asc";
@@ -64,7 +45,6 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
             type: type,
             ascending: ascending
         };
-
         onApply(
             {
                 filterOptions: {
@@ -78,11 +58,10 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
         toggleDrawer();
     };
 
-
     const handleReset = () => {
         setSelectedGenre("");
-        setYearRange([1950, new Date().getFullYear()]);
-        setRating([0, 10]);
+        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
         setSortOptions("none");
     };
 
@@ -111,7 +90,7 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
                             onChange={(e) => setSelectedGenre(e.target.value)}
                             size="small"
                         >
-                            {genres.map((genre) => (
+                            {moviesInformation.genres.map((genre) => (
                                 <MenuItem key={genre} value={genre}>
                                     {genre}
                                 </MenuItem>
@@ -124,8 +103,8 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
                         value={yearRange}
                         onChange={(_, newValue) => setYearRange(newValue)}
                         valueLabelDisplay="auto"
-                        min={1950}
-                        max={new Date().getFullYear()}
+                        min={moviesInformation.release_date_min}
+                        max={moviesInformation.release_date_max}
                         step={1}
                         size="small"
                     />
@@ -135,8 +114,8 @@ export function FilterSortMenu({ onApply, sortOptionsLabel }: { onApply: (filter
                         value={rating}
                         onChange={(_, newValue) => setRating(newValue)}
                         valueLabelDisplay="auto"
-                        min={0}
-                        max={10}
+                        min={moviesInformation.rating_min}
+                        max={moviesInformation.rating_max}
                         step={0.1}
                         size="small"
                     />

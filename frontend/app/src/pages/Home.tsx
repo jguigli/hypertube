@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, use } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import MovieCard from '../components/MovieCard.tsx';
 import { useMovies } from '../contexts/MovieContext.tsx';
 import { useAuth } from '../contexts/AuthContext.tsx';
@@ -10,40 +10,43 @@ import FilterSortOptions, { FilterOptions, SortOptions } from '../types/FilterSo
 export default function Home() {
 
     const { user } = useAuth();
-    const { movies, fetchMovies, hasMore, setHasMore } = useMovies();
+    const { movies, fetchMovies, hasMore, setHasMore, moviesInformation } = useMovies();
     const { searchQuery, setSearchQuery } = useSearch();
+
     const [page, setPage] = useState(1);
-
     const [loading, setLoading] = useState(false);
-    const loadingRef = useRef<HTMLDivElement | null>(null);
-
+    const [initialRating, setInitialRating] = useState<number[]>([moviesInformation.rating_min, moviesInformation.rating_max]);
+    const [initialYearRange, setInitialYearRange] = useState<number[]>([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+        // genres: [],
+        yearRange: initialYearRange,
+        rating: initialRating
+    });
     const [sortOptions, setSortOptions] = useState<SortOptions>({
         type: "none",
         ascending: false
     });
 
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        // genres: [],
-        yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()],
-        rating: [0, 10]
-    });
+    const loadingRef = useRef<HTMLDivElement | null>(null);
 
     // Reset state when searchQuery changes
     useEffect(() => {
         setPage(1);
         setHasMore(true);
+        setInitialRating([moviesInformation.rating_min, moviesInformation.rating_max]);
+        setInitialYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
         setFilterOptions({
             // genres: [],
-            yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()],
-            rating: [0, 10]
+            yearRange: initialYearRange,
+            rating: initialRating
         });
-    }, [searchQuery]);
+    }, [searchQuery, moviesInformation]);
 
     // Reset state when searchQuery or language changes
     useEffect(() => {
         setLoading(true);
         window.scrollTo(0, 0);
-    }, [searchQuery, user.language, sortOptions]);
+    }, [searchQuery, user.language]);
 
     // Reset searchQuery when language changes
     useEffect(() => {
@@ -80,22 +83,24 @@ export default function Home() {
     useEffect(() => {
         return () => {
             setSearchQuery("");
-            fetchMovies(1, "", user.language, { rating: [0, 10], yearRange: [new Date().getFullYear() - 50, new Date().getFullYear()] }, { type: "none", ascending: false });
+            fetchMovies(1, "", user.language, {
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max],
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max]
+            }, { type: "none", ascending: false });
         }
     }, []);
 
     const applyFilterSort = (filters: FilterSortOptions) => {
-
         const { filterOptions, sortOptions } = filters;
-
         setLoading(true);
         setFilterOptions(filterOptions);
         setSortOptions(sortOptions);
         setPage(1);
         setHasMore(true);
         fetchMovies(1, searchQuery, user.language, filterOptions, sortOptions
-
         ).then(() => {
+            setInitialRating(filterOptions.rating);
+            setInitialYearRange(filterOptions.yearRange);
             setLoading(false);
         });
     };
@@ -130,9 +135,14 @@ export default function Home() {
                             </div>
                         )}
 
-                        <FilterSortMenu onApply={applyFilterSort} sortOptionsLabel={
-                            sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
-                        } />
+                        <FilterSortMenu
+                            onApply={applyFilterSort}
+                            sortOptionsLabel={
+                                sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
+                            }
+                            initialYearRange={initialYearRange}
+                            initialRating={initialRating}
+                        />
                     </>
                 )
             }

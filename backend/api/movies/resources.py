@@ -202,6 +202,42 @@ async def get_popular_movies(
     return movies
 
 
+# Get movies informations : vote_average (min and max), release_date (min and max) and genres
+@router.get('/movies/informations', response_model=schemas.MovieInformations)
+async def get_movies_informations(
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    movies_informations = db.query(
+        models.Movie.vote_average,
+        models.Movie.release_date
+    ).all()
+
+    if not movies_informations:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No movies found"
+        )
+
+    vote_average = [movie.vote_average for movie in movies_informations]
+    release_date = [movie.release_date for movie in movies_informations]
+    genres = []
+
+    informations = {
+        "vote_average": {
+            "min": min(vote_average),
+            "max": max(vote_average)
+        },
+        "release_date": {
+            "min": int(min(release_date)[:4]),
+            "max": int(max(release_date)[:4])
+        },
+        "genres": list(genres)
+    }
+
+    return informations
+
+
 @router.get('/movies/{movie_id}', response_model=schemas.MovieInfo)
 async def get_movie_informations(
     movie_id: int,

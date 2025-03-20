@@ -110,6 +110,8 @@ export default class MovieService {
     }
 
 
+    // Get movie information by id
+    // For one movie
     async getMovieInfo(id: number, token: string | null) {
         try {
             if (token) {
@@ -143,4 +145,40 @@ export default class MovieService {
             }
         }
     }
+
+
+    // Get movies information (min and max release year, min and max rating, genres)
+    // GET /api/movies/information
+    async getMoviesInformation(token: string | null) {
+        try {
+            if (token) {
+                const response = await axios.get(
+                    `/movies/informations`,
+                    {
+                        headers: {
+                            Authorization: `${token}`
+                        }
+                    }
+                );
+                if (response.status === 200) {
+                    console.log(response.data);
+                    return {
+                        success: true,
+                        data: response.data
+                    }
+                }
+            }
+            return {
+                success: false,
+                data: null
+            }
+        }
+        catch (error) {
+            return {
+                success: false,
+                data: null
+            }
+        }
+    }
+
 }

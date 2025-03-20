@@ -84,3 +84,19 @@ class SearchMovieBody(BaseModel):
     page: int
     filter_options: FilterOption
     sort_options: SortOption
+
+
+class VoteAverage(BaseModel):
+    min: float
+    max: float
+
+
+class ReleaseDate(BaseModel):
+    min: int
+    max: int
+
+
+class MovieInformations(BaseModel):
+    vote_average: VoteAverage
+    release_date: ReleaseDate
+    genres: list[str]

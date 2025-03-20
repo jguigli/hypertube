@@ -1,8 +1,17 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
 import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
+
+
+export interface MoviesInformation {
+    release_date_min: number;
+    release_date_max: number;
+    rating_min: number;
+    rating_max: number;
+    genres: string[];
+}
 
 interface MoviesContextType {
     movies: Movie[];
@@ -10,15 +19,26 @@ interface MoviesContextType {
     fetchMovies: (page: number, searchQuery: string, language: string, filterOptions: FilterOptions, sortOptions: SortOptions) => Promise<Movie[]>;
     hasMore: boolean;
     setHasMore: (hasMore: boolean) => void;
+    moviesInformation: MoviesInformation;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 
+
 export function MoviesProvider({ children }: { children: React.ReactNode }) {
+
     const movieService = new MovieService();
-    const { user } = useAuth();
+    const { user, getToken } = useAuth();
     const [movies, setMovies] = useState<Movie[]>([]);
     const [hasMore, setHasMore] = useState(true);
+    const [moviesInformation, setMoviesInformation] = useState<MoviesInformation>({
+        release_date_min:  0,
+        release_date_max: 0,
+        rating_min: 0,
+        rating_max: 0,
+        genres: []
+    });
+    const [loading, setLoading] = useState(true);
 
     async function fetchMovies(
         page: number,
@@ -27,7 +47,6 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         filterOptions: FilterOptions,
         sortOptions: SortOptions
     ): Promise<Movie[]> {
-
         try {
             const response = searchQuery
                 ? await movieService.searchMovies(searchQuery, language, page, filterOptions, sortOptions)
@@ -42,10 +61,8 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                         setMovies((prevMovies) => [...prevMovies, ...response.data]);
                     }
                 } else {
-                    // No more movies to fetch
                     setHasMore(false);
                     if (searchQuery && page === 1) {
-                        // No results found for search query
                         setMovies([]);
                     }
                 }
@@ -59,22 +76,50 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
             console.log(error);
             return [];
         }
-
     }
 
-    // Fetch popular movies on component mount
+    async function getMoviesInfo() {
+        const token = getToken();
+        try {
+            const response = await movieService.getMoviesInformation(token);
+            if (response.success) {
+                setMoviesInformation({
+                    release_date_min: response.data.release_date.min,
+                    release_date_max: response.data.release_date.max,
+                    rating_min: response.data.vote_average.min,
+                    rating_max: response.data.vote_average.max,
+                    genres: response.data.genres
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch movies information:", error);
+        } finally {
+            setLoading(false); // Fin du chargement
+        }
+    }
+
     useEffect(() => {
-        const sortOptions: SortOptions = { type: "none", ascending: false };
-        const filterOtptions: FilterOptions = {
-            genre: "",
-            yearRange: [1950, new Date().getFullYear()],
-            rating: [0, 10]
-        };
-        fetchMovies(1, "", user.language, filterOtptions, sortOptions);
-    }, [user.language]);
+        getMoviesInfo();
+    }, []);
+
+    useEffect(() => {
+        if (!loading) {
+            const defaultFilterOptions: FilterOptions = {
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+            };
+            const defaultSortOptions: SortOptions = { type: "none", ascending: false };
+            
+            fetchMovies(1, "", user.language, defaultFilterOptions, defaultSortOptions);
+        }
+    }, [user.language, moviesInformation, loading]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
-        <MoviesContext.Provider value={{ movies, setMovies, fetchMovies, hasMore, setHasMore }}>
+        <MoviesContext.Provider value={{ movies, setMovies, fetchMovies, hasMore, setHasMore, moviesInformation }}>
             {children}
         </MoviesContext.Provider>
     );
