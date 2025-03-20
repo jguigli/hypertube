@@ -34,7 +34,7 @@ export interface CommentType {
     parent_id: number | null;
     content: string;
     replies: CommentType[];
-    timestamp?: number;
+    timestamp: number;
     // name?: string;
     // video_id: number
     // avatarUrl?: string;
@@ -87,37 +87,6 @@ export default function VideoView() {
     const navigate = useNavigate();
 
     const { getToken, user } = useAuth();
-
-
-    // const buildCommentTree = (comments: CommentType[]): CommentType[] => {
-    //     const commentMap: { [key: number]: CommentType } = {};
-    //     let rootComment: CommentType = {
-    //         id: 1,
-    //         user_id: 1,
-    //         user_name: "user",
-    //         // video_id: 0,
-    //         content: "Root comment",
-    //         timestamp: Date.now(),
-    //         items: [],
-    //     };
-
-    //     comments.forEach(comment => {
-    //         comment.items = [];
-    //         commentMap[comment.id] = comment;
-
-    //         if (comment.id === 1) {
-    //             rootComment = comment;
-    //         }
-    //     });
-
-    //     comments.forEach(comment => {
-    //         if (comment.user_id && commentMap[comment.user_id]) {
-    //             commentMap[comment.user_id].items?.push(comment);
-    //         }
-    //     });
-
-    //     return rootComment;
-    // };
 
     useEffect(() => {
 
@@ -181,14 +150,15 @@ export default function VideoView() {
             if (!videoID || !token) {
                 return;
             }
-            const response = await commentService.postComments(+videoID, input, token);
+            const newTimestamp = Math.floor(Date.now() / 1000);
+            const response = await commentService.postComments(+videoID, input, token, null, newTimestamp);
             if (response.success) {
                 const newComment: CommentType = {
                     id: response.data.id,
                     user_id: response.data.user_id,
                     user_name: user.username || "",
                     parent_id: response.data.parent_id,
-                    // timestamp: Date.now(),
+                    timestamp: newTimestamp,
                     content: input,
                     replies: []
                 };
@@ -197,6 +167,7 @@ export default function VideoView() {
         } catch (error) {
             console.error("Failed to post comment:", error);
         }
+        setInput("")
     };
 
 
@@ -228,6 +199,7 @@ export default function VideoView() {
                             autoFocus
                             value={input}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && onAddComment()}
                             placeholder="Type your comment here"
                             style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
                         />
@@ -247,4 +219,3 @@ export default function VideoView() {
         </>
     );
 }
-

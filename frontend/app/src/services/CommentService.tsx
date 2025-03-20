@@ -6,15 +6,16 @@ axios.defaults.baseURL = `http://${hostname}:3000/api`;
 
 export default class CommentService {
 
-    async postComments(movie_id: number, content: string, token: string, parent_id: number | null = null) {
-        console.log("Posting comment with:", { movie_id, content, token, parent_id });
+    async postComments(movie_id: number, content: string, token: string, parent_id: number | null = null, timestamp: number) {
+        console.log("Posting comment with:", { movie_id, content, token, parent_id, timestamp });
 
         try {
             const response = await axios.post(
                 `/comments/${movie_id}`,
                 {
                     content,
-                    parent_id
+                    parent_id,
+                    timestamp
                 },
                 {
                     headers: {
