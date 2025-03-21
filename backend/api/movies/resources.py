@@ -166,7 +166,7 @@ async def download_and_convert(movie_id: int, user_id: int):
 async def download_movie(
     movie_id: int,
     background_tasks: BackgroundTasks,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
     movie = get_movie_by_id(db, movie_id)
@@ -219,7 +219,7 @@ async def stream_movie(
 @router.get('/movies/{movie_id}/subtitles')
 async def get_subtitles(
     movie_id: int,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
     movie = get_movie_by_id(db, movie_id)
