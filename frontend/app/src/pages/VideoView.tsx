@@ -158,12 +158,13 @@ export default function VideoView() {
                     user_id: response.data.user_id,
                     user_name: user.username || "",
                     parent_id: response.data.parent_id,
-                    timestamp: newTimestamp,
+                    timestamp: response.data.timestamp,
                     content: input,
                     replies: []
                 };
                 setCommentsData((prev) => [...prev, newComment]);
             }
+            console.log("Response data from backend (main comment):", response.data);
         } catch (error) {
             console.error("Failed to post comment:", error);
         }

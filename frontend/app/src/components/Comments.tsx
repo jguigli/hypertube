@@ -21,10 +21,11 @@ interface CommentsProps {
 const formatTimeAgo = (timestamp: number | string): string => {
   if (!timestamp) return "Just now";
 
-  let timeInMs = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;  // ✅ Ne pas multiplier par 1000
+  let timeInMs = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;
+
 
   const now = Date.now();
-  const diffInSeconds = Math.floor((now - timeInMs) / 1000);
+  const diffInSeconds = Math.floor((now) / 1000 - timeInMs);
 
   if (diffInSeconds < 60) return `${diffInSeconds} sec ago`;
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
@@ -103,60 +104,60 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     });
   };
 
-  const onReplyComment = async (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement> , parent_id: number) => {
-
+  const onReplyComment = async (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>, parent_id: number) => {
+    event.preventDefault()
     if (editMode) {
-        handleEditNode(comments.id, inputRef.current?.innerText ?? "");
-        setEditMode(false);
+      handleEditNode(comments.id, inputRef.current?.innerText ?? "");
+      setEditMode(false);
     } else {
-        if (input.trim() === "") return;
-        setExpand(true);
-        const token = getToken();
-        if (!token) { console.error("Error: Missing authentication token"); return; }
-        if (!videoID) {
-            console.error("Error: video_id is undefined");
-            return;
-        }
+      if (input.trim() === "") return;
+      setExpand(true);
+      const token = getToken();
+      if (!token) { console.error("Error: Missing authentication token"); return; }
+      if (!videoID) {
+        console.error("Error: video_id is undefined");
+        return;
+      }
 
-        const newTimestamp = Math.floor(Date.now() / 1000); 
+      const newTimestamp = Math.floor(Date.now() / 1000);
 
-        console.log("Making API request with:", {
-            video_id: videoID,
+      console.log("Making API request with:", {
+        video_id: videoID,
+        content: input,
+        token,
+        parent_id,
+        timestamp: newTimestamp
+      });
+
+      try {
+        const response = await commentService.postComments(+videoID, input, token, parent_id, newTimestamp);
+        if (response.success && response.data) {
+          const newReply: CommentType = {
+            id: response.data.id,
+            user_id: response.data.user_id,
+            user_name: user.username || "",
+            parent_id: parent_id,
             content: input,
-            token,
-            parent_id,
+            replies: [],
             timestamp: newTimestamp
-        });
+          };
+          
+          setCommentsData(prevComments => {
+            const updatedComments = insertReply(prevComments, parent_id, newReply);
+            console.log("Updated commentsData:", updatedComments);
+            return updatedComments;
+          });
 
-        try {
-            const response = await commentService.postComments(+videoID, input, token, parent_id, newTimestamp);
-            if (response.success && response.data) {
-                const newReply: CommentType = {
-                    id: response.data.id, 
-                    user_id: response.data.user_id,
-                    user_name: user.username || "",
-                    parent_id: parent_id,
-                    content: input,
-                    replies: [],
-                    timestamp: newTimestamp
-                };
-
-                setCommentsData(prevComments => {
-                    const updatedComments = insertReply(prevComments, parent_id, newReply);
-                    console.log("Updated commentsData:", updatedComments);
-                    return updatedComments;
-                });
-
-                console.log("Comment posted successfully:", response);
-            }
-        } catch (error) {
-            console.error("Failed to post comment:", error);
+          console.log("Comment posted successfully:", response);
         }
-        
-        setShowInput(false);
-        setInput("");
+      } catch (error) {
+        console.error("Failed to post comment:", error);
+      }
+
+      setShowInput(false);
+      setInput("");
     }
-};
+  };
 
 
   return (
@@ -193,12 +194,12 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 <div style={{ display: "flex", marginTop: "20px" }}>
                   <Stack direction="column" spacing={1} className="inputContainer">
                     <input
-                          type="text"
-                          className="inputContainer__input"
-                          autoFocus onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && onReplyComment(e as any, comment.id) }
-                          placeholder="Type your reply here"
-                        />
+                      type="text"
+                      className="inputContainer__input"
+                      autoFocus onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && onReplyComment(e as any, comment.id)}
+                      placeholder="Type your reply here"
+                    />
                     <Stack direction="row" spacing={2}>
                       <Button variant="contained" size='small' onClick={(event) => onReplyComment(event, comment.id)}>Add reply</Button>
                       <Button variant="outlined" size='small' className="p-2" onClick={() => setShowInput(false)}>Cancel</Button>

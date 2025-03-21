@@ -27,7 +27,7 @@ def upgrade() -> None:
                     user_id INTEGER NOT NULL,
                     parent_id INTEGER,
                     content VARCHAR(500),
-                    created_at DATE DEFAULT CURRENT_DATE,
+                    timestamp INTEGER,
                     FOREIGN KEY (parent_id) REFERENCES comments(id),
                     FOREIGN KEY (movie_id) REFERENCES movies(id),
                     FOREIGN KEY (user_id) REFERENCES users(id)

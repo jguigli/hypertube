@@ -9,7 +9,7 @@ class Comment(BaseModel):
     user_name: str
     parent_id: Optional[int]
     content: str
-    # created_at: datetime
+    timestamp: Optional[int] = None
 
     replies: list['Comment'] = []
 
