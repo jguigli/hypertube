@@ -8,6 +8,11 @@ class Comment(BaseModel):
     user_name: str
     parent_id: Optional[int]
     content: str
+<<<<<<< HEAD
+=======
+    timestamp: Optional[int] = None
+
+>>>>>>> f9bb6da9 (timestamp on comments fixed)
     replies: list['Comment'] = []
 
     class Config:

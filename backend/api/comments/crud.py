@@ -20,7 +20,7 @@ def create_comment(
         user_id=user_id,
         parent_id=parent_id,
         content=content,
-        created_at=datetime.fromtimestamp(timestamp)
+        timestamp=timestamp
         )
     db.add(db_comment)
     db.commit()
