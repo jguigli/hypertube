@@ -21,8 +21,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
-import Video from "../components/VideoJS";
 import CustomCard from "../components/Card";
+import Video from "../components/VideoJS";
 import MovieService from "../services/MovieService";
 import CommentService from "../services/CommentService";
 import { Button } from "@mui/material";
@@ -183,7 +183,8 @@ export default function VideoView() {
             {/* <h1>{movie?.language[user.language].title}</h1> */}
 
             {/* Affichage du lecteur Video.js */}
-            <Video video_ID={ +videoID }/>
+            {/* <VideoJS /> */}
+            <Video video_ID={+videoID} />
 
             {/* Exemple de bouton pour changer la vidéo */}
             {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
