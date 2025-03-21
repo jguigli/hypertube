@@ -21,22 +21,11 @@ import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import Comments from "../components/Comments";
 import { useNode } from "../components/Comments";
-<<<<<<< HEAD
 import Video from "../components/VideoJS";
 import CustomCard from "../components/Card";
-=======
-import CustomCard from "../components/Card";
-import Video from "../components/VideoJS";
-<<<<<<< HEAD
->>>>>>> fa01fe63 (updates)
-=======
 import MovieService from "../services/MovieService";
-<<<<<<< HEAD
->>>>>>> 211d518d (init link front / back comments)
-=======
 import CommentService from "../services/CommentService";
 import { Button } from "@mui/material";
->>>>>>> 0f1ef6a7 (call backend comments)
 
 export interface CommentType {
     id: number;
