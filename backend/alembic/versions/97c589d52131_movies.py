@@ -27,6 +27,8 @@ def upgrade() -> None:
                     release_date VARCHAR(10),
                     magnet_link VARCHAR(300),
                     file_path VARCHAR(200),
+                    is_download BOOLEAN DEFAULT FALSE,
+                    is_convert BOOLEAN DEFAULT FALSE,
                     created_at DATE DEFAULT CURRENT_DATE
                 );
             """

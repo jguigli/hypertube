@@ -13,6 +13,8 @@ class Movie(Base):
     release_date = Column(String(10))
     magnet_link = Column(String(300))
     file_path = Column(String(200))
+    is_download = Column(Boolean, default=False)
+    is_convert = Column(Boolean, default=False)
     created_at = Column(Date, default=datetime.now)
 
     comments_association = relationship("Comment", back_populates="movie_association", cascade="all, delete-orphan")
