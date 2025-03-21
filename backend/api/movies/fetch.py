@@ -67,6 +67,25 @@ async def search_movies_tmdb(search: str, language: str, page: int):
     redis_client.setex(key_search, 86400, json.dumps(movies_data))
     return movies_data
 
+# async def search_movies_omdb(search: str, language: str, page: int):
+#     url = f"http://www.omdbapi.com/?t=tt3896198&apikey=ace95878"
+#     key_search = f"search:{search}:{language}:{page}"
+
+#     headers = {
+#         "accept": "application/json",
+#         "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
+#     }
+
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url, headers=headers) as response:
+#             if response.status != 200:
+#                 return None
+#             response_json = await response.json()
+
+#     movies_data = response_json["results"]
+#     redis_client.setex(key_search, 86400, json.dumps(movies_data))
+#     return movies_data
+
 
 async def fetch_movie_detail_tmdb(movie_id: int, language: str):
     url = f"https://api.themoviedb.org/3/movie/{movie_id}?append_to_response=credits&language={language}"
