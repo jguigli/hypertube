@@ -46,7 +46,7 @@ async def search_movies(
     search: str,
     language: str,
     page: int,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)
     ],
     db: Session = Depends(get_db)
 ):
@@ -66,11 +66,10 @@ async def search_movies(
         if not genres:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genres for movies not available")
 
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
+    watched_movies = get_watched_movies_id(db, current_user.id)
 
-        for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+    for movie in movies_data:
+        movie["is_watched"] = movie["id"] in watched_movies
 
     movies = [map_to_movie_display(movie, genres) for movie in movies_data]
     if not movies:
@@ -83,7 +82,7 @@ async def search_movies(
 async def get_popular_movies(
     page: int,
     language: str,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
     cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
@@ -102,11 +101,10 @@ async def get_popular_movies(
         if not genres:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genres for movies not available")
 
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
+    watched_movies = get_watched_movies_id(db, current_user.id)
 
-        for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+    for movie in movies_data:
+        movie["is_watched"] = movie["id"] in watched_movies
 
     movies = [map_to_movie_display(movie, genres) for movie in movies_data]
     if not movies:
