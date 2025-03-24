@@ -42,6 +42,28 @@ async def post_movie_comment(
     comment = create_comment(db, current_user.id, movie_id, parent_id, content, timestamp)
     return comment
 
+@router.put('/comments/{comment_id}', response_model=Comment)
+async def edit_movie_comment(
+    comment_id: int,
+    comment_data: CommentRequest,
+    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db),
+):
+    comment = get_comment_by_id(db, comment_id, current_user.id)
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Comment not found or not yours")
+
+    if not len(comment_data.content) or len(comment_data.content) > 500:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid comment format")
+
+    updated_comment = update_comment(
+        db=db,
+        comment=comment,
+        new_content=comment_data.content,
+        new_timestamp=comment_data.timestamp
+    )
+
+    return updated_comment
 
 @router.delete('/comments/{comment_id}')
 async def delete_movie_comment(

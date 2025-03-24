@@ -27,6 +27,19 @@ def create_comment(
     db.refresh(db_comment)
     return db_comment
 
+def update_comment(
+    db: Session,
+    comment: Comment,
+    new_content: str,
+    new_timestamp: int
+):
+    comment.content = new_content
+    comment.timestamp = new_timestamp
+    db.commit()
+    db.refresh(comment)
+    return comment
+
+
 def delete_comment(db: Session, comment: Comment):
     db.delete(comment)
     db.commit()
