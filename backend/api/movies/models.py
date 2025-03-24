@@ -49,6 +49,7 @@ class Movie(Base):
                 "user_name": com.user_name,
                 "parent_id": com.parent_id,
                 "content": com.content,
+                "timestamp": com.timestamp,
                 "replies": com.replies
             } for com in self.comments_association if com.parent_id is None
         ]

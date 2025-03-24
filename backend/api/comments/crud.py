@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from .models import Comment
+from datetime import datetime, timedelta
+
 
 
 def get_comment_by_id(db: Session, comment_id: int, user_id: int):
@@ -10,13 +12,15 @@ def create_comment(
         user_id: int,
         movie_id: int,
         parent_id: int | None,
-        content: str
+        content: str,
+        timestamp: int
 ):
     db_comment = Comment(
         movie_id=movie_id,
         user_id=user_id,
         parent_id=parent_id,
         content=content,
+        timestamp=timestamp
         )
     db.add(db_comment)
     db.commit()

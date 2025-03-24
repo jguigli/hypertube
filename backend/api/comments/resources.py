@@ -16,22 +16,31 @@ from .schemas import Comment
 
 router = APIRouter(tags=["Comments"])
 
+class CommentRequest(BaseModel):
+    content: str
+    parent_id: Optional[int] = None
+    timestamp: int
 
-@router.post('/comments/{movie_id}')
+@router.post('/comments/{movie_id}', response_model=Comment)
 async def post_movie_comment(
     movie_id: int,
-    content: str,
+    comment_data:  CommentRequest,
     current_user: Annotated[user_models.User, Depends(security.get_current_user)],
     db: Session = Depends(get_db),
-    parent_id: Optional[int] = None,
 ):
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
+    
+    content = comment_data.content
+    parent_id = comment_data.parent_id
+    timestamp = comment_data.timestamp
+
     if not len(content) or len(content) > 500:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid comment format")
-    create_comment(db, current_user.id, movie_id, parent_id, content)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    comment = create_comment(db, current_user.id, movie_id, parent_id, content, timestamp)
+    return comment
 
 
 @router.delete('/comments/{comment_id}')

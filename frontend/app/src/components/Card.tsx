@@ -17,6 +17,7 @@ export default function CustomCard(
             sx={{
                 borderRadius: "10px",
                 boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.5)",
+                marginBottom: "10px",
             }}
         >
             {children}

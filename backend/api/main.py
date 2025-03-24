@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -32,10 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Generate a random secret key for the session middleware
 secret_string = os.urandom(32).hex()
 app.add_middleware(SessionMiddleware, secret_key=secret_string)
-
 
 app.include_router(login_router)
 app.include_router(users_router)

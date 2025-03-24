@@ -56,7 +56,7 @@ export const VideoJS = (props: {
     }, [options, videoRef]);
 
     const movieService = new MovieService();
-    const { getToken } = useAuth();
+    const { getToken, user } = useAuth();
     const [movieDetail, setMovieDetail] = useState<Movie | null>(null);
 
 
@@ -64,7 +64,7 @@ export const VideoJS = (props: {
     useEffect(() => {
 
         async function getMovieInfo() {
-            const response = await movieService.getMovieInfo(props.movieID, getToken());
+            const response = await movieService.getMovieInfo(props.movieID, getToken(), user.language);
             if (!response.success) {
                 return;
             }
