@@ -1,12 +1,15 @@
 import ffmpeg
 import os
 import asyncio
-from api.redis_client import redis_client
+
 
 HLS_MOVIES_FOLDER = "hls_movies"
 
-def run_ffmpeg(input_file, output_m3u8, segment_pattern, width, height, bitrate):
-    try:    
+
+def run_ffmpeg(
+        input_file, output_m3u8, segment_pattern, width, height, bitrate
+):
+    try:
         (
             ffmpeg
             .input(input_file)
@@ -49,11 +52,19 @@ async def convert_to_hls(input_file, movie_id):
             f.write(f"{resolution}.m3u8\n\n")
 
     tasks = []
-    for resolution, (width, height, bitrate) in resolutions.items():    
+    for resolution, (width, height, bitrate) in resolutions.items():
         output_m3u8 = f"{HLS_MOVIES_FOLDER}/movie_{movie_id}/{resolution}.m3u8"
         segment_pattern = f"{HLS_MOVIES_FOLDER}/movie_{movie_id}/segment_{resolution}_%03d.ts"
-        
-        task = asyncio.to_thread(run_ffmpeg, input_file, output_m3u8, segment_pattern, width, height, bitrate)
+
+        task = asyncio.to_thread(
+            run_ffmpeg,
+            input_file,
+            output_m3u8,
+            segment_pattern,
+            width,
+            height,
+            bitrate
+        )
         tasks.append(task)
 
     await asyncio.gather(*tasks)

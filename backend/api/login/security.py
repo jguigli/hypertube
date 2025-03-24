@@ -1,21 +1,16 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from fastapi import HTTPException, Depends, status
+from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-from typing import Optional
-
 import jwt
 from jwt.exceptions import InvalidTokenError
-
 from . import schemas
 from api.database import get_db
 from api.users import crud as user_crud
 from api.users import models as user_models
 from api.config import SECRET_KEY, SECRET_KEY_MAIL_LINK
-
 from .models import AuthProvider
 
 
@@ -82,6 +77,7 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
 
 def get_current_user_streaming(
         token: str,

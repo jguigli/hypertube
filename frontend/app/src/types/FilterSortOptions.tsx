@@ -1,12 +1,10 @@
 export default interface FilterSortOptions {
-    selectedGenre: string;
-    yearRange: number[];
-    rating: number[];
-    sortBy: string;
+    filterOptions: FilterOptions;
+    sortOptions: SortOptions;
 };
 
 export interface FilterOptions {
-    genre: string;
+    genre: string[];
     yearRange: number[];
     rating: number[];
 };

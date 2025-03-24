@@ -1,4 +1,4 @@
-import React from "react";
+import React, { JSX } from "react";
 import { Button } from "@mui/material";
 
 interface ActionCommentsProps {

@@ -1,11 +1,7 @@
 import libtorrent as lt
-import time
 import asyncio
 import os
-import aiofiles
-from api.redis_client import redis_client
 
-from .models import Movie
 
 DOWNLOAD_MOVIES_FOLDER = "./downloads"
 
@@ -21,7 +17,6 @@ async def download_torrent(magnet_link: str, movie_id: int):
     })
     session.start_dht()
     session.start_lsd()
-    
 
     for router in [
         ("router.bittorrent.com", 6881),
@@ -48,24 +43,25 @@ async def download_torrent(magnet_link: str, movie_id: int):
     for tracker in trackers:
         handle.add_tracker({"url": tracker})
 
-
     while not handle.has_metadata():
-        print(f"Waiting for torrent metadata", flush=True)
+        print("Waiting for torrent metadata", flush=True)
         alerts = session.pop_alerts()
         for a in alerts:
             print(a)
         await asyncio.sleep(5)
-    
+
     torrent_info = handle.get_torrent_info()
 
     while not handle.is_seed():
-        print(f"Downloading : {handle.status().progress * 100:.2f}%", flush=True)
+        print(
+            f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
+        )
         await asyncio.sleep(5)
-    
+
     file_path = ""
     for index in range(torrent_info.num_files()):
         file_entry = torrent_info.files().file_path(index)
-    
+
         if file_entry.endswith((".mp4", ".mkv", ".avi", ".mov", ".flv")):
             file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER, file_entry)
             break
