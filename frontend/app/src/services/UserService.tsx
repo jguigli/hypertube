@@ -3,7 +3,7 @@ import User from "../types/User";
 
 // Axios configuration
 const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
-axios.defaults.baseURL = `http://${hostname}:3000/api`;
+axios.defaults.baseURL = `http://${hostname}:3000/api/`;
 
 interface AllUsers {
     id: number;
@@ -102,7 +102,7 @@ export default class UserService {
         }
     }
 
-    // GET / users
+    // GET /users
     async getUsers(
         token: string
     ): Promise<
@@ -136,7 +136,7 @@ export default class UserService {
         }
     }
 
-    // GET / users / { user_id }
+    // GET /users/{ user_id }
     async getUser(
         user_id: number,
         token: string
@@ -185,7 +185,6 @@ export default class UserService {
         user_name: string,
         first_name: string,
         last_name: string,
-        language: string
     ): Promise<{ success: boolean, error: string | null }> {
 
         try {
@@ -197,7 +196,6 @@ export default class UserService {
                     user_name: user_name,
                     first_name: first_name,
                     last_name: last_name,
-                    language: language
                 },
                 {
                     headers: {
