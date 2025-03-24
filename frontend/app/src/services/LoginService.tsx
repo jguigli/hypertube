@@ -100,12 +100,12 @@ export default class LoginService {
     // GET /auth/google/callback
 
     // GET /auth/42 and GET /auth/google
-    async registerOAuth(provider: "42" | "google") {
+    async registerOAuth(provider: "42" | "google" | "github"): Promise<void> {
         try {
-            window.open(`http://localhost:3000/api/auth/${provider}`, "_self");
+            window.open(`http://${hostname}:3000/api/auth/${provider}`, "_self");
         }
         catch (error) {
-            return error;
+            console.error("Error during OAuth registration:", error);
         }
     }
 

@@ -19,9 +19,6 @@ async def register(
     db: Session = Depends(get_db)
 ):
 
-    # Search in the AuthProvider table if the email is already registered
-    # instead of the User table ?
-
     user = crud.get_user_by_email(db, user_infos.email)
     if user:
         raise HTTPException(

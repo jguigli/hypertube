@@ -12,6 +12,7 @@ import UserService from "../services/UserService";
 import User from "../types/User";
 import { useAuth } from "../contexts/AuthContext";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
+import { GitHub } from "@mui/icons-material";
 
 
 function RegisterFormFirstPart(
@@ -330,6 +331,10 @@ export default function Register() {
         loginService.registerOAuth("google");
     };
 
+    const handleGithubLogin = async () => {
+        loginService.registerOAuth("github");
+    };
+
     function handleNextPage(event: React.MouseEvent) {
         event.preventDefault();
 
@@ -360,6 +365,11 @@ export default function Register() {
                         <Button variant="outlined" onClick={handleGoogleRegister}>
                             <span className="flex items-center gap-2">
                                 <GoogleIcon color="secondary" /> Google
+                            </span>
+                        </Button>
+                        <Button variant="outlined" onClick={handleGithubLogin}>
+                            <span className="flex items-center gap-2">
+                                <GitHub color="secondary" /> Github
                             </span>
                         </Button>
                     </Stack>
