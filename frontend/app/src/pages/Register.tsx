@@ -99,6 +99,10 @@ function RegisterFormSecondPart(
         setLastName: (lastName: string) => void;
         avatar: File | null;
         setAvatar: (avatar: File | null) => void;
+        firstNameError: string | null;
+        setFirstNameError: (firstNameError: string | null) => void;
+        lastNameError: string | null;
+        setLastNameError: (lastNameError: string | null) => void;
     }
 ) {
 
@@ -133,6 +137,7 @@ function RegisterFormSecondPart(
                     required
                     id="firstName_register"
                 />
+                {props.firstNameError && <Typography variant="caption" className="text-xs text-red-500">{props.firstNameError}</Typography>}
             </div>
 
             <div className="flex flex-col gap-2 w-full">
@@ -145,6 +150,7 @@ function RegisterFormSecondPart(
                     required
                     id="lastName_register"
                 />
+                {props.lastNameError && <Typography variant="caption" className="text-xs text-red-500">{props.lastNameError}</Typography>}
             </div>
 
             <div className="flex flex-col gap-2 w-full">
@@ -190,6 +196,8 @@ export default function Register() {
     const [emailFormatError, setEmailFormatError] = useState<string | null>(null);
     const [passwordFormatError, setPasswordFormatError] = useState<string | null>(null);
     const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [firstNameError, setFirstNameError] = useState<string | null>(null);
+    const [lastNameError, setLastNameError] = useState<string | null>(null);
 
     const { user, login } = useAuth();
     const navigate = useNavigate();
@@ -217,6 +225,7 @@ export default function Register() {
         );
 
         if (!response.success || !response.token) {
+
             if (response.error === "Username already taken") {
                 setUsernameError("Username already taken");
                 setCurrentStep(1);
@@ -247,6 +256,22 @@ export default function Register() {
                 return;
             } else {
                 setPasswordFormatError(null);
+            }
+
+            if (response.error === "First name cannot be empty.") {
+                setFirstNameError("First name cannot be empty.");
+                setCurrentStep(2);
+                return;
+            } else {
+                setFirstNameError(null);
+            }
+
+            if (response.error === "Last name cannot be empty.") {
+                setLastNameError("Last name cannot be empty.");
+                setCurrentStep(2);
+                return;
+            } else {
+                setLastNameError(null);
             }
 
             alert("An error occurred: " + response.error || "An unexpected error occurred");
@@ -377,6 +402,10 @@ export default function Register() {
                             setLastName={setLastName}
                             avatar={avatar}
                             setAvatar={setAvatar}
+                            firstNameError={firstNameError}
+                            setFirstNameError={setFirstNameError}
+                            lastNameError={lastNameError}
+                            setLastNameError={setLastNameError}
                         />
                         <div className="flex gap-3 w-full">
                             <Button variant="outlined" onClick={() => setCurrentStep(1)} className="flex-1">Previous</Button>

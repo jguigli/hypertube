@@ -72,9 +72,19 @@ def edit_user(
             auth_provider.user_name = user_infos.user_name
 
     if user_infos.first_name != user.first_name:
+        if not user_infos.first_name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="First name cannot be empty."
+            )
         user.first_name = user_infos.first_name
 
     if user_infos.last_name != user.last_name:
+        if not user_infos.last_name.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Last name cannot be empty."
+            )
         user.last_name = user_infos.last_name
 
     db.commit()
