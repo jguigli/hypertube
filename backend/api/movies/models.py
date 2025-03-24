@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Boolean, Column, ForeignKey, Integer, String, Date, ARRAY
+    Boolean, Column, ForeignKey, Integer, String, Date, ARRAY, Text
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -18,7 +18,7 @@ class Movie(Base):
     poster_path = Column(String(64))
     backdrop_path = Column(String(64))
     release_date = Column(String(10))
-    category = Column(ARRAY(String(128)))
+    category = Column(ARRAY(Text))
     title = Column(String(512))
     vote_average = Column(Integer)
     vote_count = Column(Integer)

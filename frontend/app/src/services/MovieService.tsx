@@ -26,8 +26,6 @@ export default class MovieService {
                 }
             }
 
-            console.log(token);
-
             const response = await axios.post(
                 `/movies/popular/${page}`,
                 {

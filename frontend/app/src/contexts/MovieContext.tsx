@@ -95,13 +95,13 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Failed to fetch movies information:", error);
         } finally {
-            setLoading(false); // Fin du chargement
+            setLoading(false);
         }
     }
 
     useEffect(() => {
         getMoviesInfo();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         if (!loading) {
@@ -111,10 +111,10 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                 rating: [moviesInformation.rating_min, moviesInformation.rating_max]
             };
             const defaultSortOptions: SortOptions = { type: "none", ascending: false };
-
             fetchMovies(1, "", user.language, defaultFilterOptions, defaultSortOptions, getToken());
+            setHasMore(true);
         }
-    }, [user.language, moviesInformation, loading]);
+    }, [user, moviesInformation, loading]);
 
     if (loading) {
         return <div>Loading...</div>;

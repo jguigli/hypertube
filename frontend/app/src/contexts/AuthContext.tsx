@@ -20,21 +20,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     function getUser() {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
-            let user: User = JSON.parse(storedUser);
-            user.avatar = undefined;
             return JSON.parse(storedUser);
         }
         return defaultUser();
     }
 
-    function defaultUser(): User {
+    function defaultUser(language: 'en' | 'fr' = 'en'): User {
         return {
             username: "",
             email: "",
             firstName: "",
             lastName: "",
+            avatar: "",
+            language: language,
             is_logged_in: false,
-            language: "en",
         };
     }
 
@@ -49,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = () => {
-        setUser(defaultUser());
+        setUser(defaultUser(user.language));
         localStorage.removeItem("user");
         localStorage.removeItem("token");
     };

@@ -31,7 +31,7 @@ def upgrade() -> None:
                     poster_path VARCHAR(64),
                     backdrop_path VARCHAR(64),
                     release_date VARCHAR(10),
-                    category VARCHAR(128) ARRAY,
+                    category TEXT ARRAY,
                     title VARCHAR(512),
                     vote_average INTEGER,
                     vote_count INTEGER,

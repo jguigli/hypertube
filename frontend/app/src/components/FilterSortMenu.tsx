@@ -92,7 +92,6 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
                                 const selectedValue = e.target.value;
                                 if (typeof selectedValue === "string") {
                                     setMovieCategories([selectedValue]);
-
                                 } else {
                                     setMovieCategories(selectedValue);
                                 }

@@ -36,6 +36,7 @@ export default function Home() {
         setHasMore(true);
         setInitialRating([moviesInformation.rating_min, moviesInformation.rating_max]);
         setInitialYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+        setInitialMovieCategories(moviesInformation.genres);
         setFilterOptions({
             genre: initialMovieCategories,
             yearRange: initialYearRange,

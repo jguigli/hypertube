@@ -27,6 +27,9 @@ from .crud import (
 from . import schemas
 import os
 from .models import Movie
+from sqlalchemy import cast
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Text
 from .download import download_torrent
 from pathlib import Path
 import io
@@ -53,6 +56,7 @@ async def search_movies(
     language = searchBody.language
     page = searchBody.page
     sort_options = searchBody.sort_options
+    filter_options = searchBody.filter_options
 
     sort_column = {
         "name": Movie.title,
@@ -77,7 +81,12 @@ async def search_movies(
         ) \
             .filter(
                 Movie.title.ilike(f"%{search}%"),
-                Movie.language == language
+                Movie.language == language,
+                Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
+                Movie.vote_average >= filter_options.imdb_rating_low,
+                Movie.vote_average <= filter_options.imdb_rating_high,
+                Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
+                Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
             ) \
             .order_by(
                 sort_column.asc() if sort_options.ascending
@@ -146,7 +155,6 @@ async def get_popular_movies(
     if cached_movies:
         movies_data = json.loads(cached_movies)
     else:
-
         movies_data = db.query(
             Movie.id,
             Movie.title,
@@ -155,10 +163,11 @@ async def get_popular_movies(
             Movie.poster_path
         ).filter(
             Movie.language == language,
+            Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
             Movie.vote_average >= filter_options.imdb_rating_low,
             Movie.vote_average <= filter_options.imdb_rating_high,
-            # Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
-            # Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
+            Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
+            Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
         ).order_by(
             sort_column.asc() if sort_options.ascending
             else sort_column.desc()
