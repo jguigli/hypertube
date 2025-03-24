@@ -10,13 +10,20 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     movie_id = Column(Integer, ForeignKey("movies.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    parent_id = Column(Integer, ForeignKey("comments.id"), nullable=True, default=None)
     content = Column(String(500))
 
     created_at = Column(Date, default=datetime.now)
 
     movie_association = relationship("Movie")
     user_association = relationship("User")
+    parent_comment = relationship("Comment", back_populates="children_replies", remote_side=[id])
+    children_replies = relationship("Comment", back_populates="parent_comment")
 
     @property
     def user_name(self):
         return self.user_association.user_name
+    
+    @property
+    def replies(self):
+        return [{"id": com.id, "user_id": com.user_id, "user_name": com.user_name, "parent_id": com.parent_id, "content": com.content, "replies": com.replies} for com in self.children_replies]

@@ -12,6 +12,8 @@ en.subject.pdf
 backend/profile_pictures/
 !backend/profile_pictures/default.jpg
 backend/venv/
+backend/downloads
+backend/hls_movies
 
 .DS_Store
 **/.DS_Store/**

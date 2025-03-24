@@ -16,7 +16,7 @@ export interface MoviesInformation {
 interface MoviesContextType {
     movies: Movie[];
     setMovies: (movies: Movie[]) => void;
-    fetchMovies: (page: number, searchQuery: string, language: string, filterOptions: FilterOptions, sortOptions: SortOptions) => Promise<Movie[]>;
+    fetchMovies: (page: number, searchQuery: string, language: string, filterOptions: FilterOptions, sortOptions: SortOptions, token: string | null) => Promise<Movie[]>;
     hasMore: boolean;
     setHasMore: (hasMore: boolean) => void;
     moviesInformation: MoviesInformation;
@@ -45,12 +45,13 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         searchQuery: string,
         language: string,
         filterOptions: FilterOptions,
-        sortOptions: SortOptions
+        sortOptions: SortOptions,
+        token: string | null
     ): Promise<Movie[]> {
         try {
             const response = searchQuery
-                ? await movieService.searchMovies(searchQuery, language, page, filterOptions, sortOptions)
-                : await movieService.getPopularMovies(page, language, filterOptions, sortOptions);
+                ? await movieService.searchMovies(searchQuery, language, page, filterOptions, sortOptions, token)
+                : await movieService.getPopularMovies(page, language, filterOptions, sortOptions, token);
 
             if (response.success) {
                 if (response.data.length > 0) {
@@ -105,12 +106,13 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!loading) {
             const defaultFilterOptions: FilterOptions = {
+                genre: moviesInformation.genres,
                 yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
                 rating: [moviesInformation.rating_min, moviesInformation.rating_max]
             };
             const defaultSortOptions: SortOptions = { type: "none", ascending: false };
-            
-            fetchMovies(1, "", user.language, defaultFilterOptions, defaultSortOptions);
+
+            fetchMovies(1, "", user.language, defaultFilterOptions, defaultSortOptions, getToken());
         }
     }, [user.language, moviesInformation, loading]);
 

@@ -20,3 +20,4 @@ aiosmtplib
 pillow
 aiofiles
 ffmpeg-python
+aiohttp

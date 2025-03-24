@@ -31,12 +31,14 @@ def upgrade() -> None:
                     poster_path VARCHAR(64),
                     backdrop_path VARCHAR(64),
                     release_date VARCHAR(10),
-                    category INTEGER ARRAY,
+                    category VARCHAR(128) ARRAY,
                     title VARCHAR(512),
                     vote_average INTEGER,
                     vote_count INTEGER,
                     magnet_link VARCHAR(300),
                     file_path VARCHAR(200),
+                    is_download BOOLEAN DEFAULT FALSE,
+                    is_convert BOOLEAN DEFAULT FALSE,
                     created_at DATE DEFAULT CURRENT_DATE
                 );
             """
@@ -53,4 +55,3 @@ def downgrade() -> None:
             """
         )
     )
-

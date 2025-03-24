@@ -13,10 +13,20 @@ export default class MovieService {
         page: number,
         language: string = "en",
         filterOptions: FilterOptions,
-        sortOptions: SortOptions
+        sortOptions: SortOptions,
+        token: string | null
     ) {
 
         try {
+
+            if (!token) {
+                return {
+                    success: false,
+                    data: null
+                }
+            }
+
+            console.log(token);
 
             const response = await axios.post(
                 `/movies/popular/${page}`,
@@ -24,12 +34,18 @@ export default class MovieService {
                     page: page,
                     language: language,
                     filter_options: {
+                        categories: filterOptions.genre,
                         production_year_low: filterOptions.yearRange[0],
                         production_year_high: filterOptions.yearRange[1],
                         imdb_rating_low: filterOptions.rating[0],
                         imdb_rating_high: filterOptions.rating[1],
                     },
-                    sort_options: sortOptions
+                    sort_options: sortOptions,
+                },
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
                 }
             );
             if (response.status === 200) {
@@ -66,9 +82,18 @@ export default class MovieService {
         language: string = "en",
         page: number = 1,
         filterOptions: FilterOptions,
-        sortOptions: SortOptions
+        sortOptions: SortOptions,
+        token: string | null
     ) {
         try {
+
+            if (!token) {
+                return {
+                    success: false,
+                    data: null
+                }
+            }
+
             const response = await axios.post(
                 `/movies/search`,
                 {
@@ -76,12 +101,18 @@ export default class MovieService {
                     language: language,
                     page: page,
                     filter_options: {
+                        categories: filterOptions.genre,
                         production_year_low: filterOptions.yearRange[0],
                         production_year_high: filterOptions.yearRange[1],
                         imdb_rating_low: filterOptions.rating[0],
                         imdb_rating_high: filterOptions.rating[1],
                     },
                     sort_options: sortOptions
+                },
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
                 }
             );
             if (response.status === 200) {

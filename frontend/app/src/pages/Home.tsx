@@ -9,7 +9,7 @@ import FilterSortOptions, { FilterOptions, SortOptions } from '../types/FilterSo
 
 export default function Home() {
 
-    const { user } = useAuth();
+    const { user, getToken } = useAuth();
     const { movies, fetchMovies, hasMore, setHasMore, moviesInformation } = useMovies();
     const { searchQuery, setSearchQuery } = useSearch();
 
@@ -17,8 +17,9 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [initialRating, setInitialRating] = useState<number[]>([moviesInformation.rating_min, moviesInformation.rating_max]);
     const [initialYearRange, setInitialYearRange] = useState<number[]>([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+    const [initialMovieCategories, setInitialMovieCategories] = useState<string[]>(moviesInformation.genres)
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        // genres: [],
+        genre: initialMovieCategories,
         yearRange: initialYearRange,
         rating: initialRating
     });
@@ -36,7 +37,7 @@ export default function Home() {
         setInitialRating([moviesInformation.rating_min, moviesInformation.rating_max]);
         setInitialYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
         setFilterOptions({
-            // genres: [],
+            genre: initialMovieCategories,
             yearRange: initialYearRange,
             rating: initialRating
         });
@@ -55,7 +56,7 @@ export default function Home() {
 
     // Fetch movies when page, searchQuery or language changes
     const fetchMoviesCallback = useCallback(() => {
-        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions).then(
+        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions, getToken()).then(
             () => { setLoading(false); }
         );
     }, [page, searchQuery, user.language]);
@@ -84,9 +85,10 @@ export default function Home() {
         return () => {
             setSearchQuery("");
             fetchMovies(1, "", user.language, {
+                genre: moviesInformation.genres,
                 rating: [moviesInformation.rating_min, moviesInformation.rating_max],
                 yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max]
-            }, { type: "none", ascending: false });
+            }, { type: "none", ascending: false }, getToken());
         }
     }, []);
 
@@ -97,7 +99,7 @@ export default function Home() {
         setSortOptions(sortOptions);
         setPage(1);
         setHasMore(true);
-        fetchMovies(1, searchQuery, user.language, filterOptions, sortOptions
+        fetchMovies(1, searchQuery, user.language, filterOptions, sortOptions, getToken()
         ).then(() => {
             setInitialRating(filterOptions.rating);
             setInitialYearRange(filterOptions.yearRange);
@@ -140,6 +142,7 @@ export default function Home() {
                             sortOptionsLabel={
                                 sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
                             }
+                            initialCategories={initialMovieCategories}
                             initialYearRange={initialYearRange}
                             initialRating={initialRating}
                         />

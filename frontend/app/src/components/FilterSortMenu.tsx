@@ -21,8 +21,9 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, initialRating }: {
+export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, initialYearRange, initialRating }: {
     onApply: (filters: FilterSortOptions) => void,
+    initialCategories: string[],
     sortOptionsLabel: string,
     initialYearRange: number[],
     initialRating: number[]
@@ -30,7 +31,7 @@ export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, in
 
     const { moviesInformation } = useMovies();
     const [open, setOpen] = useState(false);
-    const [selectedGenre, setSelectedGenre] = useState("");
+    const [movieCategories, setMovieCategories] = useState<string[]>(initialCategories)
     const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
     const [rating, setRating] = useState<number[] | number>(initialRating);
     const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
@@ -48,9 +49,9 @@ export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, in
         onApply(
             {
                 filterOptions: {
-                    // genre: selectedGenre,
-                    yearRange: typeof(yearRange) === "number" ? [yearRange, yearRange] : yearRange,
-                    rating: typeof(rating) === "number" ? [rating, rating] : rating
+                    genre: movieCategories,
+                    yearRange: typeof (yearRange) === "number" ? [yearRange, yearRange] : yearRange,
+                    rating: typeof (rating) === "number" ? [rating, rating] : rating
                 },
                 sortOptions: sortOptionsValue
             }
@@ -59,7 +60,7 @@ export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, in
     };
 
     const handleReset = () => {
-        setSelectedGenre("");
+        setMovieCategories(moviesInformation.genres)
         setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
         setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
         setSortOptions("none");
@@ -83,11 +84,19 @@ export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, in
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
-                            sx={{ bgcolor: "background.paper"}}
+                            sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={selectedGenre}
-                            onChange={(e) => setSelectedGenre(e.target.value)}
+                            value={movieCategories}
+                            onChange={(e) => {
+                                const selectedValue = e.target.value;
+                                if (typeof selectedValue === "string") {
+                                    setMovieCategories([selectedValue]);
+
+                                } else {
+                                    setMovieCategories(selectedValue);
+                                }
+                            }}
                             size="small"
                         >
                             {moviesInformation.genres.map((genre) => (
@@ -125,7 +134,7 @@ export function FilterSortMenu({ onApply, sortOptionsLabel, initialYearRange, in
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
-                            sx={{ bgcolor: "background.paper"}}
+                            sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
                             value={sortOptions}
