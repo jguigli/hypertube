@@ -88,10 +88,11 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     console.error("Error: video_id is undefined")
   }
   useEffect(() => {
-    if (editMode && inputRef.current) {
+    if (editMode && editingCommentId !== null && inputRef.current) {
+      inputRef.current.innerText = editedContent[editingCommentId] ?? comments.find(c => c.id === editingCommentId)?.content ?? '';
       inputRef.current.focus();
     }
-  }, [editMode]);
+  }, [editMode, editingCommentId]);
 
   const handleNewComment = () => {
     // setExpand(!expand);
@@ -191,9 +192,18 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 {comment.user_name || "anonymous"}
               </Link>
               <span
+                dir="ltr"
                 contentEditable={editMode && editingCommentId === comment.id}
                 suppressContentEditableWarning
                 ref={editingCommentId === comment.id ? inputRef : null}
+                style={{
+                    unicodeBidi: "plaintext",
+                    whiteSpace: "pre-wrap",
+                    outline: "none",
+                    border: editMode && editingCommentId === comment.id ? "1px solid #ddd" : "none",
+                    padding: "2px",
+                    minHeight: "20px"
+                  }}
                 onInput={(e) => {
                   const text = (e.target as HTMLElement).innerText;
                   setEditedContent(prev => ({ ...prev, [comment.id]: text }));
@@ -201,8 +211,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 onKeyDown={async (e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    if (inputRef.current) {
-                      const newContent = inputRef.current.innerText;
+                      const newContent = editedContent[comment.id];
                       if (newContent.trim() !== "") {
                         const token = getToken();
                         if (!token) return console.error("No token");
@@ -218,10 +227,8 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         }
                       }
                     }
-                  }
                 }}>
-                {/* {comment.content} */}
-                {editingCommentId === comment.id ? editedContent[comment.id] ?? comment.content : comment.content}
+                {comment.content}
               </span>
             </div>
 
@@ -236,9 +243,9 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                   className="reply"
                   type="Edit"
                   handleClick={() => {
+                    setEditedContent(prev => ({ ...prev, [comment.id]: comment.content }));
                     setEditMode(true);
                     setEditingCommentId(comment.id);
-                    setEditedContent(prev => ({ ...prev, [comment.id]: comment.content }));
                   }} />
                 <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comment.id)} />
               </Stack>
