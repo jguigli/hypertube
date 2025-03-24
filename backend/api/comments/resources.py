@@ -9,7 +9,7 @@ from api.database import get_db
 from api.users import models as user_models
 from api.login import security
 
-from .crud import get_comment_by_id, create_comment, delete_comment
+from .crud import get_comment_by_id, create_comment, update_comment, delete_comment
 from api.movies.crud import get_movie_by_id
 from .schemas import Comment
 

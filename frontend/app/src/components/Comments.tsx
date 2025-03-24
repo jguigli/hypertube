@@ -78,6 +78,10 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   const [expand, setExpand] = useState<boolean>(true);
   const inputRef = useRef<HTMLSpanElement | null>(null);
   const { getToken, user } = useAuth();
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editedContent, setEditedContent] = useState<{ [key: number]: string }>({});
+
+
 
   const videoID: string | undefined = useParams().id;
   if (!videoID) {
@@ -160,6 +164,22 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   };
 
 
+  const updateCommentContent = (
+    comments: CommentType[],
+    commentId: number,
+    newContent: string,
+    newTimestamp: number
+  ): CommentType[] => {
+    return comments.map(comment => {
+      if (comment.id === commentId) {
+        return { ...comment, content: newContent, timestamp: newTimestamp };
+      } else if (comment.replies && comment.replies.length) {
+        return { ...comment, replies: updateCommentContent(comment.replies, commentId, newContent, newTimestamp) };
+      }
+      return comment;
+    });
+  };
+
   return (
     <div className="comment-wrapper">
       {comments.map((comment) => (
@@ -170,8 +190,38 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
               <Link to={`/profile/${comment.user_name || "anonymous"}`} style={{ textDecoration: "none", fontWeight: "bold", color: "#1DA1F2" }}>
                 {comment.user_name || "anonymous"}
               </Link>
-              <span contentEditable={editMode} suppressContentEditableWarning={editMode} ref={inputRef}>
-                {comment.content}
+              <span
+                contentEditable={editMode && editingCommentId === comment.id}
+                suppressContentEditableWarning
+                ref={editingCommentId === comment.id ? inputRef : null}
+                onInput={(e) => {
+                  const text = (e.target as HTMLElement).innerText;
+                  setEditedContent(prev => ({ ...prev, [comment.id]: text }));
+                }}
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (inputRef.current) {
+                      const newContent = inputRef.current.innerText;
+                      if (newContent.trim() !== "") {
+                        const token = getToken();
+                        if (!token) return console.error("No token");
+                        try {
+                          await commentService.editComment(comment.id, newContent, token);
+                          setCommentsData(prev =>
+                          updateCommentContent(prev, comment.id, newContent, Math.floor(Date.now() / 1000)));
+                          handleEditNode(comment.id, newContent);
+                          setEditMode(false);
+                          setEditingCommentId(null);
+                        } catch (err) {
+                          console.error("Failed to edit comment", err);
+                        }
+                      }
+                    }
+                  }
+                }}>
+                {/* {comment.content} */}
+                {editingCommentId === comment.id ? editedContent[comment.id] ?? comment.content : comment.content}
               </span>
             </div>
 
@@ -182,7 +232,14 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
             <div style={{ display: "flex", marginTop: "20px" }}>
               <Stack direction="row" spacing={1.5}>
                 <ActionComments className="reply" type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>} handleClick={handleNewComment} />
-                <ActionComments className="reply" type="Edit" handleClick={() => setEditMode(true)} />
+                <ActionComments
+                  className="reply"
+                  type="Edit"
+                  handleClick={() => {
+                    setEditMode(true);
+                    setEditingCommentId(comment.id);
+                    setEditedContent(prev => ({ ...prev, [comment.id]: comment.content }));
+                  }} />
                 <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comment.id)} />
               </Stack>
             </div>
@@ -208,7 +265,14 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 </div>
               )}
               {comment.replies?.map((subComment) => (
-                <Comments key={subComment.id} comments={[subComment]} handleInsertNode={handleInsertNode} handleEditNode={handleEditNode} handleDeleteNode={handleDeleteNode} setCommentsData={setCommentsData} />
+                <Comments
+                  key={subComment.id}
+                  comments={[subComment]}
+                  handleInsertNode={handleInsertNode}
+                  handleEditNode={handleEditNode}
+                  handleDeleteNode={handleDeleteNode}
+                  setCommentsData={setCommentsData}
+                />
               ))}
             </div>
           )}
