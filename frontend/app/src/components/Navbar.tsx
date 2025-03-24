@@ -78,27 +78,12 @@ function MovieSearchBar() {
 
 export function LanguageSelection() {
 
-    const { user, getToken, changeUserLanguage } = useAuth();
-    const userService = new UserService();
+    const { user, changeUserLanguage } = useAuth();
 
     const handleChange = (event: SelectChangeEvent) => {
         const language = event.target.value;
         if (language === "en" || language === "fr") {
             changeUserLanguage(language);
-            if (user.is_logged_in && user.email && user.username && user.firstName && user.lastName) {
-                const token = getToken();
-                if (!token) {
-                    return;
-                }
-                userService.setInformations(
-                    token,
-                    user.email,
-                    user.username,
-                    user.firstName,
-                    user.lastName,
-                    language
-                );
-            }
         }
     };
 

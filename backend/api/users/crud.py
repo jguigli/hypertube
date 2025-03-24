@@ -1,10 +1,7 @@
 import shutil
 import os
-
 from sqlalchemy.orm import Session
-
 from . import models, schemas
-from api.login import security
 from fastapi import UploadFile, File, HTTPException, status
 import re
 from api.login.models import AuthProvider
@@ -13,19 +10,24 @@ from api.login.models import AuthProvider
 PROFILE_PICTURES_FOLDER = "./profile_pictures"
 DEFAULT_PICTURE_PATH = f"{PROFILE_PICTURES_FOLDER}/default.jpg"
 
+
 def get_user_by_id(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
+
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
+
 def get_user_by_username(db: Session, user_name: str):
     return db.query(models.User).filter(models.User.user_name == user_name).first()
+
 
 def get_users(db: Session):
     # Return all users {id, user_name}
     users = db.query(models.User).all()
     return {"users": [{"id": user.id, "user_name": user.user_name} for user in users]}
+
 
 def create_user(db: Session, user: schemas.User):
     db_user = models.User(
@@ -33,7 +35,6 @@ def create_user(db: Session, user: schemas.User):
         user_name=user.user_name,
         first_name=user.first_name,
         last_name=user.last_name,
-        # hashed_password=security.get_password_hash(user.password),
         profile_picture_path=DEFAULT_PICTURE_PATH
     )
     db.add(db_user)
@@ -43,9 +44,9 @@ def create_user(db: Session, user: schemas.User):
 
 
 def edit_user(
-        db: Session,
-        user: models.User,
-        user_infos: schemas.UserEditInfos
+    db: Session,
+    user: models.User,
+    user_infos: schemas.UserEditInfos
 ):
 
     auth_provider = db.query(AuthProvider).filter(AuthProvider.user_id == user.id).first()
@@ -76,14 +77,10 @@ def edit_user(
     if user_infos.last_name != user.last_name:
         user.last_name = user_infos.last_name
 
-    if user_infos.language != user.language:
-        if user_infos.language not in ["en", "fr"]:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid language")
-        user.language = user_infos.language
-
     db.commit()
     db.refresh(user)
     return user
+
 
 def manage_profile_picture(
         db: Session,

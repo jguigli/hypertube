@@ -28,7 +28,6 @@ def upgrade() -> None:
                     first_name VARCHAR(64),
                     last_name VARCHAR(64),
                     profile_picture_path VARCHAR(255),
-                    language VARCHAR(5) DEFAULT 'en',
                     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
                     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
                 );
