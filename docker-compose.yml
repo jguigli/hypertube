@@ -31,9 +31,10 @@ services:
       .env
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "dev"]
-      interval: 3s
-      retries: 5
-    restart: always
+      interval: 10s
+      retries: 10
+      timeout: 5s
+    restart: unless-stopped
 
   redis:
     image: redis/redis-stack-server:latest

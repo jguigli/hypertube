@@ -234,7 +234,10 @@ export default class UserService {
                 "/users/me/picture",
                 {
                     headers: {
-                        Authorization: `${token}`
+                        Authorization: `${token}`,
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
                     },
                     responseType: "blob"
                 }
