@@ -82,7 +82,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     async function getMoviesInfo() {
         const token = getToken();
         try {
-            const response = await movieService.getMoviesInformation(token);
+            const response = await movieService.getMoviesInformation(token, user.language);
             if (response.success) {
                 setMoviesInformation({
                     release_date_min: response.data.release_date.min,
@@ -106,7 +106,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!loading) {
             const defaultFilterOptions: FilterOptions = {
-                genre: moviesInformation.genres,
+                genre: "All",
                 yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
                 rating: [moviesInformation.rating_min, moviesInformation.rating_max]
             };

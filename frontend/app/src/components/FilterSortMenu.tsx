@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
 import { useMovies } from "../contexts/MovieContext";
 
@@ -21,25 +21,27 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, initialYearRange, initialRating }: {
+export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initialYearRange, initialRating }: {
     onApply: (filters: FilterSortOptions) => void,
-    initialCategories: string[],
+    movieCategory: string,
     sortOptionsLabel: string,
     initialYearRange: number[],
     initialRating: number[]
 }) {
 
     const { moviesInformation } = useMovies();
+
     const [open, setOpen] = useState(false);
-    const [movieCategories, setMovieCategories] = useState<string[]>(initialCategories)
+
+    const [category, setCategory] = useState<string>(movieCategory);
     const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
     const [rating, setRating] = useState<number[] | number>(initialRating);
-    const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
+    const [sort, setSort] = useState<string>(sortOptionsLabel);
 
     const toggleDrawer = () => setOpen(!open);
 
     const handleApply = () => {
-        const splitted_sortOptions = sortOptions.split(".");
+        const splitted_sortOptions = sort.split(".");
         const type = splitted_sortOptions[0];
         const ascending = splitted_sortOptions[1] === "asc";
         const sortOptionsValue: SortOptions = {
@@ -49,7 +51,7 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
         onApply(
             {
                 filterOptions: {
-                    genre: movieCategories,
+                    genre: category,
                     yearRange: typeof (yearRange) === "number" ? [yearRange, yearRange] : yearRange,
                     rating: typeof (rating) === "number" ? [rating, rating] : rating
                 },
@@ -60,11 +62,17 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
     };
 
     const handleReset = () => {
-        setMovieCategories(moviesInformation.genres)
         setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
         setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
-        setSortOptions("none");
+        setSort("none");
     };
+
+    useEffect(() => {
+        setCategory("All");
+        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
+        setSort("none");
+    }, [moviesInformation]);
 
     return (
         <>
@@ -87,13 +95,13 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
                             sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={movieCategories}
+                            value={category}
                             onChange={(e) => {
                                 const selectedValue = e.target.value;
                                 if (typeof selectedValue === "string") {
-                                    setMovieCategories([selectedValue]);
+                                    setCategory(selectedValue);
                                 } else {
-                                    setMovieCategories(selectedValue);
+                                    setCategory(selectedValue[0]);
                                 }
                             }}
                             size="small"
@@ -136,8 +144,8 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
                             sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
-                            value={sortOptions}
-                            onChange={(e) => (setSortOptions(e.target.value))}
+                            value={sort}
+                            onChange={(e) => (setSort(e.target.value))}
                             size="small"
                         >
                             {sortOptionsLabels.map((option) => (

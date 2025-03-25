@@ -178,7 +178,7 @@ export default class MovieService {
 
     // Get movies information (min and max release year, min and max rating, genres)
     // GET /api/movies/information
-    async getMoviesInformation(token: string | null) {
+    async getMoviesInformation(token: string | null, language: string) {
         try {
             if (token) {
                 const response = await axios.get(
@@ -186,6 +186,9 @@ export default class MovieService {
                     {
                         headers: {
                             Authorization: `${token}`
+                        },
+                        params: {
+                            language: language
                         }
                     }
                 );

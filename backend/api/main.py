@@ -122,10 +122,10 @@ def start_scheduler():
     scheduler.start()
 
 
-@app.on_event("startup")
-async def startup_event():
-    with SessionLocal() as session:
-        await populate_movies(session)
+# @app.on_event("startup")
+# async def startup_event():
+#     with SessionLocal() as session:
+#         await populate_movies(session)
 
 
 @app.on_event("shutdown")

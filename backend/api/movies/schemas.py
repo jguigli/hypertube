@@ -57,7 +57,7 @@ class SortOption(BaseModel):
 
 
 class FilterOption(BaseModel):
-    categories: list[str]
+    categories: str
     production_year_low: int
     production_year_high: int
     imdb_rating_low: float

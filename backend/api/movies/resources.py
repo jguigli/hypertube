@@ -82,7 +82,7 @@ async def search_movies(
             .filter(
                 Movie.title.ilike(f"%{search}%"),
                 Movie.language == language,
-                Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
+                Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
                 Movie.vote_average >= filter_options.imdb_rating_low,
                 Movie.vote_average <= filter_options.imdb_rating_high,
                 Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
@@ -163,7 +163,7 @@ async def get_popular_movies(
             Movie.poster_path
         ).filter(
             Movie.language == language,
-            Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
+            Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
             Movie.vote_average >= filter_options.imdb_rating_low,
             Movie.vote_average <= filter_options.imdb_rating_high,
             Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
@@ -214,13 +214,23 @@ async def get_popular_movies(
 # max) and genres, used in the filter / sort menu of the frontend.
 @router.get('/movies/informations', response_model=schemas.MovieInformations)
 async def get_movies_informations(
+    language: str,
     current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
+
+    if not language or language not in ["en", "fr"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid language"
+        )
+
     movies_informations = db.query(
         Movie.category,
         Movie.vote_average,
         Movie.release_date
+    ).filter(
+        Movie.language == language
     ).all()
 
     if not movies_informations:
@@ -229,8 +239,8 @@ async def get_movies_informations(
             detail="No movies found"
         )
 
-    vote_average = [movie.vote_average for movie in movies_informations]
-    release_date = [movie.release_date for movie in movies_informations]
+    vote_average = [movie.vote_average for movie in movies_informations if movie.vote_average]
+    release_date = [movie.release_date for movie in movies_informations if movie.release_date]
     genres = {str(genre) for movie in movies_informations for genre in movie.category}
 
     informations = {
@@ -239,10 +249,10 @@ async def get_movies_informations(
             "max": max(vote_average)
         },
         "release_date": {
-            "min": int(min(release_date)[:4] if min(release_date) else 1900),
-            "max": int(max(release_date)[:4] if max(release_date) else 2025)
+            "min": min([int(date.split('-')[0]) for date in release_date]) if release_date else 1900,
+            "max": max([int(date.split('-')[0]) for date in release_date]) if release_date else datetime.datetime.now().year
         },
-        "genres": sorted(list(genres))
+        "genres": ["All"] + sorted(list(genres))
     }
 
     return informations

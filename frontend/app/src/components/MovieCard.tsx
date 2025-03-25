@@ -7,8 +7,6 @@ import { Star } from "@mui/icons-material";
 
 export default function MovieCard({ movie }: { movie: Movie }) {
 
-    // TODO : Differenciate watched movies from unwatched ones
-
     return (
         <CustomCard
             additionalClasses={`h-full w-full max-w-[350px] ${movie.is_watched ? "watched" : ""}`}

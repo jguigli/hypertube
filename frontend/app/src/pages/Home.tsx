@@ -15,11 +15,13 @@ export default function Home() {
 
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
+
+    const [movieCategory, setMovieCategory] = useState<string>("All");
     const [initialRating, setInitialRating] = useState<number[]>([moviesInformation.rating_min, moviesInformation.rating_max]);
     const [initialYearRange, setInitialYearRange] = useState<number[]>([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-    const [initialMovieCategories, setInitialMovieCategories] = useState<string[]>(moviesInformation.genres)
+
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        genre: initialMovieCategories,
+        genre: "All",
         yearRange: initialYearRange,
         rating: initialRating
     });
@@ -36,9 +38,8 @@ export default function Home() {
         setHasMore(true);
         setInitialRating([moviesInformation.rating_min, moviesInformation.rating_max]);
         setInitialYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-        setInitialMovieCategories(moviesInformation.genres);
         setFilterOptions({
-            genre: initialMovieCategories,
+            genre: "All",
             yearRange: initialYearRange,
             rating: initialRating
         });
@@ -86,7 +87,7 @@ export default function Home() {
         return () => {
             setSearchQuery("");
             fetchMovies(1, "", user.language, {
-                genre: moviesInformation.genres,
+                genre: "All",
                 rating: [moviesInformation.rating_min, moviesInformation.rating_max],
                 yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max]
             }, { type: "none", ascending: false }, getToken());
@@ -95,6 +96,7 @@ export default function Home() {
 
     const applyFilterSort = (filters: FilterSortOptions) => {
         const { filterOptions, sortOptions } = filters;
+
         setLoading(true);
         setFilterOptions(filterOptions);
         setSortOptions(sortOptions);
@@ -104,6 +106,7 @@ export default function Home() {
         ).then(() => {
             setInitialRating(filterOptions.rating);
             setInitialYearRange(filterOptions.yearRange);
+            setMovieCategory(filterOptions.genre);
             setLoading(false);
         });
     };
@@ -143,9 +146,9 @@ export default function Home() {
                             sortOptionsLabel={
                                 sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
                             }
-                            initialCategories={initialMovieCategories}
                             initialYearRange={initialYearRange}
                             initialRating={initialRating}
+                            movieCategory={movieCategory}
                         />
                     </>
                 )
