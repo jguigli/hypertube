@@ -3,14 +3,13 @@ import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
-import { useSearch } from "../contexts/SearchContext.tsx";
 import { Clear, Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
-import UserService from "../services/UserService.tsx";
+import { useMovies } from "../contexts/MovieContext.tsx";
 
 
 function Logo() {
@@ -33,17 +32,15 @@ function MovieSearchBar() {
 
     const [search, setSearch] = useState("");
 
-    const { setSearchQuery } = useSearch();
+    const { setSearchQuery } = useMovies();
 
-    async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+    function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setSearch(event.target.value);
-        // setSearchQuery(event.target.value);
     }
 
-    async function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+    function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         setSearchQuery(search);
-        // setSearch("");
     }
 
     function handleClearSearch() {

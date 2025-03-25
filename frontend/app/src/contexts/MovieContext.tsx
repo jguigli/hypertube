@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, useCallback } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
@@ -15,71 +15,71 @@ export interface MoviesInformation {
 
 interface MoviesContextType {
     movies: Movie[];
-    setMovies: (movies: Movie[]) => void;
-    fetchMovies: (page: number, searchQuery: string, language: string, filterOptions: FilterOptions, sortOptions: SortOptions, token: string | null) => Promise<Movie[]>;
+    fetchMovies: (page?: number) => Promise<void>;
+    filterOptions: FilterOptions;
+    setFilterOptions: (options: FilterOptions) => void;
+    sortOptions: SortOptions;
+    setSortOptions: (options: SortOptions) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
     hasMore: boolean;
-    setHasMore: (hasMore: boolean) => void;
     moviesInformation: MoviesInformation;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 
-
 export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     const movieService = new MovieService();
+
     const { user, getToken } = useAuth();
+
     const [movies, setMovies] = useState<Movie[]>([]);
+
+    const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const [moviesInformation, setMoviesInformation] = useState<MoviesInformation>({
-        release_date_min:  0,
+        release_date_min: 0,
         release_date_max: 0,
         rating_min: 0,
         rating_max: 0,
         genres: []
     });
-    const [loading, setLoading] = useState(true);
 
-    async function fetchMovies(
-        page: number,
-        searchQuery: string,
-        language: string,
-        filterOptions: FilterOptions,
-        sortOptions: SortOptions,
-        token: string | null
-    ): Promise<Movie[]> {
+    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+        genre: "All",
+        yearRange: [0, 0],
+        rating: [0, 0]
+    });
+
+    const [sortOptions, setSortOptions] = useState<SortOptions>({
+        type: "none",
+        ascending: false
+    });
+
+    const fetchMovies = useCallback(async () => {
+        const token = getToken();
         try {
             const response = searchQuery
-                ? await movieService.searchMovies(searchQuery, language, page, filterOptions, sortOptions, token)
-                : await movieService.getPopularMovies(page, language, filterOptions, sortOptions, token);
+                ? await movieService.searchMovies(searchQuery, user.language, page, filterOptions, sortOptions, token)
+                : await movieService.getPopularMovies(page, user.language, filterOptions, sortOptions, token);
 
             if (response.success) {
-                if (response.data.length > 0) {
-                    setHasMore(true);
-                    if (page === 1) {
-                        setMovies(response.data);
-                    } else {
-                        setMovies((prevMovies) => [...prevMovies, ...response.data]);
-                    }
-                } else {
-                    setHasMore(false);
-                    if (searchQuery && page === 1) {
-                        setMovies([]);
-                    }
-                }
-                return response.data || [];
+                setMovies((prevMovies) => (page === 1 ? response.data : [...prevMovies, ...response.data]));
+                setHasMore(response.data.length > 0);
+                setPage((prevPage) => prevPage + 1);
             } else {
                 setHasMore(false);
-                return [];
             }
         } catch (error) {
+            console.error("Failed to fetch movies:", error);
             setHasMore(false);
-            console.log(error);
-            return [];
         }
-    }
+    }, [searchQuery, user.language, filterOptions, sortOptions, page, getToken]);
 
-    async function getMoviesInfo() {
+    const fetchMoviesInformation = useCallback(async () => {
         const token = getToken();
         try {
             const response = await movieService.getMoviesInformation(token, user.language);
@@ -89,39 +89,41 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                     release_date_max: response.data.release_date.max,
                     rating_min: response.data.vote_average.min,
                     rating_max: response.data.vote_average.max,
-                    genres: response.data.genres
+                    genres: ["All", ...response.data.genres]
                 });
+                setFilterOptions({
+                    genre: "All",
+                    yearRange: [response.data.release_date.min, response.data.release_date.max],
+                    rating: [response.data.vote_average.min, response.data.vote_average.max]
+                });
+                setPage(1);
+                setMovies([]);
+                setHasMore(true);
             }
         } catch (error) {
             console.error("Failed to fetch movies information:", error);
-        } finally {
-            setLoading(false);
         }
-    }
+    }, [user.language]);
 
     useEffect(() => {
-        getMoviesInfo();
-    }, [user]);
-
-    useEffect(() => {
-        if (!loading) {
-            const defaultFilterOptions: FilterOptions = {
-                genre: "All",
-                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
-                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
-            };
-            const defaultSortOptions: SortOptions = { type: "none", ascending: false };
-            fetchMovies(1, "", user.language, defaultFilterOptions, defaultSortOptions, getToken());
-            setHasMore(true);
-        }
-    }, [user, moviesInformation, loading]);
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+        fetchMoviesInformation();
+    }, [fetchMoviesInformation]);
 
     return (
-        <MoviesContext.Provider value={{ movies, setMovies, fetchMovies, hasMore, setHasMore, moviesInformation }}>
+        <MoviesContext.Provider
+            value={{
+                movies,
+                fetchMovies,
+                filterOptions,
+                setFilterOptions,
+                sortOptions,
+                setSortOptions,
+                searchQuery,
+                setSearchQuery,
+                hasMore,
+                moviesInformation
+            }}
+        >
             {children}
         </MoviesContext.Provider>
     );

@@ -60,9 +60,9 @@ async def search_movies(
 
     sort_column = {
         "name": Movie.title,
+        "none": Movie.title,
         "production_year": Movie.release_date,
         "imdb_rating": Movie.vote_average,
-        "none": Movie.popularity
     }.get(sort_options.type.value, Movie.popularity)
 
     cached_searches = False
@@ -143,10 +143,10 @@ async def get_popular_movies(
     sort_options = popularMovieBody.sort_options
 
     sort_column = {
+        "none": Movie.popularity,
         "name": Movie.title,
         "production_year": Movie.release_date,
         "imdb_rating": Movie.vote_average,
-        "none": Movie.popularity
     }.get(sort_options.type.value, Movie.id)
 
     # TODO: Set the key based on filter/sort options

@@ -21,62 +21,25 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initialYearRange, initialRating }: {
-    onApply: (filters: FilterSortOptions) => void,
-    movieCategory: string,
-    sortOptionsLabel: string,
-    initialYearRange: number[],
-    initialRating: number[]
-}) {
-
-    const { moviesInformation } = useMovies();
+export function FilterSortMenu() {
 
     const [open, setOpen] = useState(false);
-
-    const [category, setCategory] = useState<string>(movieCategory);
-    const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
-    const [rating, setRating] = useState<number[] | number>(initialRating);
-    const [sort, setSort] = useState<string>(sortOptionsLabel);
-
     const toggleDrawer = () => setOpen(!open);
 
+    // const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
+
     const handleApply = () => {
-        const splitted_sortOptions = sort.split(".");
-        const type = splitted_sortOptions[0];
-        const ascending = splitted_sortOptions[1] === "asc";
-        const sortOptionsValue: SortOptions = {
-            type: type,
-            ascending: ascending
-        };
-        onApply(
-            {
-                filterOptions: {
-                    genre: category,
-                    yearRange: typeof (yearRange) === "number" ? [yearRange, yearRange] : yearRange,
-                    rating: typeof (rating) === "number" ? [rating, rating] : rating
-                },
-                sortOptions: sortOptionsValue
-            }
-        );
-        toggleDrawer();
+        // Fetch movies with updated filters and sort options
     };
 
     const handleReset = () => {
-        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
-        setSort("none");
+        // setFilterOptions(FilterSortOptions.defaultFilterOptions);
+        // setSortOptions(FilterSortOptions.defaultSortOptions);
     };
-
-    useEffect(() => {
-        setCategory("All");
-        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
-        setSort("none");
-    }, [moviesInformation]);
 
     return (
         <>
-            <Fab
+            {/* <Fab
                 color="primary"
                 onClick={toggleDrawer}
                 sx={{ position: "fixed", bottom: 16, right: 16 }}
@@ -95,7 +58,7 @@ export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initi
                             sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={category}
+                            value={filterOptions.genre}
                             onChange={(e) => {
                                 const selectedValue = e.target.value;
                                 if (typeof selectedValue === "string") {
@@ -116,7 +79,7 @@ export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initi
 
                     <Typography>Production year</Typography>
                     <Slider
-                        value={yearRange}
+                        value={filterOptions.yearRange}
                         onChange={(_, newValue) => setYearRange(newValue)}
                         valueLabelDisplay="auto"
                         min={moviesInformation.release_date_min}
@@ -127,7 +90,7 @@ export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initi
 
                     <Typography>IMDb ratings</Typography>
                     <Slider
-                        value={rating}
+                        value={filterOptions.rating}
                         onChange={(_, newValue) => setRating(newValue)}
                         valueLabelDisplay="auto"
                         min={moviesInformation.rating_min}
@@ -144,7 +107,7 @@ export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initi
                             sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
-                            value={sort}
+                            value={sortOptions.type}
                             onChange={(e) => (setSort(e.target.value))}
                             size="small"
                         >
@@ -171,7 +134,7 @@ export function FilterSortMenu({ onApply, movieCategory, sortOptionsLabel, initi
                         </Button>
                     </Box>
                 </Box>
-            </Drawer>
+            </Drawer> */}
         </>
     );
 }
