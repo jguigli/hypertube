@@ -56,7 +56,7 @@ export const VideoJS = (props: {
     }, [options, videoRef]);
 
     const movieService = new MovieService();
-    const { getToken } = useAuth();
+    const { getToken, user } = useAuth();
     const [movieDetail, setMovieDetail] = useState<Movie | null>(null);
 
 
@@ -64,7 +64,7 @@ export const VideoJS = (props: {
     useEffect(() => {
 
         async function getMovieInfo() {
-            const response = await movieService.getMovieInfo(props.movieID, getToken());
+            const response = await movieService.getMovieInfo(props.movieID, getToken(), user.language);
             if (!response.success) {
                 return;
             }
@@ -75,17 +75,39 @@ export const VideoJS = (props: {
 
     }, [props.movieID, getToken]); // Add dependencies to re-run the effect when movieID or getToken changes
 
-    const rootRef = useRef<any>(null);
-
+    
     const formatDuration = (seconds: number): string => {
         const hrs = Math.floor(seconds / 3600);
         const mins = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
-
+        
         return `${hrs}h${mins}min${secs}s`;
     }
+    
+    // Utilitaires pour formater les informations de casting et de réalisateur
+const getTopActors = (casting: any[] | undefined) => {
+    if (!casting) return "Casting non disponible";
+    const actors = casting
+        .filter((member) => member.role === "Acting")
+        .slice(0, 3) // On prend les 3 premiers acteurs
+        .map((member) => member.name)
+        .join(", ");
+    return actors || "Acteurs non disponibles";
+};
+
+const getDirector = (crew: any[] | undefined) => {
+    if (!crew) return "Directeur non disponible";
+    const director = crew.find((member) => member.role === "Directing");
+    return director ? director.name : "Directeur non disponible";
+};
+
+useEffect(() => {
+    // Ton code du useEffect ici
+}, [movieDetail, movieDuration]);
 
 
+    
+    const rootRef = useRef<any>(null);
     // Move overlay content creation and rendering to a separate useEffect
     useEffect(() => {
         //Contenu de l'overlay pour eviter de faire un innerHTML.
@@ -101,7 +123,7 @@ export const VideoJS = (props: {
                     <span>Age</span>
                     <span>{movieDuration ? formatDuration(movieDuration) : 'Chargement...'}</span>
                 </div>
-                <div className="casting">Avec Anthony Mackie, Harrison Ford, Danny Ramirez</div>
+                <div className="casting">Réalisé par {getDirector(movieDetail?.crew)}, Avec {getTopActors(movieDetail?.casting)}</div>
                 <div className="synopsis">{movieDetail?.overview}</div>
             </div>
         );

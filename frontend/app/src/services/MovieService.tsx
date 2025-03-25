@@ -1,3 +1,4 @@
+import { Language } from "@mui/icons-material";
 import axios from "axios";
 
 // Axios configuration
@@ -86,7 +87,7 @@ export default class MovieService {
     }
 
 
-    async getMovieInfo(id: number, token: string | null) {
+    async getMovieInfo(id: number, token: string | null, language:string) {
         try {
             if (token) {
                 const response = await axios.get(
@@ -96,7 +97,7 @@ export default class MovieService {
                             Authorization: `${token}`
                         },
                         params: {
-                            movie_id: id
+                            movie_id: id, language:language
                         }
                     }
                 );
