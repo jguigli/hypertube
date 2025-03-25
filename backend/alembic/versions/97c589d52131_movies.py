@@ -23,22 +23,22 @@ def upgrade() -> None:
             """
                 CREATE TABLE movies (
                     id INTEGER PRIMARY KEY,
-                    adult BOOLEAN,
                     original_language VARCHAR(3),
-                    original_title VARCHAR(64),
+                    language VARCHAR(3),
+                    original_title VARCHAR(512),
                     overview VARCHAR(1024),
                     popularity INTEGER,
                     poster_path VARCHAR(64),
                     backdrop_path VARCHAR(64),
                     release_date VARCHAR(10),
-                    category TEXT[],
-                    title VARCHAR(64),
+                    category TEXT ARRAY,
+                    title VARCHAR(512),
                     vote_average INTEGER,
                     vote_count INTEGER,
-                    casting JSONB,
-                    crew JSONB,
                     magnet_link VARCHAR(300),
                     file_path VARCHAR(200),
+                    is_download BOOLEAN DEFAULT FALSE,
+                    is_convert BOOLEAN DEFAULT FALSE,
                     created_at DATE DEFAULT CURRENT_DATE
                 );
             """
@@ -55,4 +55,3 @@ def downgrade() -> None:
             """
         )
     )
-

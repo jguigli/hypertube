@@ -19,27 +19,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     function getUser() {
         const storedUser = localStorage.getItem("user");
+        const language = getUserLanguage();
         if (storedUser) {
-            let user: User = JSON.parse(storedUser);
-            user.avatar = undefined;
-            return JSON.parse(storedUser);
+            return { ...JSON.parse(storedUser), language };
         }
-        return defaultUser();
+        return defaultUser(language);
     }
 
-    function defaultUser(): User {
+    function defaultUser(language: 'en' | 'fr' = 'en'): User {
         return {
             username: "",
             email: "",
             firstName: "",
             lastName: "",
+            avatar: "",
+            language: language,
             is_logged_in: false,
-            language: "en",
         };
     }
 
     function getToken() {
         return localStorage.getItem("token");
+    }
+
+    function getUserLanguage(): 'en' | 'fr' {
+        return (localStorage.getItem("language") as 'en' | 'fr') || 'en';
     }
 
     const login = (user: User, token: string) => {
@@ -49,19 +53,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logout = () => {
-        setUser(defaultUser());
+        const language = getUserLanguage();
+        setUser(defaultUser(language));
         localStorage.removeItem("user");
         localStorage.removeItem("token");
     };
 
     const changeUserLanguage = (language: 'en' | 'fr') => {
+        localStorage.setItem("language", language);
         const newUser = { ...user, language };
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
     };
 
     const changeUserAvatar = (avatar: string) => {
-        const newUser = { ...user, avatar: avatar };
+        const newUser = { ...user, avatar };
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
     };

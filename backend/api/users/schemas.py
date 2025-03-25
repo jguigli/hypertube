@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserRegister(BaseModel):
@@ -11,12 +11,14 @@ class UserRegister(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserRegisterReturn(BaseModel):
     access_token: str
     token_type: str
 
     class Config:
         from_attributes = True
+
 
 class User(BaseModel):
     email: str
@@ -26,6 +28,7 @@ class User(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class OtherUser(BaseModel):
     user_name: str
@@ -50,12 +53,12 @@ class UsersList(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserEditInfos(BaseModel):
     email: str
     user_name: str
     first_name: str
     last_name: str
-    language: str
 
     class Config:
         from_attributes = True

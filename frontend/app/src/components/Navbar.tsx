@@ -4,15 +4,13 @@ import { IconButton, InputBase, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { useSearch } from "../contexts/SearchContext.tsx";
-import { Search } from "@mui/icons-material";
+import { Clear, Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import UserService from "../services/UserService.tsx";
-import MovieService from "../services/MovieService.tsx";
-import { useMovies } from "../contexts/MovieContext.tsx";
 
 
 function Logo() {
@@ -33,23 +31,42 @@ function Logo() {
 
 function MovieSearchBar() {
 
-    const { searchQuery, setSearchQuery } = useSearch();
+    const [search, setSearch] = useState("");
+
+    const { setSearchQuery } = useSearch();
 
     async function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearchQuery(event.target.value);
+        setSearch(event.target.value);
+        // setSearchQuery(event.target.value);
+    }
+
+    async function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setSearchQuery(search);
+        // setSearch("");
+    }
+
+    function handleClearSearch() {
+        setSearch("");
+        setSearchQuery("");
     }
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={(event) => event.preventDefault()}>
+            <form onSubmit={handleSearchSubmit}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={searchQuery}
+                        value={search}
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
+                    { search.length > 0 && (
+                        <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
+                            <Clear />
+                        </IconButton>
+                    )}
                     <IconButton type="submit" sx={{ p: '5px', mr: 2 }} aria-label="search">
                         <Search />
                     </IconButton>
@@ -61,27 +78,12 @@ function MovieSearchBar() {
 
 export function LanguageSelection() {
 
-    const { user, getToken, changeUserLanguage } = useAuth();
-    const userService = new UserService();
+    const { user, changeUserLanguage } = useAuth();
 
     const handleChange = (event: SelectChangeEvent) => {
         const language = event.target.value;
         if (language === "en" || language === "fr") {
             changeUserLanguage(language);
-            if (user.is_logged_in && user.email && user.username && user.firstName && user.lastName) {
-                const token = getToken();
-                if (!token) {
-                    return;
-                }
-                userService.setInformations(
-                    token,
-                    user.email,
-                    user.username,
-                    user.firstName,
-                    user.lastName,
-                    language
-                );
-            }
         }
     };
 

@@ -1,145 +1,372 @@
 from typing import Annotated
-from fastapi import Depends, Response, HTTPException, APIRouter, status, Request
+from fastapi import (
+    Depends, Response, HTTPException, APIRouter, status, BackgroundTasks
+)
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
 import json
 from typing import List
 from datetime import datetime
-from fastapi.responses import StreamingResponse
-
+from fastapi.responses import FileResponse
+from .schemas import MovieDisplay
 from api.redis_client import redis_client
 from api.database import get_db
-from api.users import models as user_models
+from api.users.models import User
 from api.login import security
 from .fetch import (
-    fetch_popular_movies_tmdb,
-    search_movies_tmdb,
     get_magnet_link_piratebay,
-    fetch_genres_movies_tmdb,
     fetch_movie_detail_tmdb
 )
 from .crud import (
-    mark_movie_as_watched,
-    get_watched_movie,
-    get_watched_movies,
     get_watched_movies_id,
+    get_watched_movie,
     get_movie_by_id,
     create_movie,
-    map_to_movie_display,
-    map_to_movie
+    map_to_movie_info,
+    mark_movie_as_watched
 )
-
-from . import schemas, models
-from .download import download_torrent, file_streamer
+from . import schemas
 import os
-import asyncio
-import time
+from .models import Movie
+from sqlalchemy import cast
+from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.types import Text
+from .download import download_torrent
+from pathlib import Path
+import io
+import zipfile
+from .hls import convert_to_hls, HLS_MOVIES_FOLDER
+from ..database import SessionLocal
+from ..websocket.websocket_manager import manager_websocket
+
 
 router = APIRouter(tags=["Movies"])
 
 
-@router.get('/movies/search', response_model=List[schemas.MovieDisplay])
+@router.post('/movies/search', response_model=List[MovieDisplay])
 async def search_movies(
-    search: str,
-    language: str,
-    page: int,
+    searchBody: schemas.SearchMovieBody,
     current_user: Annotated[
-        user_models.User,
-        Depends(security.get_current_user_authentified_or_anonymous)
+        User,
+        Depends(security.get_current_user)
     ],
     db: Session = Depends(get_db)
 ):
-    cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
+
+    search = searchBody.search
+    language = searchBody.language
+    page = searchBody.page
+    sort_options = searchBody.sort_options
+    filter_options = searchBody.filter_options
+
+    sort_column = {
+        "name": Movie.title,
+        "production_year": Movie.release_date,
+        "imdb_rating": Movie.vote_average,
+        "none": Movie.popularity
+    }.get(sort_options.type.value, Movie.popularity)
+
+    cached_searches = False
+    # TODO: Add the sort and filter options to the cache key
+    # cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
     if cached_searches:
         movies_data = json.loads(cached_searches)
     else:
-        movies_data = search_movies_tmdb(search, language, page)
+        # Search movies in database
+        movies_data = db.query(
+            Movie.id,
+            Movie.title,
+            Movie.release_date,
+            Movie.vote_average,
+            Movie.poster_path
+        ) \
+            .filter(
+                Movie.title.ilike(f"%{search}%"),
+                Movie.language == language,
+                Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
+                Movie.vote_average >= filter_options.imdb_rating_low,
+                Movie.vote_average <= filter_options.imdb_rating_high,
+                Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
+                Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
+            ) \
+            .order_by(
+                sort_column.asc() if sort_options.ascending
+                else sort_column.desc()) \
+            .offset((page - 1) * 20) \
+            .limit(20) \
+            .all()
+
         if not movies_data:
-            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+            raise HTTPException(
+                status_code=status.HTTP_204_NO_CONTENT,
+                detail="Search movie not available"
+            )
 
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
+        # TODO: Add to cache
+        # redis_client.set(
+        #    f"search:{search}:{language}:{page}", json.dumps(movies_data)
+        # )
 
-        for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+    watched_movies = get_watched_movies_id(db, current_user.id)
 
-    movies = [map_to_movie_display(movie) for movie in movies_data]
+    # movies = [map_to_movie_display(movie) for movie in movies_data]
+    movies = [
+        MovieDisplay(**{
+            "id": movie.id,
+            "title": movie.title,
+            "release_date": movie.release_date,
+            "vote_average": movie.vote_average,
+            "poster_path": movie.poster_path,
+            "is_watched": movie.id in watched_movies,
+            "category": []
+        }) for movie in movies_data
+    ]
+
     if not movies:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Search movie not available")
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="Search movie not available"
+        )
+
     return movies
 
 
-@router.get('/movies/popular/{page}', response_model=List[schemas.MovieDisplay])
+@router.post('/movies/popular/{page}', response_model=List[MovieDisplay])
 async def get_popular_movies(
-    page: int,
-    language: str,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user_authentified_or_anonymous)],
+    popularMovieBody: schemas.PopularMovieBody,
+    current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
-    cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
+
+    page = popularMovieBody.page
+    language = popularMovieBody.language
+    filter_options: schemas.FilterOption = popularMovieBody.filter_options
+    sort_options = popularMovieBody.sort_options
+
+    sort_column = {
+        "name": Movie.title,
+        "production_year": Movie.release_date,
+        "imdb_rating": Movie.vote_average,
+        "none": Movie.popularity
+    }.get(sort_options.type.value, Movie.id)
+
+    # TODO: Set the key based on filter/sort options
+    # cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
+    cached_movies = False
     if cached_movies:
         movies_data = json.loads(cached_movies)
     else:
-        movies_data = fetch_popular_movies_tmdb(language, page)
+        movies_data = db.query(
+            Movie.id,
+            Movie.title,
+            Movie.release_date,
+            Movie.vote_average,
+            Movie.poster_path
+        ).filter(
+            Movie.language == language,
+            Movie.category.op("&&")(cast(filter_options.categories, ARRAY(Text))),
+            Movie.vote_average >= filter_options.imdb_rating_low,
+            Movie.vote_average <= filter_options.imdb_rating_high,
+            Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
+            Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
+        ).order_by(
+            sort_column.asc() if sort_options.ascending
+            else sort_column.desc()
+        ).offset(
+            (page - 1) * 20
+        ).limit(20).all()
+
         if not movies_data:
-            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Popular movies not available")
-        
-    cached_genres = redis_client.get(f"genres_movies:{page}:{language}")
-    if cached_genres:
-        genres = json.loads(cached_genres)
-    else:
-        genres = fetch_genres_movies_tmdb(language)
-        if not genres:
-            raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Genres for movies not available")
+            raise HTTPException(
+                status_code=status.HTTP_204_NO_CONTENT,
+                detail="No movies found"
+            )
 
-    if current_user:
-        watched_movies = get_watched_movies_id(db, current_user.id)
+        # TODO: Add to cache
+        # redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
 
-        for movie in movies_data:
-            movie["is_watched"] = movie["id"] in watched_movies
+    watched_movies = get_watched_movies_id(db, current_user.id)
 
-    movies = [map_to_movie_display(movie, genres) for movie in movies_data]
-    if not movies:
-        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="No movies found")
+    # Already fetched at startup
+    # genres = await fetch_genres_movies_tmdb(language)
+
+    movies = [
+        MovieDisplay(**{
+            "id": movie.id,
+            "title": movie.title,
+            "release_date": movie.release_date,
+            "vote_average": movie.vote_average,
+            "poster_path": movie.poster_path,
+            "is_watched": movie.id in watched_movies,
+            "category": []
+        }) for movie in movies_data
+    ]
+
+    if not movies_data:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No movies found"
+        )
 
     return movies
+
+
+# Get movies informations : vote_average (min and max), release_date (min and
+# max) and genres, used in the filter / sort menu of the frontend.
+@router.get('/movies/informations', response_model=schemas.MovieInformations)
+async def get_movies_informations(
+    current_user: Annotated[User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    movies_informations = db.query(
+        Movie.category,
+        Movie.vote_average,
+        Movie.release_date
+    ).all()
+
+    if not movies_informations:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No movies found"
+        )
+
+    vote_average = [movie.vote_average for movie in movies_informations]
+    release_date = [movie.release_date for movie in movies_informations]
+    genres = {str(genre) for movie in movies_informations for genre in movie.category}
+
+    informations = {
+        "vote_average": {
+            "min": min(vote_average),
+            "max": max(vote_average)
+        },
+        "release_date": {
+            "min": int(min(release_date)[:4] if min(release_date) else 1900),
+            "max": int(max(release_date)[:4] if max(release_date) else 2025)
+        },
+        "genres": sorted(list(genres))
+    }
+
+    return informations
 
 
 @router.get('/movies/{movie_id}', response_model=schemas.MovieInfo)
 async def get_movie_informations(
     movie_id: int,
     language: str,
-    current_user: Annotated[user_models.User, Depends(security.get_current_user)],
+    current_user: Annotated[User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    cached_detailed_movie = redis_client.get(
+        f"detailed_movie:{movie_id}:{language}"
+    )
+    if cached_detailed_movie:
+        detailed_movie = json.loads(cached_detailed_movie)
+    else:
+        detailed_movie = await fetch_movie_detail_tmdb(movie_id, language)
+        if not detailed_movie:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Detailed movie not available"
+            )
+
+    db_movie = get_movie_by_id(db, movie_id)
+    if not db_movie:
+        db_movie = create_movie(
+            db,
+            detailed_movie['id'],
+            detailed_movie['original_title'],
+            detailed_movie['release_date']
+        )
+
+    return map_to_movie_info(detailed_movie, db_movie)
+
+
+async def download_and_convert(movie_id: int, user_id: int):
+    redis_client.set(f"download_and_convert:{movie_id}", 1)
+    file_path = ""
+
+    db = SessionLocal()
+    try:
+        movie = get_movie_by_id(db, movie_id)
+        if movie.is_download is False:
+            await manager_websocket.send_message(
+                user_id, f"Movie {movie.original_title} is downloading."
+            )
+            file_path = await download_torrent(movie.magnet_link, movie.id)
+            movie.file_path = file_path
+            movie.is_download = True
+            db.commit()
+        if movie.is_convert is False:
+            await manager_websocket.send_message(
+                user_id,
+                f"Movie {movie.original_title} is being converted to HLS."
+            )
+            await convert_to_hls(movie.file_path, movie.id)
+            movie.is_convert = True
+            db.commit()
+    finally:
+        db.close()
+
+    redis_client.delete(f"download_and_convert:{movie.id}")
+    await manager_websocket.send_message(
+        user_id, f"Movie {movie.original_title} is ready to be watch."
+    )
+
+
+@router.post('/movies/{movie_id}/download')
+async def download_movie(
+    movie_id: int,
+    background_tasks: BackgroundTasks,
+    current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
     movie = get_movie_by_id(db, movie_id)
     if not movie:
-        detailed_movie = fetch_movie_detail_tmdb(movie_id, language)
-        if not detailed_movie:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Detailed movie not available")
-        movie = create_movie(db, map_to_movie(detailed_movie))
-    return movie
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
+        )
+
+    if movie.is_download and movie.is_convert:
+        return Response(status_code=200)
+
+    if not movie.magnet_link:
+        year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
+        magnet_link = await get_magnet_link_piratebay(
+            movie.original_title, year)
+        if not magnet_link:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Movie not available"
+            )
+        movie.magnet_link = magnet_link
+        db.commit()
+
+    if not redis_client.exists(f"download_and_convert:{movie_id}"):
+        background_tasks.add_task(
+            download_and_convert, movie_id, current_user.id)
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
-@router.get('/movies/{movie_id}/stream/{token}')
-async def start_streaming(
+@router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
+async def stream_movie(
     movie_id: int,
     token: str,
-    request: Request,
+    hls_file: str,
     db: Session = Depends(get_db)
 ):
     current_user = security.get_current_user_streaming(token, db)
     movie = get_movie_by_id(db, movie_id)
     if not movie:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
-    if not movie.magnet_link:
-        year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
-        magnet_link = get_magnet_link_piratebay(movie.original_title, year)
-        if not magnet_link:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Movie not available")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
+        )
 
-        movie.magnet_link = magnet_link
-        db.commit()
+    file_path = f"{HLS_MOVIES_FOLDER}/movie_{movie_id}/{hls_file}"
+    if not os.path.exists(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie not downloaded"
+        )
 
     watched_movie = get_watched_movie(db, current_user.id, movie_id)
     if not watched_movie:
@@ -148,41 +375,52 @@ async def start_streaming(
         watched_movie.watched_at = datetime.now()
         db.commit()
 
-    if not movie.file_path:
-        asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
-        while not redis_client.get(f"movie_path:{movie_id}"):
-            await asyncio.sleep(1)
-        movie.file_path = redis_client.get(f"movie_path:{movie_id}")
-        db.commit()
+    return FileResponse(file_path, media_type="application/vnd.apple.mpegurl")
 
-    file_size = os.path.getsize(movie.file_path)
-    range_header = request.headers.get("range")
 
-    if range_header:
-        try:
-            start, end = range_header.replace("bytes=", "").split("-")
-            start = int(start)
-            end = int(end) if end else file_size - 1
-            end = min(end, file_size - 1)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid Range request")
-
-        return StreamingResponse(
-            file_streamer(movie.file_path, start, end),
-            status_code=206,
-            media_type="video/mp4",
-            headers={
-                "Content-Range": f"bytes {start}-{end}/{file_size}",
-                "Accept-Ranges": "bytes",
-                "Content-Length": str(end - start + 1),
-            }
+@router.get('/movies/{movie_id}/subtitles')
+async def get_subtitles(
+    movie_id: int,
+    current_user: Annotated[User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid movie"
         )
 
-    return StreamingResponse(
-        file_streamer(movie.file_path, 0, file_size - 1),
-        media_type="video/mp4",
-        headers={
-            "Content-Length": str(file_size),
-            "Accept-Ranges": "bytes",
-        }
+    if movie.is_download is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie not downloaded"
+        )
+
+    dir_path = os.path.dirname(movie.file_path)
+    if not dir_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subtitles not available"
+        )
+
+    subtitles = [filename for filename in Path(dir_path).rglob('*.srt')]
+    if not subtitles:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subtitles not available"
+        )
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for file_path in subtitles:
+            zip_file.write(file_path, arcname=file_path.name)
+
+    zip_buffer.seek(0)
+
+    return Response(
+        zip_buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=files.zip"}
     )

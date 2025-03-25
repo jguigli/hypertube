@@ -1,5 +1,5 @@
 import {
-    Box, Drawer, Button, Fab, TextField, Slider, Typography,
+    Box, Drawer, Button, Fab, Slider, Typography,
     FormControl,
     InputLabel,
     Select,
@@ -8,58 +8,62 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useState } from "react";
-import FilterSortOptions from "../types/FilterSortOptions";
+import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
+import { useMovies } from "../contexts/MovieContext";
 
-const genres = [
-    "Action",
-    "Adventure",
-    "Animation",
-    "Comedy",
-    "Crime",
-    "Documentary",
-    "Drama",
-    "Family",
-    "Fantasy",
-    "History",
-    "Horror",
-    "Music",
-    "Mystery",
-    "Romance",
-    "Science Fiction",
-    "TV Movie",
-    "Thriller",
-    "War",
-    "Western"
-];
-const sortOptions = [
-    { label: "Name (A-Z)", value: "name_asc" },
-    { label: "Name (Z-A)", value: "name_desc" },
-    { label: "Production year (newest first)", value: "year_desc" },
-    {label: "Production year (oldest first)", value: "year_asc" },
-    { label: "IMDb rating (highest first)", value: "rating_desc" },
-    { label: "IMDb rating (lowest first)", value: "rating_asc" }
+const sortOptionsLabels = [
+    { label: "None", value: "none" },
+    { label: "Name (A-Z)", value: "name.asc" },
+    { label: "Name (Z-A)", value: "name.desc" },
+    { label: "Production year (newest first)", value: "production_year.desc" },
+    { label: "Production year (oldest first)", value: "production_year.asc" },
+    { label: "IMDb rating (highest first)", value: "imdb_rating.desc" },
+    { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptions) => void }) {
+export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, initialYearRange, initialRating }: {
+    onApply: (filters: FilterSortOptions) => void,
+    initialCategories: string[],
+    sortOptionsLabel: string,
+    initialYearRange: number[],
+    initialRating: number[]
+}) {
 
+    const { moviesInformation } = useMovies();
     const [open, setOpen] = useState(false);
-    const [selectedGenre, setSelectedGenre] = useState("");
-    const [yearRange, setYearRange] = useState<number[]>([1950, new Date().getFullYear()]);
-    const [rating, setRating] = useState<number[]>([0, 10]);
-    const [sortBy, setSortBy] = useState("");
+    const [movieCategories, setMovieCategories] = useState<string[]>(initialCategories)
+    const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
+    const [rating, setRating] = useState<number[] | number>(initialRating);
+    const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
 
     const toggleDrawer = () => setOpen(!open);
 
     const handleApply = () => {
-        onApply({ selectedGenre, yearRange, rating, sortBy });
+        const splitted_sortOptions = sortOptions.split(".");
+        const type = splitted_sortOptions[0];
+        const ascending = splitted_sortOptions[1] === "asc";
+        const sortOptionsValue: SortOptions = {
+            type: type,
+            ascending: ascending
+        };
+        onApply(
+            {
+                filterOptions: {
+                    genre: movieCategories,
+                    yearRange: typeof (yearRange) === "number" ? [yearRange, yearRange] : yearRange,
+                    rating: typeof (rating) === "number" ? [rating, rating] : rating
+                },
+                sortOptions: sortOptionsValue
+            }
+        );
         toggleDrawer();
     };
 
     const handleReset = () => {
-        setSelectedGenre("");
-        setYearRange([1950, 2025]);
-        setRating([0, 10]);
-        setSortBy("");
+        setMovieCategories(moviesInformation.genres)
+        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
+        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
+        setSortOptions("none");
     };
 
     return (
@@ -80,14 +84,21 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
-                            sx={{ bgcolor: "background.paper"}}
+                            sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={selectedGenre}
-                            onChange={(e) => setSelectedGenre(e.target.value)}
+                            value={movieCategories}
+                            onChange={(e) => {
+                                const selectedValue = e.target.value;
+                                if (typeof selectedValue === "string") {
+                                    setMovieCategories([selectedValue]);
+                                } else {
+                                    setMovieCategories(selectedValue);
+                                }
+                            }}
                             size="small"
                         >
-                            {genres.map((genre) => (
+                            {moviesInformation.genres.map((genre) => (
                                 <MenuItem key={genre} value={genre}>
                                     {genre}
                                 </MenuItem>
@@ -100,8 +111,8 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                         value={yearRange}
                         onChange={(_, newValue) => setYearRange(newValue)}
                         valueLabelDisplay="auto"
-                        min={1950}
-                        max={new Date().getFullYear()}
+                        min={moviesInformation.release_date_min}
+                        max={moviesInformation.release_date_max}
                         step={1}
                         size="small"
                     />
@@ -111,8 +122,8 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                         value={rating}
                         onChange={(_, newValue) => setRating(newValue)}
                         valueLabelDisplay="auto"
-                        min={0}
-                        max={10}
+                        min={moviesInformation.rating_min}
+                        max={moviesInformation.rating_max}
                         step={0.1}
                         size="small"
                     />
@@ -122,15 +133,15 @@ export function FilterSortMenu({ onApply }: { onApply: (filters: FilterSortOptio
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
-                            sx={{ bgcolor: "background.paper"}}
+                            sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
+                            value={sortOptions}
+                            onChange={(e) => (setSortOptions(e.target.value))}
                             size="small"
                         >
-                            {sortOptions.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
+                            {sortOptionsLabels.map((option) => (
+                                <MenuItem key={option.label} value={option.value}>
                                     {option.label}
                                 </MenuItem>
                             ))}

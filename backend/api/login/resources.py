@@ -17,9 +17,11 @@ from api.config import (
     OAUTH42_REDIRECT_URI,
     OAUTH_GOOGLE_CLIENT_ID,
     OAUTH_GOOGLE_CLIENT_SECRET,
-    OAUTH_GOOGLE_REDIRECT_URI
+    OAUTH_GOOGLE_REDIRECT_URI,
+    OAUTH_GITHUB_REDIRECT_URI,
+    OAUTH_GITHUB_CLIENT_ID,
+    OAUTH_GITHUB_CLIENT_SECRET
 )
-
 from .schemas import Token, ForgotPasswordForm, ResetPasswordForm
 from .security import (
     authenticate_user,
@@ -33,10 +35,8 @@ from api.users import crud as user_crud
 from api.users import models as user_models
 from api.mail.send_email import send_email_reset_password
 import re
-
 import requests
 from io import BytesIO
-
 from api.login.models import AuthProvider
 
 
@@ -156,6 +156,18 @@ oauth.register(
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
 )
 
+oauth.register(
+    name="github",
+    client_id=OAUTH_GITHUB_CLIENT_ID,
+    client_secret=OAUTH_GITHUB_CLIENT_SECRET,
+    authorize_url="https://github.com/login/oauth/authorize",
+    authorize_params=None,
+    access_token_url="https://github.com/login/oauth/access_token",
+    access_token_params=None,
+    userinfo_endpoint="https://api.github.com/user",
+    client_kwargs={"scope": "user:email"},
+)
+
 ###########################################################################################
 
 
@@ -189,6 +201,12 @@ async def handle_oauth_callback(
 
     # If the user doesn't exist, create it
     if not auth_provider:
+
+        # For github split the name into first_name and last_name
+        if provider == "github":
+            name = json[name_key].split(" ")
+            json[first_name_key] = name[0]
+            json[last_name_key] = name[-1]
 
         user_infos = schemas.UserRegister(
             email=json[email_key],
@@ -289,6 +307,28 @@ async def auth_google_callback(
         email_key="email", name_key="name",
         first_name_key="given_name", last_name_key="name",
         picture_key=("picture",)
+    )
+
+
+@router.get("/auth/github")
+async def auth_github(request: Request):
+    return await oauth.github.authorize_redirect(
+        request, OAUTH_GITHUB_REDIRECT_URI
+    )
+
+
+@router.get("/auth/github/callback")
+async def auth_github_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    return await handle_oauth_callback(
+        request, db, provider="github",
+        provider_id_key="id",
+        user_info_url="https://api.github.com/user",
+        email_key="email", name_key="name",
+        first_name_key="firstname", last_name_key="lastname",
+        picture_key=("avatar_url",)
     )
 
 

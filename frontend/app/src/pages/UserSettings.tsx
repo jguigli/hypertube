@@ -55,7 +55,7 @@ export default function UserSettings() {
             return;
         }
 
-        const response = await userService.setInformations(token, email, username, firstName, lastName, user.language);
+        const response = await userService.setInformations(token, email, username, firstName, lastName);
         if (!response.success) {
             if (response.error === "Username already taken") {
                 setUsernameError("Username already taken");
@@ -63,8 +63,12 @@ export default function UserSettings() {
                 setEmailError("Email already taken");
             } else if (response.error === "Invalid email format") {
                 setEmailError("Invalid email format");
+            } else if (response.error === "First name cannot be empty.") {
+                setFirstNameError("First name cannot be empty.");
+            } else if (response.error === "Last name cannot be empty.") {
+                setLastNameError("Last name cannot be empty.");
             } else {
-                alert("An error occurred while updating the user information" + response.error || "An unexpected error occurred");
+                alert("An error occurred while updating the user information: " + response.error || "An unexpected error occurred");
             }
             return;
         }
