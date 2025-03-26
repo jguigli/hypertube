@@ -21,7 +21,7 @@ REDIS_PORT = environ["REDIS_PORT"]
 # External streaming sources
 TMDB_API_KEY = environ["TMDB_API_KEY"]
 TMDB_API_BEARER_TOKEN = environ["TMDB_API_BEARER_TOKEN"]
-OMDB_API_KEY = environ["OMDB_API_KEY"]
+# OMDB_API_KEY = environ["OMDB_API_KEY"]
 
 # OAuth Credentials
 OAUTH42_CLIENT_ID = environ["OAUTH42_CLIENT_ID"]

@@ -2,7 +2,8 @@ import json
 import aiohttp
 from api.redis_client import redis_client
 
-from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
+from api.config import TMDB_API_BEARER_TOKEN
+# from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
 
 
 # #################### TMDB #####################

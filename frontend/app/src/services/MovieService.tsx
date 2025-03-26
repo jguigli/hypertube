@@ -212,4 +212,32 @@ export default class MovieService {
         }
     }
 
+    // Get top movies
+    // GET /api/movies/top
+    async getTopMovies(language: string) {
+
+        try {
+            const response = await axios.get(`/movies/top`, {
+                params: {
+                    language: language
+                }
+            });
+            if (response.status === 200) {
+                return {
+                    success: true,
+                    data: response.data
+                };
+            }
+            return {
+                success: false,
+                data: null
+            };
+        } catch (error) {
+            return {
+                success: false,
+                data: null
+            };
+        }
+    }
+
 }
