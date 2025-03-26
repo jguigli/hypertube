@@ -30,36 +30,28 @@ function Logo() {
 
 function MovieSearchBar() {
 
-    const [search, setSearch] = useState("");
-
-    const { setSearchQuery } = useMovies();
+    const { searchQuery, setSearchQuery } = useMovies();
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearch(event.target.value);
-    }
-
-    function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setSearchQuery(search); // Trigger search query update
+        setSearchQuery(event.target.value);
     }
 
     function handleClearSearch() {
-        setSearch("");
         setSearchQuery("");
     }
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={handleSearchSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={search}
+                        value={searchQuery}
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
-                    {search.length > 0 && (
+                    {searchQuery.length > 0 && (
                         <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
                             <Clear />
                         </IconButton>

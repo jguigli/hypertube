@@ -59,8 +59,8 @@ async def search_movies(
     filter_options = searchBody.filter_options
 
     sort_column = {
-        "name": Movie.title,
         "none": Movie.title,
+        "name": Movie.title,
         "production_year": Movie.release_date,
         "imdb_rating": Movie.vote_average,
     }.get(sort_options.type.value, Movie.popularity)
@@ -89,7 +89,7 @@ async def search_movies(
                 Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
             ) \
             .order_by(
-                sort_column.asc() if sort_options.ascending
+                sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none")
                 else sort_column.desc()) \
             .offset((page - 1) * 20) \
             .limit(20) \

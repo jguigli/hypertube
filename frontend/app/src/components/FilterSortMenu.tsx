@@ -8,11 +8,11 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useEffect, useState } from "react";
-import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
+import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 import { useMovies } from "../contexts/MovieContext";
 
 const sortOptionsLabels = [
-    { label: "None", value: "none" },
+    { label: "None", value: "none.desc" },
     { label: "Name (A-Z)", value: "name.asc" },
     { label: "Name (Z-A)", value: "name.desc" },
     { label: "Production year (newest first)", value: "production_year.desc" },
@@ -22,24 +22,64 @@ const sortOptionsLabels = [
 ];
 
 export function FilterSortMenu() {
-
     const [open, setOpen] = useState(false);
     const toggleDrawer = () => setOpen(!open);
 
-    // const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
+    const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
+
+    // Nouveaux états locaux pour gérer les valeurs temporaires
+    const [tempFilterOptions, setTempFilterOptions] = useState<FilterOptions>({
+        genre: "All",
+        yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+        rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+    });
+
+    const [tempSortOptions, setTempSortOptions] = useState<SortOptions>({
+        type: "none.desc",
+        ascending: false
+    });
+
+    // Mettre à jour les états locaux lorsque moviesInformation change
+    useEffect(() => {
+        setTempFilterOptions({
+            genre: filterOptions.genre,
+            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+        });
+        setTempSortOptions(sortOptions);
+    }, [moviesInformation]);
 
     const handleApply = () => {
-        // Fetch movies with updated filters and sort options
+        // Appliquer les valeurs temporaires aux états globaux
+        setFilterOptions(tempFilterOptions);
+        setSortOptions(tempSortOptions);
+        toggleDrawer();
     };
 
     const handleReset = () => {
-        // setFilterOptions(FilterSortOptions.defaultFilterOptions);
-        // setSortOptions(FilterSortOptions.defaultSortOptions);
+        // Réinitialiser les valeurs temporaires aux valeurs par défaut
+        setTempFilterOptions(
+            {
+                genre: "All",
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+            }
+        );
+        setTempSortOptions({ type: "none", ascending: false });
+        setFilterOptions(
+            {
+                genre: "All",
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+            }
+        );
+        setSortOptions({ type: "none", ascending: false });
+        toggleDrawer();
     };
 
     return (
         <>
-            {/* <Fab
+            <Fab
                 color="primary"
                 onClick={toggleDrawer}
                 sx={{ position: "fixed", bottom: 16, right: 16 }}
@@ -58,14 +98,13 @@ export function FilterSortMenu() {
                             sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={filterOptions.genre}
+                            value={tempFilterOptions.genre}
                             onChange={(e) => {
                                 const selectedValue = e.target.value;
-                                if (typeof selectedValue === "string") {
-                                    setCategory(selectedValue);
-                                } else {
-                                    setCategory(selectedValue[0]);
-                                }
+                                setTempFilterOptions({
+                                    ...tempFilterOptions,
+                                    genre: typeof selectedValue === "string" ? selectedValue : selectedValue[0]
+                                });
                             }}
                             size="small"
                         >
@@ -79,8 +118,10 @@ export function FilterSortMenu() {
 
                     <Typography>Production year</Typography>
                     <Slider
-                        value={filterOptions.yearRange}
-                        onChange={(_, newValue) => setYearRange(newValue)}
+                        value={tempFilterOptions.yearRange}
+                        onChange={(_, newValue) =>
+                            setTempFilterOptions({ ...tempFilterOptions, yearRange: newValue as number[] })
+                        }
                         valueLabelDisplay="auto"
                         min={moviesInformation.release_date_min}
                         max={moviesInformation.release_date_max}
@@ -90,8 +131,10 @@ export function FilterSortMenu() {
 
                     <Typography>IMDb ratings</Typography>
                     <Slider
-                        value={filterOptions.rating}
-                        onChange={(_, newValue) => setRating(newValue)}
+                        value={tempFilterOptions.rating}
+                        onChange={(_, newValue) =>
+                            setTempFilterOptions({ ...tempFilterOptions, rating: newValue as number[] })
+                        }
                         valueLabelDisplay="auto"
                         min={moviesInformation.rating_min}
                         max={moviesInformation.rating_max}
@@ -107,8 +150,14 @@ export function FilterSortMenu() {
                             sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
-                            value={sortOptions.type}
-                            onChange={(e) => (setSort(e.target.value))}
+                            value={tempSortOptions.type + (tempSortOptions.ascending ? ".asc" : ".desc")}
+                            onChange={(e) => {
+                                const [type, order] = e.target.value.split(".");
+                                setTempSortOptions({
+                                    type,
+                                    ascending: order === "asc"
+                                });
+                            }}
                             size="small"
                         >
                             {sortOptionsLabels.map((option) => (
@@ -134,7 +183,7 @@ export function FilterSortMenu() {
                         </Button>
                     </Box>
                 </Box>
-            </Drawer> */}
+            </Drawer>
         </>
     );
 }

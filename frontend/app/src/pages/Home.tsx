@@ -1,53 +1,67 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useMovies } from "../contexts/MovieContext";
 import MovieCard from "../components/MovieCard";
 import { FilterSortMenu } from "../components/FilterSortMenu";
 import { CircularProgress, Typography } from "@mui/material";
 
+
 export default function Home() {
-    const { movies, fetchMovies, isLoading, hasMore, searchQuery, setPage } = useMovies();
+
+    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
-    useEffect(() => {
-        fetchMovies(); // Fetch movies on component mount
-    }, []);
-
-    const handleScroll = () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore) {
-            // fetchMovies();
-            setPage((prevPage) => prevPage + 1);
+    const handleScroll = useCallback(() => {
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore && !isLoading) {
+            if (timeout !== null) {
+                clearTimeout(timeout);
+            }
+            timeout = setTimeout(() => {
+                incrementPage();
+            }, 200);
         }
-    };
+    }, [hasMore, isLoading, incrementPage]);
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [handleScroll, hasMore]); // Ensure hasMore is included in dependencies
+    }, [handleScroll]);
+
+    useEffect(() => {
+        if (page > 1) {
+            fetchMovies(page);
+        }
+    }, [page, fetchMovies]);
+
+    useEffect(() => {
+        if (movies.length === 0 && page === 1) {
+            fetchMovies(1); // Charger la première page si aucun film n'est chargé
+        }
+    }, [movies, page, fetchMovies]);
 
     return (
         <>
-            <div className="flex justify-center items-center">
-                <Typography variant="h6" color="secondary">
-                    {searchQuery ? `Search results for "${searchQuery}"` : "Popular movies"}
-                </Typography>
-            </div>
-
-            {movies.length === 0 ? (
+            {movies.length === 0 && !isLoading ? (
                 <div className="flex justify-center items-center">
                     <p className="text-3xl">No movies found</p>
                 </div>
             ) : (
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
                     {movies.map((movie, id) => (
-                        <MovieCard movie={movie} key={id} />
+                        <MovieCard key={id} movie={movie} />
                     ))}
                 </div>
             )}
 
-            {(hasMore && isLoading) && (
-                <div ref={loadingRef} className="flex justify-center py-4">
-                    <CircularProgress />
-                </div>
+            {isLoading && (
+                <>
+                    <div ref={loadingRef} className="flex justify-center py-4">
+                        <CircularProgress />
+                    </div>
+                    <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
+                        Loading more movies...
+                    </Typography>
+                </>
             )}
 
             <FilterSortMenu />
