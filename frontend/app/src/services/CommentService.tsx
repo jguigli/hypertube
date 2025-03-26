@@ -24,7 +24,6 @@ export default class CommentService {
                     }
                 }
             );
-            console.log(response)
             return {
                 success: response.status === 200,
                 data: response.data,
