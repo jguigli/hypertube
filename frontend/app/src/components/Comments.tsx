@@ -13,7 +13,7 @@ import { CommentType } from "../pages/VideoView";
 interface CommentsProps {
   comments: CommentType[];
   handleInsertNode: (commentId: number, item: string) => void;
-  handleEditNode: (commentId: number, value: string) => void;
+  handleEditNode: (commentId: number, value: string, timestamp:number) => void;
   handleDeleteNode: (commentId: number) => void;
   setCommentsData: (commentData: CommentType[]) => void;
 }
@@ -50,15 +50,18 @@ export const useNode = () => {
     };
   };
 
-  const editNode = (tree: CommentType, commentId: number, value: string, videoId: number): CommentType => {
+  const editNode = (tree: CommentType, commentId: number, value: string, newTimestamp: number): CommentType => {
     if (tree.id === commentId) {
-      return { ...tree, name: value };
+      return { ...tree, content: value, timestamp: newTimestamp };
     }
     return {
       ...tree,
-      items: tree.items ? tree.items.map((node) => editNode(node, commentId, value, videoId)) : [],
+      replies: tree.replies?.map(reply =>
+        editNode(reply, commentId, value, newTimestamp)
+      ) || [],
     };
   };
+  
 
   const deleteNode = (tree: CommentType, commentId: number): CommentType | null => {
     if (tree.id === commentId) return null;
@@ -95,7 +98,6 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   }, [editMode, editingCommentId]);
 
   const handleNewComment = () => {
-    // setExpand(!expand);
     setShowInput(true);
   };
 
@@ -114,6 +116,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     if (editMode) {
       handleEditNode(comments.id, inputRef.current?.innerText ?? "");
       setEditMode(false);
+      setInput("");
     } else {
       if (input.trim() === "") return;
       setExpand(true);
@@ -174,16 +177,19 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     return comments.map(comment => {
       if (comment.id === commentId) {
         return { ...comment, content: newContent, timestamp: newTimestamp };
-      } else if (comment.replies && comment.replies.length) {
+      } else if (comment.replies?.length) {
         return { ...comment, replies: updateCommentContent(comment.replies, commentId, newContent, newTimestamp) };
-      }
+      } else {
       return comment;
+      }
     });
   };
-
+  
   return (
     <div className="comment-wrapper">
-      {comments.map((comment) => (
+      {[...comments]
+        .sort((a, b) => a.id - b.id)
+        .map((comment) => (
         <div key={comment.id} className="comment-container">
           <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -211,25 +217,70 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 onKeyDown={async (e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
+                    const newContent = editedContent[comment.id];
+                    if (newContent.trim() !== "") {
+                      const token = getToken();
+                      if (!token) return console.error("No token");
+                      try {
+                        const newTimestamp = Math.floor(Date.now() / 1000);
+                        await commentService.editComment(comment.id, newContent, token);
+                        handleEditNode(comment.id, newContent, newTimestamp);
+                        setEditMode(false);
+                        setEditingCommentId(null);
+                      } catch (err) {
+                        console.error("Failed to edit comment", err);
+                      }
+                    }
+                  }
+                }}>                
+                {comment.content}
+              </span>
+              {editMode && editingCommentId === comment.id && (
+                <Stack direction="row" spacing={1} style={{ marginTop: "8px" }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={async () => {
                       const newContent = editedContent[comment.id];
                       if (newContent.trim() !== "") {
                         const token = getToken();
                         if (!token) return console.error("No token");
                         try {
+                          const newTimestamp = Math.floor(Date.now() / 1000);
                           await commentService.editComment(comment.id, newContent, token);
-                          setCommentsData(prev =>
-                          updateCommentContent(prev, comment.id, newContent, Math.floor(Date.now() / 1000)));
-                          handleEditNode(comment.id, newContent);
-                          setEditMode(false);
-                          setEditingCommentId(null);
+                          handleEditNode(comment.id, newContent, newTimestamp);
                         } catch (err) {
                           console.error("Failed to edit comment", err);
                         }
                       }
-                    }
-                }}>
-                {comment.content}
-              </span>
+                      setEditMode(false);
+                      setEditingCommentId(null);
+                      setEditedContent(prev => {
+                        const updated = { ...prev };
+                        delete updated[comment.id];
+                        return updated;
+                      });
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      setEditMode(false);
+                      setEditingCommentId(null);
+                      setEditedContent(prev => {
+                        const updated = { ...prev };
+                        delete updated[comment.id];
+                        return updated;
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
+              )}
             </div>
 
             <span style={{ fontSize: "12px", color: "#bbb", marginTop: "4px", display: "block" }}>

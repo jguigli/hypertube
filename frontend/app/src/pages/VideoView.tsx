@@ -65,13 +65,22 @@ export default function VideoView() {
         setCommentsData(Array.isArray(finalStructure) ? finalStructure : [finalStructure]);
     };
 
-    const handleEditNode = (commentId: number, value: string): void => {
-        if (!value.trim() || !videoID) return;
-        const rootComment = commentsData.length > 0 ? commentsData[0] : null;
-        if (!rootComment) return;
+    const handleEditNode = (commentId: number, value: string, newTimestamp: number): void => {
+        if (!value.trim()) return;
 
-        const finalStructure = editNode(rootComment, commentId, value, +videoID);
-        setCommentsData(Array.isArray(finalStructure) ? finalStructure : [finalStructure]);
+        const updateContentInPlace = (comments: CommentType[]): CommentType[] => {
+            return comments.map(comment => {
+                if (comment.id === commentId) {
+                    return { ...comment, content: value, timestamp: newTimestamp };
+                }
+                if (comment.replies?.length) {
+                    return { ...comment, replies: updateContentInPlace(comment.replies) };
+                }
+                return comment;
+            });
+        };
+
+        setCommentsData(prev => updateContentInPlace(prev));
     };
 
     const handleDeleteNode = (commentId: number): void => {
