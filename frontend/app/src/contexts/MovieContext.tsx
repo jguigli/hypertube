@@ -34,6 +34,7 @@ const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     const movieService = new MovieService();
+
     const { user, getToken } = useAuth();
 
     // Movies information used for filter options
