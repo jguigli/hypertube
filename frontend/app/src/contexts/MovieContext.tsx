@@ -24,6 +24,9 @@ interface MoviesContextType {
     setSearchQuery: (query: string) => void;
     hasMore: boolean;
     moviesInformation: MoviesInformation;
+    page: number;
+    setPage: (page: number) => void;
+    isLoading: boolean;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -31,23 +34,20 @@ const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
 export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     const movieService = new MovieService();
-
     const { user, getToken } = useAuth();
 
+    // Movies state
+    // This state holds the movies fetched from the API
     const [movies, setMovies] = useState<Movie[]>([]);
 
+    // Page state and hasMore state used for infinite scrolling
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+
+    // Search query state
     const [searchQuery, setSearchQuery] = useState("");
 
-    const [moviesInformation, setMoviesInformation] = useState<MoviesInformation>({
-        release_date_min: 0,
-        release_date_max: 0,
-        rating_min: 0,
-        rating_max: 0,
-        genres: []
-    });
-
+    // Filter and sort options states
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         genre: "All",
         yearRange: [0, 0],
@@ -59,25 +59,49 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         ascending: false
     });
 
-    const fetchMovies = useCallback(async () => {
-        const token = getToken();
-        try {
-            const response = searchQuery
-                ? await movieService.searchMovies(searchQuery, user.language, page, filterOptions, sortOptions, token)
-                : await movieService.getPopularMovies(page, user.language, filterOptions, sortOptions, token);
+    const [isLoading, setIsLoading] = useState(false);
 
-            if (response.success) {
-                setMovies((prevMovies) => (page === 1 ? response.data : [...prevMovies, ...response.data]));
-                setHasMore(response.data.length > 0);
-                setPage((prevPage) => prevPage + 1);
-            } else {
-                setHasMore(false);
-            }
-        } catch (error) {
-            console.error("Failed to fetch movies:", error);
+    // Fetch movies function
+    // This function fetches movies from the API
+    // If a search query is provided, it fetches movies based on the search query
+    // If no search query is provided, it fetches popular movies
+    // The function is called when the component mounts and when the user changes the filter options,
+    const fetchMovies = useCallback(async () => {
+        if (!hasMore || isLoading) return;
+
+        setIsLoading(true);
+        const token = getToken();
+        const response = searchQuery
+            ? await movieService.searchMovies(searchQuery, user.language, page, filterOptions, sortOptions, token)
+            : await movieService.getPopularMovies(page, user.language, filterOptions, sortOptions, token);
+
+        if (response.success) {
+            setMovies((prevMovies) => (page === 1 ? response.data : [...prevMovies, ...response.data]));
+            setHasMore(response.data.length > 0);
+        } else {
             setHasMore(false);
         }
-    }, [searchQuery, user.language, filterOptions, sortOptions, page, getToken]);
+        setIsLoading(false);
+    }, [searchQuery, user.language, filterOptions, sortOptions, page, hasMore, isLoading, getToken]);
+
+    useEffect(() => {
+        setMovies([]);
+        setPage(1);
+        setHasMore(true);
+        fetchMovies();
+    }, [user.language, filterOptions, sortOptions, searchQuery]); // Refetch movies on language/filter/sort/search change
+
+    // Movies information used for filter options
+    // This state holds the information about the movies for filtering purposes
+    // When the component mounts, the information is fetched from the API
+    // When the user changes it's language, the information is fetched again
+    const [moviesInformation, setMoviesInformation] = useState<MoviesInformation>({
+        release_date_min: 0,
+        release_date_max: 0,
+        rating_min: 0,
+        rating_max: 0,
+        genres: []
+    });
 
     const fetchMoviesInformation = useCallback(async () => {
         const token = getToken();
@@ -121,7 +145,10 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                 searchQuery,
                 setSearchQuery,
                 hasMore,
-                moviesInformation
+                moviesInformation,
+                page,
+                setPage,
+                isLoading
             }}
         >
             {children}

@@ -5,23 +5,24 @@ import { FilterSortMenu } from "../components/FilterSortMenu";
 import { CircularProgress, Typography } from "@mui/material";
 
 export default function Home() {
-    const { movies, fetchMovies, hasMore, searchQuery } = useMovies();
+    const { movies, fetchMovies, isLoading, hasMore, searchQuery, setPage } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        fetchMovies(1);
-    }, [searchQuery]);
+        fetchMovies(); // Fetch movies on component mount
+    }, []);
 
     const handleScroll = () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore) {
-            fetchMovies();
+            // fetchMovies();
+            setPage((prevPage) => prevPage + 1);
         }
     };
 
     useEffect(() => {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [handleScroll]);
+    }, [handleScroll, hasMore]); // Ensure hasMore is included in dependencies
 
     return (
         <>
@@ -43,7 +44,7 @@ export default function Home() {
                 </div>
             )}
 
-            {hasMore && (
+            {(hasMore && isLoading) && (
                 <div ref={loadingRef} className="flex justify-center py-4">
                     <CircularProgress />
                 </div>

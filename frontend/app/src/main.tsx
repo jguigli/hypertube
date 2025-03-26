@@ -13,15 +13,15 @@ import { MoviesProvider } from './contexts/MovieContext.tsx'
 import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
+    // <StrictMode>
         <ThemeProvider theme={theme}>
             <AuthProvider>
                 <MoviesProvider>
-                        <ActiveLinkProvider>
-                            <AppRouter />
-                        </ActiveLinkProvider>
+                    <ActiveLinkProvider>
+                        <AppRouter />
+                    </ActiveLinkProvider>
                 </MoviesProvider>
             </AuthProvider>
         </ThemeProvider>
-    </StrictMode>,
+    // </StrictMode>,
 )

@@ -40,7 +40,7 @@ function MovieSearchBar() {
 
     function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        setSearchQuery(search);
+        setSearchQuery(search); // Trigger search query update
     }
 
     function handleClearSearch() {
@@ -59,7 +59,7 @@ function MovieSearchBar() {
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
-                    { search.length > 0 && (
+                    {search.length > 0 && (
                         <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
                             <Clear />
                         </IconButton>
