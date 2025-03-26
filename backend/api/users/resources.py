@@ -1,14 +1,12 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, APIRouter, Depends, status, UploadFile, File
-# from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-# from pydantic import BaseModel
+from fastapi import (
+    Depends, HTTPException, APIRouter, status, UploadFile, File
+)
 from sqlalchemy.orm import Session
 import re
-
 from . import models, schemas, crud
 from api.database import get_db
 from api.login import security
-
 from api.login.models import AuthProvider
 
 
@@ -20,9 +18,6 @@ async def register(
     user_infos: schemas.UserRegister,
     db: Session = Depends(get_db)
 ):
-
-    # Search in the AuthProvider table if the email is already registered
-    # instead of the User table ?
 
     user = crud.get_user_by_email(db, user_infos.email)
     if user:
@@ -52,6 +47,17 @@ async def register(
             detail="The new password must contain 8 characters with " +
                    "at least one lowercase, one uppercase, one digit and " +
                    "one special character"
+        )
+
+    if not user_infos.first_name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="First name cannot be empty."
+        )
+    elif not user_infos.last_name.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Last name cannot be empty."
         )
 
     user = crud.create_user(db, user_infos)

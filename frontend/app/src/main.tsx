@@ -9,22 +9,19 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
-import { SearchProvider } from './contexts/SearchContext.tsx'
 import { MoviesProvider } from './contexts/MovieContext.tsx'
 import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
+    // <StrictMode>
         <ThemeProvider theme={theme}>
             <AuthProvider>
                 <MoviesProvider>
-                    <SearchProvider>
-                        <ActiveLinkProvider>
-                            <AppRouter />
-                        </ActiveLinkProvider>
-                    </SearchProvider>
+                    <ActiveLinkProvider>
+                        <AppRouter />
+                    </ActiveLinkProvider>
                 </MoviesProvider>
             </AuthProvider>
         </ThemeProvider>
-    </StrictMode>,
+    // </StrictMode>,
 )

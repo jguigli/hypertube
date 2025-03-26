@@ -37,7 +37,12 @@ async def download_torrent(magnet_link: str, movie_id: int):
     trackers = [
         "http://tracker.openbittorrent.com:80/announce",
         "http://tracker.opentrackr.org:1337/announce",
-        "http://tracker.leechers-paradise.org:6969/announce"
+        "http://tracker.leechers-paradise.org:6969/announce",
+        "http://glotorrents.pw:6969/announce",
+        "http://torrent.gresille.org:80/announce",
+        "http://p4p.arenabg.com:1337",
+        "http://open.demonii.com:1337/announce",
+        "http://tracker.coppersurfer.tk:6969"
     ]
 
     for tracker in trackers:

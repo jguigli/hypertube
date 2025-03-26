@@ -11,17 +11,17 @@ import LoginService from "../services/LoginService.tsx";
 import UserService from "../services/UserService.tsx";
 import User from "../types/User.tsx";
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
+import { GitHub } from "@mui/icons-material";
+
 
 export default function Login() {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-
     const { user, login } = useAuth();
     const navigate = useNavigate();
     const userService = new UserService();
-
     const { setActiveLink} = useActiveLink();
 
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,6 +104,10 @@ export default function Login() {
         loginService.registerOAuth("google");
     }
 
+    const handleGithubLogin = async () => {
+        loginService.registerOAuth("github");
+    }
+
 
     // UseEffect to detect if there is an error in the URL
     // If there is an error, display it
@@ -166,6 +170,11 @@ export default function Login() {
                         <Button variant="outlined" onClick={handleGoogleLogin}>
                             <span className="flex items-center gap-2">
                                 <GoogleIcon color="secondary" /> Google
+                            </span>
+                        </Button>
+                        <Button variant="outlined" onClick={handleGithubLogin}>
+                            <span className="flex items-center gap-2">
+                                <GitHub color="secondary" /> Github
                             </span>
                         </Button>
                         <Typography variant="body1" color="error">{errorInUrl}</Typography>

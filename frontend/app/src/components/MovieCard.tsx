@@ -1,27 +1,29 @@
-import {  CardActionArea, CardContent, CardHeader, CardMedia, Rating, Typography } from "@mui/material";
+import { CardActionArea, CardContent, CardHeader, CardMedia, Rating, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import Movie from "../types/Movie.tsx";
 import CustomCard from "./Card.tsx";
 import { Star } from "@mui/icons-material";
+import LazyLoad from "react-lazyload";
 
 
 export default function MovieCard({ movie }: { movie: Movie }) {
-
-    // TODO : Differenciate watched movies from unwatched ones
 
     return (
         <CustomCard
             additionalClasses={`h-full w-full max-w-[350px] ${movie.is_watched ? "watched" : ""}`}
         >
+
             <CardActionArea className={`h-full w-full ${movie.is_watched && "Mui-focusVisible"}`}>
                 <Link to={`/watch/${movie.id}`}>
                     <div className="h-[400px] w-full flex items-center justify-center bg-gray-950 border-b border-b-neutral-800">
-                        <CardMedia
-                            component="img"
-                            image={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : ""}
-                            alt={`No poster path for ${movie.title}`}
-                            className="w-full h-full object-cover"
-                        />
+                        <LazyLoad height={'100%'} offset={100} resize={true} once>
+                            <CardMedia
+                                component="img"
+                                image={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : ""}
+                                alt={`No poster path for ${movie.title}`}
+                                className="w-full h-full object-cover"
+                            />
+                        </LazyLoad>
                     </div>
                     <CardHeader
                         title={movie.title}

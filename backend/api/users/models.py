@@ -17,11 +17,7 @@ class User(Base):
     first_name = Column(String(64))
     last_name = Column(String(64))
     profile_picture_path = Column(String(255))
-    language = Column(String(5), default="en")
     movies_watched_association = relationship("MovieWatched")
-
-    # hashed_password = Column(String(60))  # Moved in the AuthProvider model
-    # is_resetting_password = Column(Boolean, default=False)  # Unused ?
 
     auth_providers = relationship("AuthProvider", back_populates="user")
 

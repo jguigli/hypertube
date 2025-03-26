@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Axios configuration
 const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
-axios.defaults.baseURL = `http://${hostname}:3000/api`;
+axios.defaults.baseURL = `http://${hostname}:3000/api/`;
 
 export default class LoginService {
 
@@ -100,12 +100,12 @@ export default class LoginService {
     // GET /auth/google/callback
 
     // GET /auth/42 and GET /auth/google
-    async registerOAuth(provider: "42" | "google") {
+    async registerOAuth(provider: "42" | "google" | "github"): Promise<void> {
         try {
-            window.open(`http://localhost:3000/api/auth/${provider}`, "_self");
+            window.open(`http://${hostname}:3000/api/auth/${provider}`, "_self");
         }
         catch (error) {
-            return error;
+            console.error("Error during OAuth registration:", error);
         }
     }
 

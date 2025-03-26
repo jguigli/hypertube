@@ -3,7 +3,7 @@ import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 
 // Axios configuration
 const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
-axios.defaults.baseURL = `http://${hostname}:3000/api`;
+axios.defaults.baseURL = `http://${hostname}:3000/api/`;
 
 export default class MovieService {
 
@@ -178,7 +178,7 @@ export default class MovieService {
 
     // Get movies information (min and max release year, min and max rating, genres)
     // GET /api/movies/information
-    async getMoviesInformation(token: string | null) {
+    async getMoviesInformation(token: string | null, language: string) {
         try {
             if (token) {
                 const response = await axios.get(
@@ -186,11 +186,13 @@ export default class MovieService {
                     {
                         headers: {
                             Authorization: `${token}`
+                        },
+                        params: {
+                            language: language
                         }
                     }
                 );
                 if (response.status === 200) {
-                    console.log(response.data);
                     return {
                         success: true,
                         data: response.data
