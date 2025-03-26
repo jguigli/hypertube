@@ -28,6 +28,26 @@ async def fetch_genres_movies_tmdb(language: str):
     return genres
 
 
+async def fetch_top_rated_movies_tmdb(language: str):
+    url = f"https://api.themoviedb.org/3/movie/top_rated?language={language}&page=1"
+    key_top_rated_movies = f"top_rated_movies:{language}"
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status != 200:
+                return None
+            response_json = await response.json()
+
+    movies_data = response_json["results"][:9]
+    redis_client.setex(key_top_rated_movies, 86400, json.dumps(movies_data))
+    return movies_data
+
+
 async def fetch_popular_movies_tmdb(language: str, page: int):
     url = f"https://api.themoviedb.org/3/movie/popular?language={language}&page={page}"
     key_popular_movies = f"popular_movies:{page}:{language}"
@@ -50,25 +70,6 @@ async def fetch_popular_movies_tmdb(language: str, page: int):
 
 async def search_movies_tmdb(search: str, language: str, page: int):
     url = f"https://api.themoviedb.org/3/search/movie?query={search}&language={language}&page={page}"
-    key_search = f"search:{search}:{language}:{page}"
-
-    headers = {
-        "accept": "application/json",
-        "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status != 200:
-                return None
-            response_json = await response.json()
-
-    movies_data = response_json["results"]
-    redis_client.setex(key_search, 86400, json.dumps(movies_data))
-    return movies_data
-
-async def search_movies_omdb(search: str, language: str, page: int):
-    url = f"http://www.omdbapi.com/?s={search}&apikey={OMDB_API_KEY}"
     key_search = f"search:{search}:{language}:{page}"
 
     headers = {

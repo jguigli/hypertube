@@ -14,7 +14,9 @@ from api.users.models import User
 from api.login import security
 from .fetch import (
     get_magnet_link_piratebay,
-    fetch_movie_detail_tmdb
+    fetch_movie_detail_tmdb,
+    fetch_top_rated_movies_tmdb,
+    fetch_genres_movies_tmdb
 )
 from .crud import (
     get_watched_movies_id,
@@ -22,7 +24,8 @@ from .crud import (
     get_movie_by_id,
     create_movie,
     map_to_movie_info,
-    mark_movie_as_watched
+    mark_movie_as_watched,
+    map_to_movie_display
 )
 from . import schemas
 import os
@@ -40,6 +43,33 @@ from ..websocket.websocket_manager import manager_websocket
 
 
 router = APIRouter(tags=["Movies"])
+
+
+@router.get('/movies/top', response_model=List[schemas.MovieDisplay])
+async def get_top_rated_movies(
+    language: str,
+):
+    cached_top_rated = redis_client.get(f"top_rated_movies:{language}")
+    if cached_top_rated:
+        movies_data = json.loads(cached_top_rated)
+    else:
+        movies_data = await fetch_top_rated_movies_tmdb(language)
+        if not movies_data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Top rated movies not available")
+        
+    cached_genres = redis_client.get(f"genres_movies:{language}")
+    if cached_genres:
+        genres = json.loads(cached_genres)
+    else:
+        genres = await fetch_genres_movies_tmdb(language)
+        if not genres:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genres for movies not available")
+
+    movies = [map_to_movie_display(movie, genres) for movie in movies_data]
+    if not movies:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Top rated movies not available")
+
+    return movies
 
 
 @router.post('/movies/search', response_model=List[MovieDisplay])
@@ -98,7 +128,7 @@ async def search_movies(
         if not movies_data:
             raise HTTPException(
                 status_code=status.HTTP_204_NO_CONTENT,
-                detail="Search movie not available"
+                detail="Search movies not available"
             )
 
         # TODO: Add to cache
@@ -124,7 +154,7 @@ async def search_movies(
     if not movies:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT,
-            detail="Search movie not available"
+            detail="Search movies not available"
         )
 
     return movies
