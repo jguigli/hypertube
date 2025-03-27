@@ -59,4 +59,19 @@ export default class CommentService {
         return await response.json();
     }
 
+    
+    async deleteComment(commentId: number, token: string) {
+        const response = await fetch(`/api/comments/${commentId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `${token}`,
+            },
+        });
+        
+        if (!response.ok) {
+            throw new Error("Failed to delete comment");
+        }
+        
+        return true;
+    }
 }

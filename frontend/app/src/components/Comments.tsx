@@ -78,6 +78,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   const [input, setInput] = useState<string>("");
   const [editMode, setEditMode] = useState<boolean>(false);
   const [showInput, setShowInput] = useState<boolean>(false);
+  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const [expand, setExpand] = useState<boolean>(true);
   const inputRef = useRef<HTMLSpanElement | null>(null);
   const { getToken, user } = useAuth();
@@ -97,9 +98,10 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     }
   }, [editMode, editingCommentId]);
 
-  const handleNewComment = () => {
-    setShowInput(true);
-  };
+  // const handleNewComment = () => {
+  //   setShowInput(true);
+  //   // setActiveReplyId(id);
+  // };
 
   const insertReply = (comments: CommentType[], parentId: number, newReply: CommentType): CommentType[] => {
     return comments.map(comment => {
@@ -164,6 +166,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
       setShowInput(false);
       setInput("");
+      setActiveReplyId(null);
     }
   };
 
@@ -270,6 +273,9 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                     onClick={() => {
                       setEditMode(false);
                       setEditingCommentId(null);
+                      if (inputRef.current) {
+                        inputRef.current.innerText = comment.content;
+                      }
                       setEditedContent(prev => {
                         const updated = { ...prev };
                         delete updated[comment.id];
@@ -289,7 +295,12 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
             <div style={{ display: "flex", marginTop: "20px" }}>
               <Stack direction="row" spacing={1.5}>
-                <ActionComments className="reply" type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>} handleClick={handleNewComment} />
+                <ActionComments
+                  className="reply"
+                  type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>}
+                  handleClick={() => {
+                    setActiveReplyId(prev => prev === comment.id ? null : comment.id)}}
+                  />
                 <ActionComments
                   className="reply"
                   type="Edit"
@@ -298,14 +309,24 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                     setEditMode(true);
                     setEditingCommentId(comment.id);
                   }} />
-                <ActionComments className="reply" variant="outlined" color="error" type="Delete" handleClick={() => handleDeleteNode(comment.id)} />
+                <ActionComments
+                  className="reply"
+                  variant="outlined"
+                  color="error"
+                  type="Delete"
+                  handleClick={() => {
+                    if (confirm("Are you sure you want to delete this comment?")) {
+                      handleDeleteNode(comment.id);
+                    }
+                  }}
+                  />
               </Stack>
             </div>
           </CustomCard>
 
           {expand && (
             <div style={{ paddingLeft: "20px" }}>
-              {showInput && (
+              {activeReplyId === comment.id && (
                 <div style={{ display: "flex", marginTop: "20px" }}>
                   <Stack direction="column" spacing={1} className="inputContainer">
                     <input
@@ -316,8 +337,21 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                       placeholder="Type your reply here"
                     />
                     <Stack direction="row" spacing={2}>
-                      <Button variant="contained" size='small' onClick={(event) => onReplyComment(event, comment.id)}>Add reply</Button>
-                      <Button variant="outlined" size='small' className="p-2" onClick={() => setShowInput(false)}>Cancel</Button>
+                      <Button
+                        variant="contained"
+                        size='small'
+                        onClick={(event) => onReplyComment(event, comment.id)}>Add reply
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size='small'
+                        className="p-2"
+                        onClick={() => {
+                          setActiveReplyId(null);
+                          setInput("");
+                        }}
+                        >Cancel
+                      </Button>
                     </Stack>
                   </Stack>
                 </div>

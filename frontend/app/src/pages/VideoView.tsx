@@ -83,13 +83,35 @@ export default function VideoView() {
         setCommentsData(prev => updateContentInPlace(prev));
     };
 
-    const handleDeleteNode = (commentId: number): void => {
-        const rootComment = commentsData.length > 0 ? commentsData[0] : null;
-        if (!rootComment) return;
-
-        const finalStructure = deleteNode(rootComment, commentId);
-        setCommentsData(finalStructure ? (Array.isArray(finalStructure) ? finalStructure : [finalStructure]) : commentsData);
-    };
+    const handleDeleteNode = async (commentId: number) => {
+        const token = getToken();
+        if (!token) return console.error("No token");
+      
+        try {
+          await commentService.deleteComment(commentId, token);
+      
+          const deleteFromTree = (comments: CommentType[]): CommentType[] => {
+            return comments
+              .map(comment => {
+                if (comment.id === commentId) {
+                  return null;
+                }
+                if (comment.replies?.length) {
+                  return {
+                    ...comment,
+                    replies: deleteFromTree(comment.replies).filter(Boolean),
+                  };
+                }
+                return comment;
+              })
+              .filter(Boolean) as CommentType[];
+          };
+      
+          setCommentsData(prev => deleteFromTree(prev));
+        } catch (err) {
+          console.error("Failed to delete comment", err);
+        }
+      };
 
     const { id } = useParams<{ id: string }>();
     const videoID = id ? parseInt(id, 10) : null;
