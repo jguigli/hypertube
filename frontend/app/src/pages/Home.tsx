@@ -1,155 +1,70 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import MovieCard from '../components/MovieCard.tsx';
-import { useMovies } from '../contexts/MovieContext.tsx';
-import { useAuth } from '../contexts/AuthContext.tsx';
-import { FilterSortMenu } from '../components/FilterSortMenu.tsx';
-import { useSearch } from '../contexts/SearchContext.tsx';
-import { CircularProgress, Typography } from '@mui/material';
-import FilterSortOptions, { FilterOptions, SortOptions } from '../types/FilterSortOptions.tsx';
+import { useEffect, useRef, useCallback } from "react";
+import { useMovies } from "../contexts/MovieContext";
+import MovieCard from "../components/MovieCard";
+import { FilterSortMenu } from "../components/FilterSortMenu";
+import { CircularProgress, Typography } from "@mui/material";
+
 
 export default function Home() {
 
-    const { user, getToken } = useAuth();
-    const { movies, fetchMovies, hasMore, setHasMore, moviesInformation } = useMovies();
-    const { searchQuery, setSearchQuery } = useSearch();
-
-    const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const [initialRating, setInitialRating] = useState<number[]>([moviesInformation.rating_min, moviesInformation.rating_max]);
-    const [initialYearRange, setInitialYearRange] = useState<number[]>([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-    const [initialMovieCategories, setInitialMovieCategories] = useState<string[]>(moviesInformation.genres)
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        genre: initialMovieCategories,
-        yearRange: initialYearRange,
-        rating: initialRating
-    });
-    const [sortOptions, setSortOptions] = useState<SortOptions>({
-        type: "none",
-        ascending: false
-    });
-
+    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
-    // Reset state when searchQuery changes
-    useEffect(() => {
-        setPage(1);
-        setHasMore(true);
-        setInitialRating([moviesInformation.rating_min, moviesInformation.rating_max]);
-        setInitialYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-        setInitialMovieCategories(moviesInformation.genres);
-        setFilterOptions({
-            genre: initialMovieCategories,
-            yearRange: initialYearRange,
-            rating: initialRating
-        });
-    }, [searchQuery, moviesInformation]);
-
-    // Reset state when searchQuery or language changes
-    useEffect(() => {
-        setLoading(true);
-        window.scrollTo(0, 0);
-    }, [searchQuery, user.language]);
-
-    // Reset searchQuery when language changes
-    useEffect(() => {
-        setSearchQuery("");
-    }, [user.language]);
-
-    // Fetch movies when page, searchQuery or language changes
-    const fetchMoviesCallback = useCallback(() => {
-        fetchMovies(page, searchQuery, user.language, filterOptions, sortOptions, getToken()).then(
-            () => { setLoading(false); }
-        );
-    }, [page, searchQuery, user.language]);
-
-    useEffect(() => {
-        fetchMoviesCallback();
-    }, [fetchMoviesCallback]);
-
-    // Infinite scroll
     const handleScroll = useCallback(() => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !loading) {
-            setPage((prevPage) => prevPage + 1);
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore && !isLoading) {
+            if (timeout !== null) {
+                clearTimeout(timeout);
+            }
+            timeout = setTimeout(() => {
+                incrementPage();
+            }, 200);
         }
-    }, [loading]);
+    }, [hasMore, isLoading, incrementPage]);
 
     useEffect(() => {
-        if (!loadingRef.current) {
-            return;
-        }
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
     }, [handleScroll]);
 
-    // Load default movies on component unmount
     useEffect(() => {
-        return () => {
-            setSearchQuery("");
-            fetchMovies(1, "", user.language, {
-                genre: moviesInformation.genres,
-                rating: [moviesInformation.rating_min, moviesInformation.rating_max],
-                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max]
-            }, { type: "none", ascending: false }, getToken());
+        if (page > 1) {
+            fetchMovies(page);
         }
-    }, []);
+    }, [page, fetchMovies]);
 
-    const applyFilterSort = (filters: FilterSortOptions) => {
-        const { filterOptions, sortOptions } = filters;
-        setLoading(true);
-        setFilterOptions(filterOptions);
-        setSortOptions(sortOptions);
-        setPage(1);
-        setHasMore(true);
-        fetchMovies(1, searchQuery, user.language, filterOptions, sortOptions, getToken()
-        ).then(() => {
-            setInitialRating(filterOptions.rating);
-            setInitialYearRange(filterOptions.yearRange);
-            setLoading(false);
-        });
-    };
+    useEffect(() => {
+        if (movies.length === 0 && page === 1) {
+            fetchMovies(1); // Charger la première page si aucun film n'est chargé
+        }
+    }, [movies, page, fetchMovies]);
 
     return (
         <>
-            {loading ?
-                <CircularProgress /> :
-                (
-                    <>
-                        <div className="flex justify-center items-center">
-                            <Typography variant="h6" color="secondary">
-                                {searchQuery ? `Search results for "${searchQuery}"` : "Popular movies"}
-                            </Typography>
-                        </div>
+            {movies.length === 0 && !isLoading ? (
+                <div className="flex justify-center items-center">
+                    <p className="text-3xl">No movies found</p>
+                </div>
+            ) : (
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
+                    {movies.map((movie, id) => (
+                        <MovieCard key={id} movie={movie} />
+                    ))}
+                </div>
+            )}
 
-                        {movies.length === 0 ? (
-                            <div className="flex justify-center items-center">
-                                <p className="text-3xl">No movies found</p>
-                            </div>
-                        ) : (
-                            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
-                                {movies.map((movie, id) => (
-                                    <MovieCard movie={movie} key={id} />
-                                ))}
-                            </div>
-                        )}
+            {isLoading && (
+                <>
+                    <div ref={loadingRef} className="flex justify-center py-4">
+                        <CircularProgress />
+                    </div>
+                    <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
+                        Loading more movies...
+                    </Typography>
+                </>
+            )}
 
-                        {hasMore && (
-                            <div ref={loadingRef} className="flex justify-center py-4">
-                                {loading && <p>Loading...</p>}
-                            </div>
-                        )}
-
-                        <FilterSortMenu
-                            onApply={applyFilterSort}
-                            sortOptionsLabel={
-                                sortOptions.type === "none" ? "none" : `${sortOptions.type}.${sortOptions.ascending ? 'asc' : 'desc'}`
-                            }
-                            initialCategories={initialMovieCategories}
-                            initialYearRange={initialYearRange}
-                            initialRating={initialRating}
-                        />
-                    </>
-                )
-            }
+            <FilterSortMenu />
         </>
     );
 }

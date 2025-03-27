@@ -24,7 +24,6 @@ export default class CommentService {
                     }
                 }
             );
-            console.log(response)
             return {
                 success: response.status === 200,
                 data: response.data,
@@ -38,4 +37,26 @@ export default class CommentService {
             };
         }
     }
+
+    async editComment(commentId: number, newContent: string, token: string): Promise<any> {
+        console.log("Token used in editComment:", token);
+        const response = await fetch(`/api/comments/${commentId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `${token}`,
+            },
+            body: JSON.stringify({
+                content: newContent,
+                timestamp: Math.floor(Date.now() / 1000)
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to edit comment");
+        }
+
+        return await response.json();
+    }
+
 }

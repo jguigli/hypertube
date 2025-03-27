@@ -64,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const newUser = { ...user, language };
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
+        // Notify other contexts about the language change
+        const event = new CustomEvent('languageChange', { detail: language });
+        window.dispatchEvent(event);
     };
 
     const changeUserAvatar = (avatar: string) => {

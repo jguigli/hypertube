@@ -3,6 +3,7 @@ import aiohttp
 from api.redis_client import redis_client
 
 from api.config import TMDB_API_BEARER_TOKEN
+# from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
 
 
 # #################### TMDB #####################
@@ -26,6 +27,26 @@ async def fetch_genres_movies_tmdb(language: str):
     genres = response_json["genres"]
     redis_client.setex(key_genres_movies, 86400, json.dumps(genres))
     return genres
+
+
+async def fetch_top_rated_movies_tmdb(language: str):
+    url = f"https://api.themoviedb.org/3/movie/top_rated?language={language}&page=1"
+    key_top_rated_movies = f"top_rated_movies:{language}"
+
+    headers = {
+        "accept": "application/json",
+        "Authorization": f"Bearer {TMDB_API_BEARER_TOKEN}"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status != 200:
+                return None
+            response_json = await response.json()
+
+    movies_data = response_json["results"][:9]
+    redis_client.setex(key_top_rated_movies, 86400, json.dumps(movies_data))
+    return movies_data
 
 
 async def fetch_popular_movies_tmdb(language: str, page: int):

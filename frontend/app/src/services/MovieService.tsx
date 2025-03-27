@@ -179,7 +179,7 @@ export default class MovieService {
 
     // Get movies information (min and max release year, min and max rating, genres)
     // GET /api/movies/information
-    async getMoviesInformation(token: string | null) {
+    async getMoviesInformation(token: string | null, language: string) {
         try {
             if (token) {
                 const response = await axios.get(
@@ -187,11 +187,13 @@ export default class MovieService {
                     {
                         headers: {
                             Authorization: `${token}`
+                        },
+                        params: {
+                            language: language
                         }
                     }
                 );
                 if (response.status === 200) {
-                    console.log(response.data);
                     return {
                         success: true,
                         data: response.data
@@ -242,4 +244,32 @@ export default class MovieService {
             }
         }
     }
+    // Get top movies
+    // GET /api/movies/top
+    async getTopMovies(language: string) {
+
+        try {
+            const response = await axios.get(`/movies/top`, {
+                params: {
+                    language: language
+                }
+            });
+            if (response.status === 200) {
+                return {
+                    success: true,
+                    data: response.data
+                };
+            }
+            return {
+                success: false,
+                data: null
+            };
+        } catch (error) {
+            return {
+                success: false,
+                data: null
+            };
+        }
+    }
+
 }

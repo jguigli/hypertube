@@ -7,12 +7,12 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
-import { useState } from "react";
-import FilterSortOptions, { SortOptions } from "../types/FilterSortOptions";
+import { useEffect, useState } from "react";
+import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 import { useMovies } from "../contexts/MovieContext";
 
 const sortOptionsLabels = [
-    { label: "None", value: "none" },
+    { label: "None", value: "none.desc" },
     { label: "Name (A-Z)", value: "name.asc" },
     { label: "Name (Z-A)", value: "name.desc" },
     { label: "Production year (newest first)", value: "production_year.desc" },
@@ -21,49 +21,60 @@ const sortOptionsLabels = [
     { label: "IMDb rating (lowest first)", value: "imdb_rating.asc" }
 ];
 
-export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, initialYearRange, initialRating }: {
-    onApply: (filters: FilterSortOptions) => void,
-    initialCategories: string[],
-    sortOptionsLabel: string,
-    initialYearRange: number[],
-    initialRating: number[]
-}) {
-
-    const { moviesInformation } = useMovies();
+export function FilterSortMenu() {
     const [open, setOpen] = useState(false);
-    const [movieCategories, setMovieCategories] = useState<string[]>(initialCategories)
-    const [yearRange, setYearRange] = useState<number[] | number>(initialYearRange);
-    const [rating, setRating] = useState<number[] | number>(initialRating);
-    const [sortOptions, setSortOptions] = useState<string>(sortOptionsLabel);
-
     const toggleDrawer = () => setOpen(!open);
 
+    const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
+
+    // Nouveaux états locaux pour gérer les valeurs temporaires
+    const [tempFilterOptions, setTempFilterOptions] = useState<FilterOptions>({
+        genre: "All",
+        yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+        rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+    });
+
+    const [tempSortOptions, setTempSortOptions] = useState<SortOptions>({
+        type: "none.desc",
+        ascending: false
+    });
+
+    // Mettre à jour les états locaux lorsque moviesInformation change
+    useEffect(() => {
+        setTempFilterOptions({
+            genre: filterOptions.genre,
+            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+        });
+        setTempSortOptions(sortOptions);
+    }, [moviesInformation]);
+
     const handleApply = () => {
-        const splitted_sortOptions = sortOptions.split(".");
-        const type = splitted_sortOptions[0];
-        const ascending = splitted_sortOptions[1] === "asc";
-        const sortOptionsValue: SortOptions = {
-            type: type,
-            ascending: ascending
-        };
-        onApply(
-            {
-                filterOptions: {
-                    genre: movieCategories,
-                    yearRange: typeof (yearRange) === "number" ? [yearRange, yearRange] : yearRange,
-                    rating: typeof (rating) === "number" ? [rating, rating] : rating
-                },
-                sortOptions: sortOptionsValue
-            }
-        );
+        // Appliquer les valeurs temporaires aux états globaux
+        setFilterOptions(tempFilterOptions);
+        setSortOptions(tempSortOptions);
         toggleDrawer();
     };
 
     const handleReset = () => {
-        setMovieCategories(moviesInformation.genres)
-        setYearRange([moviesInformation.release_date_min, moviesInformation.release_date_max]);
-        setRating([moviesInformation.rating_min, moviesInformation.rating_max]);
-        setSortOptions("none");
+        // Réinitialiser les valeurs temporaires aux valeurs par défaut
+        setTempFilterOptions(
+            {
+                genre: "All",
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+            }
+        );
+        setTempSortOptions({ type: "none", ascending: false });
+        setFilterOptions(
+            {
+                genre: "All",
+                yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+                rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+            }
+        );
+        setSortOptions({ type: "none", ascending: false });
+        toggleDrawer();
     };
 
     return (
@@ -87,14 +98,13 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
                             sx={{ bgcolor: "background.paper" }}
                         >Genres</InputLabel>
                         <Select
-                            value={movieCategories}
+                            value={tempFilterOptions.genre}
                             onChange={(e) => {
                                 const selectedValue = e.target.value;
-                                if (typeof selectedValue === "string") {
-                                    setMovieCategories([selectedValue]);
-                                } else {
-                                    setMovieCategories(selectedValue);
-                                }
+                                setTempFilterOptions({
+                                    ...tempFilterOptions,
+                                    genre: typeof selectedValue === "string" ? selectedValue : selectedValue[0]
+                                });
                             }}
                             size="small"
                         >
@@ -108,8 +118,10 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
 
                     <Typography>Production year</Typography>
                     <Slider
-                        value={yearRange}
-                        onChange={(_, newValue) => setYearRange(newValue)}
+                        value={tempFilterOptions.yearRange}
+                        onChange={(_, newValue) =>
+                            setTempFilterOptions({ ...tempFilterOptions, yearRange: newValue as number[] })
+                        }
                         valueLabelDisplay="auto"
                         min={moviesInformation.release_date_min}
                         max={moviesInformation.release_date_max}
@@ -119,8 +131,10 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
 
                     <Typography>IMDb ratings</Typography>
                     <Slider
-                        value={rating}
-                        onChange={(_, newValue) => setRating(newValue)}
+                        value={tempFilterOptions.rating}
+                        onChange={(_, newValue) =>
+                            setTempFilterOptions({ ...tempFilterOptions, rating: newValue as number[] })
+                        }
                         valueLabelDisplay="auto"
                         min={moviesInformation.rating_min}
                         max={moviesInformation.rating_max}
@@ -136,8 +150,14 @@ export function FilterSortMenu({ onApply, initialCategories, sortOptionsLabel, i
                             sx={{ bgcolor: "background.paper" }}
                         >Sort by</InputLabel>
                         <Select
-                            value={sortOptions}
-                            onChange={(e) => (setSortOptions(e.target.value))}
+                            value={tempSortOptions.type + (tempSortOptions.ascending ? ".asc" : ".desc")}
+                            onChange={(e) => {
+                                const [type, order] = e.target.value.split(".");
+                                setTempSortOptions({
+                                    type,
+                                    ascending: order === "asc"
+                                });
+                            }}
                             size="small"
                         >
                             {sortOptionsLabels.map((option) => (
