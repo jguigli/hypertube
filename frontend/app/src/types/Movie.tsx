@@ -1,3 +1,8 @@
+export default interface Cast {
+  name: string;
+  role: string;
+}
+
 export default interface Movie {
     id: number;
     title: string;
@@ -9,6 +14,8 @@ export default interface Movie {
     popularity?: number;
     backdrop_path?: string;
     vote_count?: number;
+    casting?: Cast[];
+    crew?: Cast[];
     comments?: [
       {
         "id": 0,

@@ -1,6 +1,6 @@
 import React from 'react';
 import videojs from "video.js";
-import VideoJS from './test_videojs';
+import VideoJS from './PlayerVideo';
 
 
 
@@ -17,9 +17,10 @@ props: {
         responsive: true,
         fluid: true,
         sources: [{
-            // src: 'https://vjs.zencdn.net/v/oceans.mp4',
-            src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
+            src: 'https://vjs.zencdn.net/v/oceans.mp4',
             type: 'video/mp4'
+            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
+            // type: 'application/x-mpegURL'
         }],
         tracks: [
           {
@@ -39,20 +40,11 @@ props: {
 
     const handlePlayerReady = (player: any) => {
         playerRef.current = player;
-
-        // You can handle player events here, for example:
-        player.on('waiting', () => {
-            videojs.log('player is waiting');
-        });
-
-        player.on('dispose', () => {
-            videojs.log('player will dispose');
-        });
     };
 
     return (
         <div className="video-container w-full">
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID}/>
+            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID} />
         </div>
     );
 

@@ -56,7 +56,7 @@ async def get_top_rated_movies(
         movies_data = await fetch_top_rated_movies_tmdb(language)
         if not movies_data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Top rated movies not available")
-        
+
     cached_genres = redis_client.get(f"genres_movies:{language}")
     if cached_genres:
         genres = json.loads(cached_genres)
@@ -215,9 +215,6 @@ async def get_popular_movies(
         # redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
 
     watched_movies = get_watched_movies_id(db, current_user.id)
-
-    # Already fetched at startup
-    # genres = await fetch_genres_movies_tmdb(language)
 
     movies = [
         MovieDisplay(**{

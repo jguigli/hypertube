@@ -4,7 +4,7 @@ import Home from "../pages/Home.tsx";
 import Register from "../pages/Register.tsx";
 import Login from "../pages/Login.tsx";
 import PageNotFound from "../pages/404.tsx";
-import VideoView from "../pages/VideoView.tsx";
+import VideoView from "../pages/Watch.tsx";
 import ResetPassword, { ChangePassword } from "../pages/ResetPassword.tsx";
 import PublicRoute from "./PublicRoute.tsx"
 import PrivateRoute, { LogoutRoute } from "./PrivateRoute.tsx";
@@ -13,6 +13,7 @@ import PublicProfile from "../pages/Profile.tsx";
 import UserSettings from "../pages/UserSettings.tsx";
 import HomeRouter from "./HomeRouter.tsx";
 import Auth from "../utils/Auth.tsx";
+import Watch from "../pages/Watch.tsx";
 
 const router = createBrowserRouter([
     {
@@ -87,7 +88,7 @@ const router = createBrowserRouter([
                 path: "watch/:id",
                 element: (
                     <PrivateRoute>
-                        <VideoView />
+                        <Watch />
                     </PrivateRoute>
                 )
             },

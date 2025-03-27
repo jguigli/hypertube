@@ -35,22 +35,27 @@ export interface CommentType {
     content: string;
     replies: CommentType[];
     timestamp: number;
-    // name?: string;
-    // video_id: number
-    // avatarUrl?: string;
+    
 }
 
 
-// const initialComments: CommentType = {
-//     id: 1,
-//     user_id: 1,
-//     user_name: "user",
-//     content: "content",
-//     items: [],
-//     timestamp: Date.now(),
-// };
+export default function Watch() {
+    
+    const movieService = new MovieService();
+    const { getToken, user } = useAuth();
+    const { id } = useParams<{ id: string }>();
+    const safeID = id || '42';
+    const [ismovieReady, setMovieReady] = useState<boolean>(false);
 
-export default function VideoView() {
+    // POST /api/download
+    useEffect(() => {
+        async function getDownloadMovie() {
+        const response = await movieService.checkMovieDownloadStatus(safeID, getToken());
+        console.log("Appelle de la fonction download.")
+    }
+    getDownloadMovie();
+    }, [getToken])
+
 
     const [commentsData, setCommentsData] = useState<CommentType[]>([]);
 
@@ -113,11 +118,9 @@ export default function VideoView() {
         }
       };
 
-    const { id } = useParams<{ id: string }>();
     const videoID = id ? parseInt(id, 10) : null;
     const navigate = useNavigate();
 
-    const { getToken, user } = useAuth();
 
     useEffect(() => {
 
@@ -136,44 +139,14 @@ export default function VideoView() {
             console.log("Fetched comments:", response.data.comments);
 
             setCommentsData(response.data.comments);
-
-            // const maxId = response.data.comments.length > 0
-            //     ? Math.max(...response.data.comments.map((comment: CommentType) => comment.id))
-            //     : 0;
-
-            // setCommentId(maxId + 1);
-
-            // setCommentsData((prev) => [...prev, response.data.comments]);
-            // setCommentsData([response.data.comments]);;
         }
 
         getMovieInfo();
 
     }, [getToken, navigate, videoID])
 
-    // Redirection vers la page d'accueil si le videoID est undefined
-
-
-    // gestion du videoID undefined a faire
-
-    // const { user } = useAuth();
-
-
-
-    // const { movies } = useMovies();
-    // const movie = movies.find((movie) => movie.imdb_id === videoID);
-
-    // const { setVideoSource } = useVideo();
-
-    // useEffect(() => {
-    //     setVideoSource("https://vjs.zencdn.net/v/oceans.mp4");
-    // }, []);
-
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");
-
-    // const [commentId, setCommentId] = useState<number>(0)
-
 
     const onAddComment = async () => {
         try {
@@ -211,16 +184,8 @@ export default function VideoView() {
 
     return (
         <>
-            {/* <h1>{movie?.language[user.language].title}</h1> */}
-
-            {/* Affichage du lecteur Video.js */}
-            {/* <VideoJS /> */}
             <Video video_ID={+videoID} />
 
-            {/* Exemple de bouton pour changer la vidéo */}
-            {/* <button onClick={() => setVideoSource("https://vjs.zencdn.net/v/oceans.mp4")}>
-                Charger une nouvelle vidéo
-                </button> */}
             <div className="Video_view">
                 <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
 
