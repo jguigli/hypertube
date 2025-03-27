@@ -1,15 +1,10 @@
-export default interface Comments {
+export default interface CommentType {
     id: number;
     user_id: number;
-    movie_id: number;
-    comment: string;
-    date: string;
-    // user: {
-    //     id: number;
-    //     username: string;
-    //     email: string;
-    //     firstName: string;
-    //     lastName: string;
-    //     avatar: string;
-    // };
+    user_name: string;
+    parent_id: number | null;
+    content: string;
+    replies: CommentType[];
+    timestamp: number;
+    
 }
