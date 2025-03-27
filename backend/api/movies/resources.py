@@ -16,7 +16,8 @@ from .fetch import (
     get_magnet_link_piratebay,
     fetch_movie_detail_tmdb,
     fetch_top_rated_movies_tmdb,
-    fetch_genres_movies_tmdb
+    fetch_genres_movies_tmdb,
+    search_movies_tmdb
 )
 from .crud import (
     get_watched_movies_id,
@@ -72,6 +73,33 @@ async def get_top_rated_movies(
     return movies
 
 
+def get_redis_key(
+    searchBody: schemas.SearchMovieBody = None,
+    popularMovieBody: schemas.PopularMovieBody = None
+) -> str:
+
+    """
+    Get the redis key based on the search or popular movie request
+    """
+
+    if searchBody is None and popularMovieBody is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid request"
+        )
+
+    type = "search" if searchBody is not None else "popular"
+    body = searchBody if searchBody is not None else popularMovieBody
+    language = body.language
+    page = body.page
+    sort_options = body.sort_options
+    filter_options = body.filter_options
+    filter_options_key = f"{filter_options.categories}:{filter_options.imdb_rating_low}:{filter_options.imdb_rating_high}:{filter_options.production_year_low}:{filter_options.production_year_high}"
+    sort_options_key = f"{sort_options.type.value}:{sort_options.ascending}"
+    redis_key = f"{type}:{language}:{page}:{sort_options_key}:{filter_options_key}"
+    return redis_key
+
+
 @router.post('/movies/search', response_model=List[MovieDisplay])
 async def search_movies(
     searchBody: schemas.SearchMovieBody,
@@ -95,12 +123,56 @@ async def search_movies(
         "imdb_rating": Movie.vote_average,
     }.get(sort_options.type.value, Movie.popularity)
 
+    # redis_key = get_redis_key(searchBody=searchBody)
+    # cached_searches = redis_client.get(redis_key)
     cached_searches = False
-    # TODO: Add the sort and filter options to the cache key
-    # cached_searches = redis_client.get(f"search:{search}:{language}:{page}")
     if cached_searches:
         movies_data = json.loads(cached_searches)
     else:
+
+        # Search movies in TMDB and add to database
+        genres = await fetch_genres_movies_tmdb(language)
+
+        # Search key in redis
+        already_search_key = f"search:{search}:{language}"
+        already_searched = redis_client.get(already_search_key)
+        if not already_searched:
+            search_page = 1
+            redis_client.setex(already_search_key, 86400, json.dumps(True))
+            while True:
+                movies_data = await search_movies_tmdb(search, language, search_page)
+                if not movies_data:
+                    break
+                # Add movies to database
+                for movie in movies_data:
+                    movie_db = get_movie_by_id(db, movie["id"])
+                    if not movie_db:
+                        categories = []
+                        genre_ids = movie.get("genre_ids", None)
+                        if genre_ids:
+                            for genre in genres:
+                                if genre['id'] in genre_ids:
+                                    categories.append(genre['name'])
+                        print(movie)
+                        # movie_db = create_movie(
+                        #     db, Movie(
+                        #         id=movie["id"],
+                        #         original_language=movie["original_language"],
+                        #         language=language,
+                        #         original_title=movie["original_title"],
+                        #         overview=movie["overview"],
+                        #         popularity=movie["popularity"],
+                        #         poster_path=movie["poster_path"],
+                        #         backdrop_path=movie["backdrop_path"],
+                        #         release_date=movie["release_date"],
+                        #         category=categories,
+                        #         title=movie["title"],
+                        #         vote_average=movie["vote_average"],
+                        #         vote_count=movie["vote_count"]
+                        #     )
+                        # )
+                search_page += 1
+
         # Search movies in database
         movies_data = db.query(
             Movie.id,
@@ -131,14 +203,10 @@ async def search_movies(
                 detail="Search movies not available"
             )
 
-        # TODO: Add to cache
-        # redis_client.set(
-        #    f"search:{search}:{language}:{page}", json.dumps(movies_data)
-        # )
+        # redis_client.set(redis_key, json.dumps(movies_data))
 
     watched_movies = get_watched_movies_id(db, current_user.id)
 
-    # movies = [map_to_movie_display(movie) for movie in movies_data]
     movies = [
         MovieDisplay(**{
             "id": movie.id,
@@ -179,8 +247,8 @@ async def get_popular_movies(
         "imdb_rating": Movie.vote_average,
     }.get(sort_options.type.value, Movie.id)
 
-    # TODO: Set the key based on filter/sort options
-    # cached_movies = redis_client.get(f"popular_movies:{page}:{language}")
+    redis_key = get_redis_key(popularMovieBody=popularMovieBody)
+    cached_movies = redis_client.get(redis_key)
     cached_movies = False
     if cached_movies:
         movies_data = json.loads(cached_movies)
@@ -211,8 +279,11 @@ async def get_popular_movies(
                 detail="No movies found"
             )
 
-        # TODO: Add to cache
-        # redis_client.set(f"popular_movies:{page}:{language}", json.dumps(movies_data))
+    if not movies_data:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="No movies found"
+        )
 
     watched_movies = get_watched_movies_id(db, current_user.id)
 
@@ -228,11 +299,7 @@ async def get_popular_movies(
         }) for movie in movies_data
     ]
 
-    if not movies_data:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No movies found"
-        )
+    # TODO: Add to redis cache
 
     return movies
 

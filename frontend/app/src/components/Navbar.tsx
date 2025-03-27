@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import { useMovies } from "../contexts/MovieContext.tsx";
+import { set } from "video.js/dist/types/tech/middleware";
 
 
 function Logo() {
@@ -31,23 +32,30 @@ function Logo() {
 function MovieSearchBar() {
 
     const { searchQuery, setSearchQuery } = useMovies();
+    const [search, setSearch] = useState("");
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-        setSearchQuery(event.target.value);
+        setSearch(event.target.value);
     }
 
     function handleClearSearch() {
+        setSearch("");
         setSearchQuery("");
+    }
+
+    function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setSearchQuery(search);
     }
 
     return (
         <div className="flex flex-row items-center w-full bg-gray-800 rounded-md mx-4 max-w-[400px]">
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={handleSearchSubmit}>
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
                         placeholder="Search movies"
-                        value={searchQuery}
+                        value={search}
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}
                     />
