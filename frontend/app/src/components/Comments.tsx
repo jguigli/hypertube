@@ -6,7 +6,7 @@ import { Button, Stack, Avatar } from "@mui/material";
 import CustomCard from "./Card";
 import CommentService from "../services/CommentService";
 import { useAuth } from "../contexts/AuthContext";
-import { CommentType } from "../pages/VideoView";
+import { CommentType } from "../pages/Watch";
 
 
 
