@@ -32,6 +32,35 @@ const accordionItems = [
     }
 ];
 
+
+function TopMovies() {
+
+    const movieService = new MovieService();
+    const { user } = useAuth();
+    const [topMovies, setTopMovies] = useState<Movie[]>([]);
+
+    useEffect(() => {
+        const fetchTopMovies = async () => {
+            const response = await movieService.getTopMovies(user.language);
+            if (response.success) {
+                setTopMovies(response.data);
+            }
+        };
+        fetchTopMovies();
+    }, [user.language]);
+
+    return (
+        <div className="flex flex-col items-center justify-center gap-5 w-[500px] h-full">
+            <Carousel className="w-[500px] h-full" navButtonsAlwaysVisible={false}>
+                {topMovies.map((movie, id) => (
+                    <MovieCard key={id} movie={movie} lazy_load={false} />
+                ))}
+            </Carousel>
+        </div>
+    )
+}
+
+
 export default function LandingPage() {
 
     const [expanded, setExpanded] = useState<string | false>(false);
@@ -57,27 +86,10 @@ export default function LandingPage() {
         }
     }, [navigate]);
 
-
-    const movieService = new MovieService();
-    const { user } = useAuth();
-    const [topMovies, setTopMovies] = useState<Movie[]>([]);
-
-    useEffect(() => {
-        const fetchTopMovies = async () => {
-            const response = await movieService.getTopMovies(user.language);
-            if (response.success) {
-                setTopMovies(response.data);
-            }
-        };
-        fetchTopMovies();
-    }, [user.language]);
-
-
-
     return (
 
-        <CustomCard additionalClasses="flex flex-col align-center p-5">
-            <div className="flex flex-row items-center justify-center gap-5">
+        <CustomCard additionalClasses="flex flex-col align-center p-5 h-[80vh] max-w-[100%] max-h-[80vh]">
+            <div className="flex flex-row items-center justify-center gap-5 h-full w-full">
                 <div className="flex flex-col items-center justify-center gap-5 w-[500px]">
                     <Typography variant="h4" className="font-bold text-center w-full">
                         Welcome
@@ -118,16 +130,7 @@ export default function LandingPage() {
                         <Button variant="outlined" className="w-full">Register</Button>
                     </Link>
                 </div>
-                <div className="flex flex-col items-center justify-center gap-5">
-                    <Typography variant="h5" className="font-bold text-center w-full">
-                        Top Movies
-                    </Typography>
-                    <Carousel className="w-[500px] h-full" navButtonsAlwaysVisible={false}>
-                        {topMovies.map((movie, id) => (
-                            <MovieCard key={id} movie={movie} />
-                        ))}
-                    </Carousel>
-                </div>
+                <TopMovies />
             </div>
         </CustomCard>
 

@@ -162,7 +162,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            setIsLoading(false);
+            // setIsLoading(false);
             setHasMore(true);
             fetchMovies();
         }, 300); // Ajouter un délai pour regrouper les changements

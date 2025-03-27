@@ -74,6 +74,11 @@ scheduler = BackgroundScheduler()
 
 
 async def populate_movies(db: Session):
+
+    # Return if there are already movies in the database
+    if db.query(Movie).first():
+        return
+
     languages = ["en", "fr"]
     for language in languages:
         genres = await fetch_genres_movies_tmdb(language)
