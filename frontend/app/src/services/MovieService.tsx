@@ -223,30 +223,45 @@ export default class MovieService {
 
             const response = await axios.post(
                 `/movies/${movie_id}/download`,
-                {
-                    movie_id
-                },
+                { movie_id },
                 {
                     headers: {
                         Authorization: `${token}`
                     }
                 }
             );
-            if (response.status === 200) {
-                console.log("Download status 200.")
-                return { status: 200, message: "Status 200" }
+            if (response.status === 400) {
+                // Invalid movie id
+                return { status: 400, message: "Invalid movie id" }
             }
-            if (response.status === 202) {
-                console.log("Download status 202.")
-                return { status: 202, message: "Status 202" }
+            else if (response.status === 200) {
+                // Movie is downloading or converting, not yet available
+                return { status: 200, message: "Movie is downloading or converting" }
             }
-            return { status: 42, message: "wtf" }
+            else if (response.status === 404) {
+                // No magnet link found for this movie
+                return { status: 404, message: "No magnet link found for this movie" }
+            }
+            else if (response.status === 202) {
+                // Movie is available for streaming
+                return { status: 202, message: "Movie is available for streaming" }
+            }
+            else {
+                console.log(response.data);
+                return { status: response.status, message: "An unexpected error occurred" }
+            }
+
         } catch (error: any) {
-            if (error.response?.status === 422) {
-                console.log("Download status 422")
-                return { status: 422, message: "Status 422" }
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                return { status: error.response.status, message: error.response.data.message }
+            } else if (error.request) {
+                // The request was made but no response was received
+                return { status: 500, message: "No response from server" }
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                return { status: 500, message: "An unexpected error occurred" }
             }
-            return { status: 42, message: "wtf" }
         }
     }
     // Get top movies

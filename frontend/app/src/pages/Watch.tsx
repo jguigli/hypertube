@@ -18,12 +18,22 @@ export default function Watch() {
     useEffect(() => {
         async function getDownloadMovie() {
             const response = await movieService.checkMovieDownloadStatus(videoId, getToken());
-            if (response.status === 202) {
+            if (response.status === 400) {
+                // Invalid movie id
+                setMovieReady(false);
+            }
+            else if (response.status === 200) {
+                // Movie is downloading or converting, not yet available
+                setMovieReady(false);
+            }
+            else if (response.status === 404) {
+                // Movie is not available
+                setMovieReady(false);
+            }
+            else if (response.status === 202) {
+                // Movie is ready to be watched
                 setMovieReady(true);
-            } else if (response.status === 401) {
-                console.error("Unauthorized access");
-            } else {
-                console.error("Unexpected status:", response.status);
+                // Set the video source
             }
         }
         getDownloadMovie();

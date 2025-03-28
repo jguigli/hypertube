@@ -1,6 +1,7 @@
 import React from 'react';
 import videojs from "video.js";
 import VideoJS from './PlayerVideo';
+import { useAuth } from '../contexts/AuthContext';
 
 
 
@@ -10,7 +11,10 @@ props: {
 }) {
 
     const playerRef = React.useRef(null);
+    const { getToken } = useAuth();
+    const token = getToken();
 
+    // /movies/{ movie_id } /stream/{ token }/{hls_file}
     const videoJsOptions = {
         autoplay: false,
         controls: true,
@@ -19,7 +23,7 @@ props: {
         sources: [{
             src: 'https://vjs.zencdn.net/v/oceans.mp4',
             type: 'video/mp4'
-            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream`,
+            // src: `http://localhost:3000/api/movies/${props.video_ID}/stream/${token}/movie.m3u8`, // 401 a resoudre ici et voir ce qu'est {hls_file}
             // type: 'application/x-mpegURL'
         }],
         tracks: [
