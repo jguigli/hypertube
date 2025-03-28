@@ -8,7 +8,7 @@ import { useNode } from "../components/Comments";
 import { Button } from "@mui/material";
 import CommentType from "../types/Comments";
 
-export default function StructureComments({ videoID } :{videoID : string}) {
+export default function StructureComments({ videoID }: { videoID: string }) {
     const [commentsData, setCommentsData] = useState<CommentType[]>([]);
     const { getToken, user } = useAuth();
     const { insertNode, editNode, deleteNode } = useNode();
@@ -43,32 +43,32 @@ export default function StructureComments({ videoID } :{videoID : string}) {
     const handleDeleteNode = async (commentId: number) => {
         const token = getToken();
         if (!token) return console.error("No token");
-      
+
         try {
-          await commentService.deleteComment(commentId, token);
-      
-          const deleteFromTree = (comments: CommentType[]): CommentType[] => {
-            return comments
-              .map(comment => {
-                if (comment.id === commentId) {
-                  return null;
-                }
-                if (comment.replies?.length) {
-                  return {
-                    ...comment,
-                    replies: deleteFromTree(comment.replies).filter(Boolean),
-                  };
-                }
-                return comment;
-              })
-              .filter(Boolean) as CommentType[];
-          };
-      
-          setCommentsData(prev => deleteFromTree(prev));
+            await commentService.deleteComment(commentId, token);
+
+            const deleteFromTree = (comments: CommentType[]): CommentType[] => {
+                return comments
+                    .map(comment => {
+                        if (comment.id === commentId) {
+                            return null;
+                        }
+                        if (comment.replies?.length) {
+                            return {
+                                ...comment,
+                                replies: deleteFromTree(comment.replies).filter(Boolean),
+                            };
+                        }
+                        return comment;
+                    })
+                    .filter(Boolean) as CommentType[];
+            };
+
+            setCommentsData(prev => deleteFromTree(prev));
         } catch (err) {
-          console.error("Failed to delete comment", err);
+            console.error("Failed to delete comment", err);
         }
-      };
+    };
 
     useEffect(() => {
 
@@ -118,33 +118,33 @@ export default function StructureComments({ videoID } :{videoID : string}) {
         }
         setInput("")
     };
-return (
-    <div className="Video_view">
-    <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
+    return (
+        <div className="Video_view">
+            <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
 
-        <>
-            <input
-                type="text"
-                className="inputContainer__input first_input"
-                autoFocus
-                value={input}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && onAddComment()}
-                placeholder="Type your comment here"
-                style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
-            />
-            <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
-        </>
+                <>
+                    <input
+                        type="text"
+                        className="inputContainer__input first_input"
+                        autoFocus
+                        value={input}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && onAddComment()}
+                        placeholder="Type your comment here"
+                        style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
+                    />
+                    <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
+                </>
 
-        <Comments
-            comments={commentsData}
-            handleInsertNode={handleInsertNode}
-            handleEditNode={handleEditNode}
-            handleDeleteNode={handleDeleteNode}
-            setCommentsData={setCommentsData}
-        />
-    </CustomCard>
+                <Comments
+                    comments={commentsData}
+                    handleInsertNode={handleInsertNode}
+                    handleEditNode={handleEditNode}
+                    handleDeleteNode={handleDeleteNode}
+                    setCommentsData={setCommentsData}
+                />
+            </CustomCard>
 
-</div>
-);
+        </div>
+    );
 }

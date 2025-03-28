@@ -3,7 +3,7 @@ import User from "../types/User";
 
 interface AuthContextType {
     user: User;
-    getToken: () => string | null;
+    getToken: () => string;
     login: (user: User, token: string) => void;
     logout: () => void;
     changeUserLanguage: (language: 'en' | 'fr') => void;
@@ -39,7 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     function getToken() {
-        return localStorage.getItem("token");
+        const token = localStorage.getItem("token");
+        return token ? token : '';
     }
 
     function getUserLanguage(): 'en' | 'fr' {
@@ -64,9 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const newUser = { ...user, language };
         setUser(newUser);
         localStorage.setItem("user", JSON.stringify(newUser));
-        // Notify other contexts about the language change
-        const event = new CustomEvent('languageChange', { detail: language });
-        window.dispatchEvent(event);
     };
 
     const changeUserAvatar = (avatar: string) => {

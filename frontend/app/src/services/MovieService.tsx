@@ -216,7 +216,10 @@ export default class MovieService {
     //Recuperation de la reponse de la route /movies/{movie_id}/download
     async checkMovieDownloadStatus(movie_id: string, token: string) {
         try {
-            if (!token) return ;
+            if (!token) return {
+                status: 401,
+                message: "Unauthorized"
+            }
 
             const response = await axios.post(
                 `/movies/${movie_id}/download`,
@@ -237,11 +240,13 @@ export default class MovieService {
                 console.log("Download status 202.")
                 return { status: 202, message: "Status 202" }
             }
+            return { status: 42, message: "wtf" }
         } catch (error: any) {
             if (error.response?.status === 422) {
                 console.log("Download status 422")
                 return { status: 422, message: "Status 422" }
             }
+            return { status: 42, message: "wtf" }
         }
     }
     // Get top movies
