@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import videojs from "video.js";
+// import videojs from "video.js";
 import VideoJS from './PlayerVideo';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,7 +11,6 @@ props: {
 }) {
 
     const playerRef = React.useRef(null);
-
     const { getToken } = useAuth();
     const token = getToken();
 

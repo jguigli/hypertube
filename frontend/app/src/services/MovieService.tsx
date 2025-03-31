@@ -1,4 +1,3 @@
-import { Language } from "@mui/icons-material";
 import axios from "axios";
 import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 

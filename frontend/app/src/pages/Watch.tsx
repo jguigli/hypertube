@@ -22,6 +22,7 @@ export default function Watch() {
         async function getDownloadMovie() {
             const response = await movieService.checkMovieDownloadStatus(videoId, getToken());
             if (response.status === 202) {
+                // Movie is ready to be watched
                 setMovieReady(true);
             } else if (response.status === 200) {
                 console.log("Download/Conversion in progress");
