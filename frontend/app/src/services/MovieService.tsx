@@ -139,8 +139,6 @@ export default class MovieService {
         }
     }
 
-
-
     async getMovieInfo(id: number, token: string | null, language: string) {
         try {
             if (token) {
@@ -213,42 +211,6 @@ export default class MovieService {
         }
     }
 
-    //Recuperation de la reponse de la route /movies/{movie_id}/download
-    async checkMovieDownloadStatus(movie_id: string, token: string) {
-        try {
-            if (!token) return {
-                status: 401,
-                message: "Unauthorized"
-            }
-
-            const response = await axios.post(
-                `/movies/${movie_id}/download`,
-                {
-                    movie_id
-                },
-                {
-                    headers: {
-                        Authorization: `${token}`
-                    }
-                }
-            );
-            if (response.status === 200) {
-                console.log("Download status 200.")
-                return { status: 200, message: "Status 200" }
-            }
-            if (response.status === 202) {
-                console.log("Download status 202.")
-                return { status: 202, message: "Status 202" }
-            }
-            return { status: 42, message: "wtf" }
-        } catch (error: any) {
-            if (error.response?.status === 422) {
-                console.log("Download status 422")
-                return { status: 422, message: "Status 422" }
-            }
-            return { status: 42, message: "wtf" }
-        }
-    }
     // Get top movies
     // GET /api/movies/top
     async getTopMovies(language: string) {
@@ -274,6 +236,46 @@ export default class MovieService {
                 success: false,
                 data: null
             };
+        }
+    }
+
+    //Recuperation de la reponse de la route /movies/{movie_id}/download
+    async checkMovieDownloadStatus(movie_id: string, token: string) {
+        try {
+
+            if (!token) return {
+                status: 401,
+                message: "Unauthorized"
+            }
+
+            const response = await axios.post(
+                `/movies/${movie_id}/download`,
+                { movie_id },
+                {
+                    headers: {
+                        Authorization: `${token}`
+                    }
+                }
+            );
+
+            // 400 : Invalid movie id -> Redirect to 404 page
+            // 404 : No torrent file found for this movie
+            // 200 : Download in progress
+            // 202 : Movie is available for streaming
+
+            if (response.status === 200) {
+                return { status: 200, message: "Download in progress" }
+            } else if (response.status === 202) {
+                return { status: 202, message: "Movie is available for streaming" }
+            } else if (response.status === 400) {
+                return { status: 400, message: "Invalid movie_id" }
+            } else if (response.status === 404) {
+                return { status: 404, message: "No torrent file found for this movie" }
+            } else {
+                return { status: 0, message: "Unexpected error" }
+            }
+        } catch (error: any) {
+            return { status: 0, message: "Unexpected error" }
         }
     }
 
