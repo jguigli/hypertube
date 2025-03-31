@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import (
     Depends, HTTPException, APIRouter, status, UploadFile, File
 )
+from starlette.responses import FileResponse
 from sqlalchemy.orm import Session
 import re
 from . import models, schemas, crud
@@ -131,9 +132,10 @@ async def get_other_user_picture(
     db: Session = Depends(get_db),
 ):
     user = crud.get_user_by_id(db, user_id)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User doesn't exist")
-    return user.profile_picture
+    if not user or not user.profile_picture_path:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile picture not found")
+
+    return FileResponse(user.profile_picture_path)
 
 
 @router.put("/users/picture")

@@ -6,5 +6,5 @@ export default interface CommentType {
     content: string;
     replies: CommentType[];
     timestamp: number;
-    
+    avatarUrl: string;
 }

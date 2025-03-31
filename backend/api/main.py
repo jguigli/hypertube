@@ -117,6 +117,8 @@ async def populate_movies(db: Session):
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
             page += 1
+            if page == 5:
+                break
 
 
 @app.on_event("startup")

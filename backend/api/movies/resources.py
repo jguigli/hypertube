@@ -423,6 +423,8 @@ async def download_movie(
     current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
+    return Response(status_code=status.HTTP_202_ACCEPTED)
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(

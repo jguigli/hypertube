@@ -41,5 +41,7 @@ def update_comment(
 
 
 def delete_comment(db: Session, comment: Comment):
+    for reply in comment.children_replies:
+        delete_comment(db, reply)
     db.delete(comment)
     db.commit()

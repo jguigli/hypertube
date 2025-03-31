@@ -6,7 +6,8 @@ import { Button, Stack, Avatar } from "@mui/material";
 import CustomCard from "./Card";
 import CommentService from "../services/CommentService";
 import { useAuth } from "../contexts/AuthContext";
-import { CommentType } from "../pages/Watch";
+import CommentType from "../types/Comments";
+import UserService from "../services/UserService";
 
 
 
@@ -149,6 +150,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
             parent_id: parent_id,
             content: input,
             replies: [],
+            avatarUrl: user.avatar || "",
             timestamp: newTimestamp
           };
           
@@ -171,23 +173,41 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   };
 
 
-  const updateCommentContent = (
-    comments: CommentType[],
-    commentId: number,
-    newContent: string,
-    newTimestamp: number
-  ): CommentType[] => {
-    return comments.map(comment => {
-      if (comment.id === commentId) {
-        return { ...comment, content: newContent, timestamp: newTimestamp };
-      } else if (comment.replies?.length) {
-        return { ...comment, replies: updateCommentContent(comment.replies, commentId, newContent, newTimestamp) };
-      } else {
-      return comment;
-      }
-    });
-  };
+  // const updateCommentContent = (
+  //   comments: CommentType[],
+  //   commentId: number,
+  //   newContent: string,
+  //   newTimestamp: number
+  // ): CommentType[] => {
+  //   return comments.map(comment => {
+  //     if (comment.id === commentId) {
+  //       return { ...comment, content: newContent, timestamp: newTimestamp };
+  //     } else if (comment.replies?.length) {
+  //       return { ...comment, replies: updateCommentContent(comment.replies, commentId, newContent, newTimestamp) };
+  //     } else {
+  //     return comment;
+  //     }
+  //   });
+  // };
   
+  // const userService = new UserService();
+  // const [avatar, setAvatar] = useState<string>("");
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const token = getToken();
+  //     if (!token) {
+  //       alert("You are not authenticated");
+  //       return;
+  //     }
+  //     const response = await userService.getPictureById(comments.user_id, token);
+  //     if (response.success && response.avatar) {
+  //       setAvatar(response.avatar);
+  //     }
+  //   };
+  //   fetchData();
+  // }
+  // , [getToken, userService, comments]);
+
   return (
     <div className="comment-wrapper">
       {[...comments]
@@ -196,7 +216,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
         <div key={comment.id} className="comment-container">
           <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <Avatar src={comment.avatarUrl} alt={comment.name} />
+              <Avatar src={comment.avatarUrl} alt={comment.user_name} />
               <Link to={`/profile/${comment.user_name || "anonymous"}`} style={{ textDecoration: "none", fontWeight: "bold", color: "#1DA1F2" }}>
                 {comment.user_name || "anonymous"}
               </Link>
