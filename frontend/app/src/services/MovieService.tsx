@@ -274,7 +274,8 @@ export default class MovieService {
                 return { status: 0, message: "Unexpected error" }
             }
         } catch (error: any) {
-            return { status: 0, message: "Unexpected error" }
+            console.log(error);
+            return { status: error.response?.status || 0, message: "Unexpected error" }
         }
     }
 

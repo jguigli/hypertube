@@ -1,7 +1,8 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi import WebSocket, WebSocketDisconnect, APIRouter
+
 
 router = APIRouter(tags=["Websocket"])
+
 
 class ConnectionManager:
     def __init__(self):
@@ -23,8 +24,10 @@ class ConnectionManager:
 
 manager_websocket = ConnectionManager()
 
+
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
+    user_id = 1
     await manager_websocket.connect(websocket, user_id)
     try:
         while True:

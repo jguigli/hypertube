@@ -51,7 +51,7 @@ props: {
     };
 
     return (
-        <div className="video-container w-full">
+        <div className="video-container w-full max-h-[80vh]">
             <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID} />
         </div>
     );

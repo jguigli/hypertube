@@ -393,7 +393,7 @@ async def download_and_convert(movie_id: int, user_id: int):
         movie = get_movie_by_id(db, movie_id)
         if movie.is_download is False:
             await manager_websocket.send_message(
-                user_id, f"Movie {movie.original_title} is downloading."
+                user_id, "Movie is downloading."
             )
             file_path = await download_torrent(movie.magnet_link, movie.id)
             movie.file_path = file_path
@@ -402,7 +402,7 @@ async def download_and_convert(movie_id: int, user_id: int):
         if movie.is_convert is False:
             await manager_websocket.send_message(
                 user_id,
-                f"Movie {movie.original_title} is being converted to HLS."
+                "Movie is being converted to HLS."
             )
             await convert_to_hls(movie.file_path, movie.id)
             movie.is_convert = True
@@ -412,7 +412,7 @@ async def download_and_convert(movie_id: int, user_id: int):
 
     redis_client.delete(f"download_and_convert:{movie.id}")
     await manager_websocket.send_message(
-        user_id, f"Movie {movie.original_title} is ready to be watch."
+        user_id, "Movie is ready."
     )
 
 
@@ -423,6 +423,22 @@ async def download_movie(
     current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
+
+    # Status_code tests:
+    # 400 : Invalid movie
+    # raise HTTPException(
+    #     status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
+    # )
+    # 404 : Movie not available
+    # raise HTTPException(
+    #     status_code=status.HTTP_404_NOT_FOUND,
+    #     detail="Movie not available"
+    # )
+    # 202 : Movie is downloading
+    return Response(status_codse=status.HTTP_202_ACCEPTED)
+    # 200 : Movie is already downloaded and converted
+    return Response(status_code=status.HTTP_200_OK)
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(
@@ -430,7 +446,7 @@ async def download_movie(
         )
 
     if movie.is_download and movie.is_convert:
-        return Response(status_code=200)
+        return Response(status_code=status.HTTP_200_OK)
 
     if not movie.magnet_link:
         year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
