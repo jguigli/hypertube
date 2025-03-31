@@ -278,14 +278,18 @@ async def auth_42_callback(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    return await handle_oauth_callback(
-        request, db, provider="fortytwo",
-        provider_id_key="id",
-        user_info_url="https://api.intra.42.fr/v2/me",
-        email_key="email", name_key="login",
-        first_name_key="first_name", last_name_key="last_name",
-        picture_key=("image", "link")
-    )
+    try:
+        return await handle_oauth_callback(
+            request, db, provider="fortytwo",
+            provider_id_key="id",
+            user_info_url="https://api.intra.42.fr/v2/me",
+            email_key="email", name_key="login",
+            first_name_key="first_name", last_name_key="last_name",
+            picture_key=("image", "link")
+        )
+    except Exception:
+        # Credentials expired
+        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
 @router.get("/auth/google")
@@ -300,14 +304,18 @@ async def auth_google_callback(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    return await handle_oauth_callback(
-        request, db, provider="google",
-        provider_id_key="sub",
-        user_info_url="https://openidconnect.googleapis.com/v1/userinfo",
-        email_key="email", name_key="name",
-        first_name_key="given_name", last_name_key="name",
-        picture_key=("picture",)
-    )
+    try:
+        return await handle_oauth_callback(
+            request, db, provider="google",
+            provider_id_key="sub",
+            user_info_url="https://openidconnect.googleapis.com/v1/userinfo",
+            email_key="email", name_key="name",
+            first_name_key="given_name", last_name_key="name",
+            picture_key=("picture",)
+        )
+    except Exception:
+        # Credentials expired
+        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
 @router.get("/auth/github")
@@ -322,14 +330,17 @@ async def auth_github_callback(
     request: Request,
     db: Session = Depends(get_db)
 ):
-    return await handle_oauth_callback(
-        request, db, provider="github",
-        provider_id_key="id",
-        user_info_url="https://api.github.com/user",
-        email_key="email", name_key="name",
-        first_name_key="firstname", last_name_key="lastname",
-        picture_key=("avatar_url",)
-    )
+    try:
+        return await handle_oauth_callback(
+            request, db, provider="github",
+            provider_id_key="id",
+            user_info_url="https://api.github.com/user",
+            email_key="email", name_key="name",
+            first_name_key="firstname", last_name_key="lastname",
+            picture_key=("avatar_url",)
+        )
+    except Exception:
+        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
 ###########################################################################################
