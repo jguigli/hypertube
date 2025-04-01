@@ -5,22 +5,39 @@ import Video from "../components/VideoJS";
 import MovieService from "../services/MovieService";
 import StructureComments from "../components/StructureComments";
 import { Stack } from "@mui/material";
+import MoviePresentation from "../components/MoviePresentation";
+import Movie from "../types/Movie";
 
 export default function Watch() {
 
     const movieService = new MovieService();
-    const { getToken } = useAuth();
+    const { getToken, user } = useAuth();
     const { id } = useParams<{ id: string }>();
-    const videoId = id || '42';
+    const video_ID = id || '42';
 
+    const [movie, setMovie] = useState<Movie | null>(null);
     const [ismovieReady, setMovieReady] = useState<boolean>(false);
     const [isInvalidMovieID, setIsInvalidMovieID] = useState<boolean>(false);
     const [isTorrentNotFound, setIsTorrentNotFound] = useState<boolean>(false);
 
+    useEffect(() => {
+        async function fetchMovieInfo() {
+            try {
+                const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
+                if (response.success) {
+                    setMovie(response.data);
+                } 
+            } catch (error) {
+                console.error("Erreur lors du chargement du film:", error);
+            }
+        }
+        fetchMovieInfo();
+    }, [video_ID, getToken, user.language]);
+
     // POST /api/download
     useEffect(() => {
         async function getDownloadMovie() {
-            const response = await movieService.checkMovieDownloadStatus(videoId, getToken());
+            // const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
             if (response.status === 202) {
                 // Movie is ready to be watched
                 setMovieReady(true);
@@ -40,7 +57,7 @@ export default function Watch() {
                 return;
             }
         }
-        getDownloadMovie();
+        //getDownloadMovie();
     }, [getToken, movieService])
 
     if (isInvalidMovieID) {
@@ -57,13 +74,13 @@ export default function Watch() {
         return (
             <Stack spacing={2}>
                 {ismovieReady ? (
-                    <Video video_ID={+videoId} />
+                    <Video video_ID={+video_ID} />
                 ) : (
                     <div className="flex justify-center items-center">
-                        <p className="text-3xl">Loading movie...</p>
+                        {movie && (<MoviePresentation movie={movie} />)}
                     </div>
                 )}
-                <StructureComments videoID={videoId} />
+                <StructureComments videoID={video_ID} />
             </Stack>
         );
     }
