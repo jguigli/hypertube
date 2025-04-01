@@ -14,10 +14,9 @@ props: {
     const { getToken } = useAuth();
     const token = getToken();
 
-    const [videoResolution, setVideoResolution] = useState("480")
-    const [videoSegment, setVideoSegment] = useState("001")
+    const [videoResolution, setVideoResolution] = useState("480p")
 
-    const hls_file = `segment_${videoResolution}p_${videoSegment}.ts`
+    const hls_file = `${videoResolution}.m3u8`
 
     const videoJsOptions = {
         autoplay: false,

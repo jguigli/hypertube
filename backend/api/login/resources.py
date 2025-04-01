@@ -191,6 +191,7 @@ async def handle_oauth_callback(
     if response.status_code != 200:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     json = response.json()
+    print(json)
 
     provider_id = json[provider_id_key]
 
@@ -207,6 +208,22 @@ async def handle_oauth_callback(
             name = json[name_key].split(" ")
             json[first_name_key] = name[0]
             json[last_name_key] = name[-1]
+
+            email_res = requests.get(
+                'https://api.github.com/user/emails',
+                headers={
+                    'Authorization': f'token {token["access_token"]}',
+                },
+            )
+            if email_res.status_code != 200:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Failed to fetch user email"
+                )
+            emails = email_res.json()
+            primary_email = next(e for e in emails if e['primary'])['email']
+
+            json[email_key] = primary_email
 
         user_infos = schemas.UserRegister(
             email=json[email_key],
@@ -339,7 +356,8 @@ async def auth_github_callback(
             first_name_key="firstname", last_name_key="lastname",
             picture_key=("avatar_url",)
         )
-    except Exception:
+    except Exception as error:
+        print(f"Error: {error}")
         return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 

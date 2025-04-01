@@ -435,9 +435,11 @@ async def download_movie(
     #     detail="Movie not available"
     # )
     # 202 : Movie is downloading
-    return Response(status_codse=status.HTTP_202_ACCEPTED)
+    # return Response(status_code=status.HTTP_202_ACCEPTED)
     # 200 : Movie is already downloaded and converted
-    return Response(status_code=status.HTTP_200_OK)
+    # return Response(status_code=status.HTTP_200_OK)
+
+    print("Download movie")
 
     movie = get_movie_by_id(db, movie_id)
     if not movie:
@@ -463,6 +465,10 @@ async def download_movie(
     if not redis_client.exists(f"download_and_convert:{movie_id}"):
         background_tasks.add_task(
             download_and_convert, movie_id, current_user.id)
+
+    db.refresh(movie)
+    if movie.is_download and movie.is_convert:
+        return Response(status_code=status.HTTP_200_OK)
 
     return Response(status_code=status.HTTP_202_ACCEPTED)
 

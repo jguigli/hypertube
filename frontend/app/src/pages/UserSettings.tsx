@@ -72,7 +72,7 @@ export default function UserSettings() {
             }
             return;
         }
-        changeUserInfo({ ...user, email, firstName, lastName });
+        changeUserInfo({ ...user, username, email, firstName, lastName });
         alert("User information updated successfully");
     }
 
