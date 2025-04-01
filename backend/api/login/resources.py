@@ -352,8 +352,8 @@ async def auth_github_callback(
             request, db, provider="github",
             provider_id_key="id",
             user_info_url="https://api.github.com/user",
-            email_key="email", name_key="name",
-            first_name_key="firstname", last_name_key="lastname",
+            email_key="email", name_key="login",
+            first_name_key="login", last_name_key="login",
             picture_key=("avatar_url",)
         )
     except Exception as error:
