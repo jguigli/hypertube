@@ -9,13 +9,13 @@ interface MoviePresentationProps {
 
 const MoviePresentation: React.FC<MoviePresentationProps> = ({ movie }) => {
   return (
-    <Card sx={{ maxWidth: 345, margin: '20px auto', padding: '16px', boxShadow: 3 }}>
+    <Card sx={{ maxWidth: 380, margin: '20px auto', padding: '16px', boxShadow: 3, maxHeight: 800, overflow: 'hidden'}}>
       <img
         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
         alt={movie.title}
         style={{ width: '100%', borderRadius: '8px' }}
       />
-      <CardContent>
+      <CardContent sx= {{maxHeight: 225, overflowY: 'auto'}}>
         <Typography gutterBottom variant="h5" component="div">
           {movie.title} ({new Date(movie.release_date).getFullYear()})
         </Typography>
