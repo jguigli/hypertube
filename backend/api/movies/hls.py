@@ -39,8 +39,8 @@ async def convert_to_hls(input_file, movie_id):
     os.makedirs(hls_dir, exist_ok=True)
 
     resolutions = {
-        "1080p":  (1920, 1080, "5000k"),
-        "720p": (1280, 720, "2800k"),
+        # "1080p":  (1920, 1080, "5000k"),
+        # "720p": (1280, 720, "2800k"),
         "480p":  (854, 480, "1400k"),
     }
 

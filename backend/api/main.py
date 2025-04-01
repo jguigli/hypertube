@@ -21,6 +21,7 @@ from api.movies.fetch import (
 )
 from api.movies.crud import get_movie_by_id, create_movie
 import os
+import contextlib
 
 
 app = FastAPI()
@@ -116,6 +117,8 @@ async def populate_movies(db: Session):
                         )
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
+            if page == 10:
+                break
             page += 1
             if page == 5:
                 break
