@@ -153,6 +153,7 @@ export default class MovieService {
                         }
                     }
                 );
+                console.log(response);
                 if (response.status === 200) {
                     return {
                         success: true,

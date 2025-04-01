@@ -28,7 +28,7 @@ def upgrade() -> None:
                     parent_id INTEGER,
                     content VARCHAR(500),
                     timestamp INTEGER,
-                    FOREIGN KEY (parent_id) REFERENCES comments(id),
+                    FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE,
                     FOREIGN KEY (movie_id) REFERENCES movies(id),
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 );

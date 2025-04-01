@@ -7,6 +7,7 @@ import MovieService from "../services/MovieService";
 import { useNode } from "../components/Comments";
 import { Button } from "@mui/material";
 import CommentType from "../types/Comments";
+import UserService from "../services/UserService";
 
 export default function StructureComments({ videoID }: { videoID: string }) {
     const [commentsData, setCommentsData] = useState<CommentType[]>([]);
@@ -70,6 +71,9 @@ export default function StructureComments({ videoID }: { videoID: string }) {
         }
     };
 
+    const token = getToken();
+    const userService = new UserService();
+
     useEffect(() => {
 
         async function getMovieInfo() {
@@ -82,6 +86,15 @@ export default function StructureComments({ videoID }: { videoID: string }) {
             }
             console.log("Fetched comments:", response.data.comments);
 
+            for (let i = 0; i < response.data.comments.length; i++) {
+
+                console.log(response.data.comments[i]);
+                const fetchedProfileUserPicture = await userService.getPictureById(response.data.comments[i].user_id, token);
+                if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
+                    response.data.comments[i].avatarUrl = fetchedProfileUserPicture.avatar;
+                }
+            }
+
             setCommentsData(response.data.comments);
         }
 
@@ -91,6 +104,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
 
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");
+
 
     const onAddComment = async () => {
         try {
@@ -108,6 +122,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
                     parent_id: response.data.parent_id,
                     timestamp: response.data.timestamp,
                     content: input,
+                    avatarUrl: user.avatar || "",
                     replies: []
                 };
                 setCommentsData((prev) => [...prev, newComment]);

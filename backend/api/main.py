@@ -120,6 +120,8 @@ async def populate_movies(db: Session):
             if page == 10:
                 break
             page += 1
+            if page == 5:
+                break
 
 
 @app.on_event("startup")

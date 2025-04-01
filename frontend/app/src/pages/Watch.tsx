@@ -5,14 +5,17 @@ import Video from "../components/VideoJS";
 import MovieService from "../services/MovieService";
 import StructureComments from "../components/StructureComments";
 import { Stack } from "@mui/material";
+import MoviePresentation from "../components/MoviePresentation";
+import Movie from "../types/Movie";
 
 export default function Watch() {
 
     const movieService = new MovieService();
-    const { getToken } = useAuth();
+    const { getToken, user } = useAuth();
     const { id } = useParams<{ id: string }>();
-    const videoId = id || '42';
+    const video_ID = id || '42';
 
+    const [movie, setMovie] = useState<Movie | null>(null);
     const [ismovieReady, setMovieReady] = useState<boolean>(false);
     const [isInvalidMovieID, setIsInvalidMovieID] = useState<boolean>(false);
     const [isTorrentNotFound, setIsTorrentNotFound] = useState<boolean>(false);
@@ -66,10 +69,25 @@ export default function Watch() {
         };
     }, []);
 
+    useEffect(() => {
+        async function fetchMovieInfo() {
+            try {
+                const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
+                if (response.success) {
+                    setMovie(response.data);
+                } 
+            } catch (error) {
+                console.error("Erreur lors du chargement du film:", error);
+            }
+        }
+        fetchMovieInfo();
+    }, [video_ID, getToken, user.language]);
+
+
     // POST /api/download
     useEffect(() => {
         async function getDownloadMovie() {
-            const response = await movieService.checkMovieDownloadStatus(videoId, getToken());
+            // const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
             if (response.status === 202) {
                 // Movie is being downloaded or converted
                 console.log("Movie is being downloaded or converted");
@@ -92,7 +110,7 @@ export default function Watch() {
                 return;
             }
         }
-        getDownloadMovie();
+        //getDownloadMovie();
     }, [getToken, movieService])
 
     if (isInvalidMovieID) {
@@ -107,13 +125,12 @@ export default function Watch() {
         return (
             <Stack spacing={2} className="w-full h-[80vh]">
                 {ismovieReady ? (
-                    <Video video_ID={+videoId} />
+                    <Video video_ID={+video_ID} />
                 ) : (
                     <div className="flex justify-center items-center">
-                        <p className="text-3xl">Loading movie...</p>
+                        {movie && (<MoviePresentation movie={movie} />)}
                     </div>
                 )}
-
                 {/* Debug : display the status of the movie */}
                 <Stack direction={"column"} className="text-center">
                     <p>
@@ -126,7 +143,6 @@ export default function Watch() {
                         {isConverting ? "Movie is being converted" : "Movie is not being converted"}
                     </p>
                 </Stack>
-
                 <StructureComments videoID={videoId} />
             </Stack>
         );
