@@ -75,7 +75,7 @@ export default function Watch() {
                 const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
                 if (response.success) {
                     setMovie(response.data);
-                } 
+                }
             } catch (error) {
                 console.error("Erreur lors du chargement du film:", error);
             }
@@ -87,7 +87,7 @@ export default function Watch() {
     // POST /api/download
     useEffect(() => {
         async function getDownloadMovie() {
-            // const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
+            const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
             if (response.status === 202) {
                 // Movie is being downloaded or converted
                 console.log("Movie is being downloaded or converted");
@@ -110,7 +110,7 @@ export default function Watch() {
                 return;
             }
         }
-        //getDownloadMovie();
+        getDownloadMovie();
     }, [getToken, movieService])
 
     if (isInvalidMovieID) {
@@ -143,7 +143,7 @@ export default function Watch() {
                         {isConverting ? "Movie is being converted" : "Movie is not being converted"}
                     </p>
                 </Stack>
-                <StructureComments videoID={videoId} />
+                <StructureComments videoID={video_ID} />
             </Stack>
         );
     }
