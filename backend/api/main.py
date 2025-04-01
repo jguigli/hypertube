@@ -21,7 +21,7 @@ from api.movies.fetch import (
 )
 from api.movies.crud import get_movie_by_id, create_movie
 import os
-import contextlib
+import asyncio
 
 
 app = FastAPI()
@@ -74,7 +74,9 @@ def delete_one_month_movie():
 scheduler = BackgroundScheduler()
 
 
-async def populate_movies(db: Session):
+async def populate_movies():
+
+    db = SessionLocal()
 
     # Return if there are already movies in the database
     if db.query(Movie).first():
@@ -117,11 +119,7 @@ async def populate_movies(db: Session):
                         )
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
-            if page == 10:
-                break
             page += 1
-            if page == 5:
-                break
 
 
 @app.on_event("startup")
@@ -135,8 +133,7 @@ def start_scheduler():
 
 @app.on_event("startup")
 async def startup_event():
-    with SessionLocal() as session:
-        await populate_movies(session)
+    asyncio.create_task(populate_movies())
 
 
 @app.on_event("shutdown")
