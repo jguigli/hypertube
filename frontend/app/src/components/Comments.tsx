@@ -8,6 +8,7 @@ import CommentService from "../services/CommentService";
 import { useAuth } from "../contexts/AuthContext";
 import CommentType from "../types/Comments";
 import UserService from "../services/UserService";
+import MovieService from "../services/MovieService";
 
 
 
@@ -88,7 +89,9 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
 
 
 
-  const videoID: string | undefined = useParams().id;
+  const { id } = useParams<{ id: string }>();
+  const videoID = id!;
+  
   if (!videoID) {
     console.error("Error: video_id is undefined")
   }
@@ -171,6 +174,37 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
       setActiveReplyId(null);
     }
   };
+
+    const token = getToken();
+    const userService = new UserService();
+    
+    useEffect(() => {
+
+        async function getMovieInfo() {
+            const movieService = new MovieService();
+
+            const response = await movieService.getMovieInfo(+videoID, getToken(), user.language);
+            if (!response.success) {
+                console.error("Failed to fetch comments", response);
+                return;
+            }
+            console.log("Fetched comments:", response.data.comments);
+
+            for (let i = 0; i < response.data.comments.length; i++) {
+
+                console.log(response.data.comments[i]);
+                const fetchedProfileUserPicture = await userService.getPictureById(response.data.comments[i].user_id, token);
+                if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
+                    response.data.comments[i].avatarUrl = fetchedProfileUserPicture.avatar;
+                }
+            }
+
+            setCommentsData(response.data.comments);
+        }
+
+        getMovieInfo();
+
+    }, [getToken, videoID, user.language])
 
 
   // const updateCommentContent = (
