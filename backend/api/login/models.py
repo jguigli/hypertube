@@ -11,7 +11,9 @@ class AuthProvider(Base):
     __tablename__ = "auth_providers"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
+    )
     user = relationship("User", back_populates="auth_providers")
 
     provider = Column(String(64))
@@ -24,4 +26,6 @@ class AuthProvider(Base):
     created_at = Column(Date, default=datetime.now)
     updated_at = Column(Date, default=datetime.now, onupdate=datetime.now)
 
-    __table_args__ = (UniqueConstraint("user_id", "provider", name="uq_user_provider"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "provider", name="uq_user_provider"),
+    )

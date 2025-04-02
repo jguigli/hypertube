@@ -1,8 +1,5 @@
 import axios from "axios";
 
-// Axios configuration
-const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
-axios.defaults.baseURL = `http://${hostname}:3000/api`;
 
 export default class LoginService {
 
@@ -102,6 +99,7 @@ export default class LoginService {
     // GET /auth/42 and GET /auth/google
     async registerOAuth(provider: "42" | "google" | "github"): Promise<void> {
         try {
+            const hostname = import.meta.env.VITE_HOSTNAME || window.location.hostname;
             window.open(`http://${hostname}:3000/api/auth/${provider}`, "_self");
         }
         catch (error) {

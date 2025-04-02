@@ -9,6 +9,7 @@ interface AuthContextType {
     changeUserLanguage: (language: 'en' | 'fr') => void;
     changeUserAvatar: (avatar: string) => void;
     changeUserInfo: (user: User) => void;
+    logoutAndRedirect: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("token");
     };
 
+    const logoutAndRedirect = () => {
+        logout();
+        window.location.href = '/';
+    };
+
     const changeUserLanguage = (language: 'en' | 'fr') => {
         localStorage.setItem("language", language);
         const newUser = { ...user, language };
@@ -79,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, getToken, login, logout, changeUserLanguage, changeUserAvatar, changeUserInfo }}>
+        <AuthContext.Provider value={{ user, getToken, login, logout, changeUserLanguage, changeUserAvatar, changeUserInfo, logoutAndRedirect }}>
             {children}
         </AuthContext.Provider>
     );

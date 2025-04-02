@@ -103,14 +103,19 @@ def get_current_user_streaming(
     return user
 
 
-def create_access_token_mail_link(data: dict, expires_delta: timedelta | None = None):
+def create_access_token_mail_link(
+    data: dict,
+    expires_delta: timedelta | None = None
+):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(tz=timezone.utc) + expires_delta
     else:
         expire = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY_MAIL_LINK, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, SECRET_KEY_MAIL_LINK, algorithm=ALGORITHM
+    )
     return encoded_jwt
 
 
@@ -124,7 +129,9 @@ async def get_current_user_from_mail(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY_MAIL_LINK, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, SECRET_KEY_MAIL_LINK, algorithms=[ALGORITHM]
+        )
         user_id: str = payload.get("user_id")
         if user_id is None:
             raise credentials_exception
@@ -139,7 +146,10 @@ async def get_current_user_from_mail(
 
 def create_token_user_for_mail_link(user: user_models.User, minutes: float):
     access_token_expires = timedelta(minutes=minutes)
-    access_token = create_access_token_mail_link(data={"user_id": int(user.id)}, expires_delta=access_token_expires)
+    access_token = create_access_token_mail_link(
+        data={"user_id": int(user.id)},
+        expires_delta=access_token_expires
+    )
     token_type = user.token_type
 
     return access_token, token_type

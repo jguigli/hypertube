@@ -74,7 +74,10 @@ async def report_forgotten_password(
     if not auth_provider:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This email is not associated with an account registered by email"
+            detail=(
+                "This email is not associated with an account registered" +
+                " by email"
+            )
         )
     found_user = db.query(user_models.User) \
         .filter(user_models.User.id == auth_provider.user_id).first()
@@ -99,12 +102,20 @@ async def reset_password(
     ],
     db: Session = Depends(get_db)
 ):
-    password_pattern = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+    password_pattern = (
+        "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+    )
     if not re.match(
         password_pattern,
         password.password
     ):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "The new password must contain 8 characters with at least" +
+                " one lowercase, one uppercase, one digit and one special" +
+                " character")
+        )
 
     # Get the password_hash from the AuthProvider table
     auth_provider = db.query(AuthProvider) \
@@ -153,7 +164,9 @@ oauth.register(
     authorize_url="https://accounts.google.com/o/oauth2/auth",
     access_token_url="https://oauth2.googleapis.com/token",
     client_kwargs={"scope": "openid email profile"},
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    server_metadata_url=(
+        'https://accounts.google.com/.well-known/openid-configuration'
+    ),
 )
 
 oauth.register(
@@ -168,30 +181,31 @@ oauth.register(
     client_kwargs={"scope": "user:email"},
 )
 
-###########################################################################################
+##############################################################################
 
 
 async def handle_oauth_callback(
-        request: Request,
-        db: Session,
-        provider: str,
-        user_info_url: str,
-        provider_id_key: str,
-        email_key: str,
-        name_key: str,
-        first_name_key: str,
-        last_name_key: str,
-        picture_key: tuple[str]
+    request: Request,
+    db: Session,
+    provider: str,
+    user_info_url: str,
+    provider_id_key: str,
+    email_key: str,
+    name_key: str,
+    first_name_key: str,
+    last_name_key: str,
+    picture_key: tuple[str]
 ):
 
-    token = await oauth.create_client(provider).authorize_access_token(request)
+    oauth_client = oauth.create_client(provider)
+    token = await oauth_client.authorize_access_token(request)
     if not token:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
-    response = await oauth.create_client(provider).get(user_info_url, token=token)
+    response = await oauth_client.get(user_info_url, token=token)
     if response.status_code != 200:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     json = response.json()
-    print(json)
+    print(f"JSON for {provider}:\n{json}")
 
     provider_id = json[provider_id_key]
 
@@ -208,7 +222,6 @@ async def handle_oauth_callback(
             name = json[name_key].split(" ")
             json[first_name_key] = name[0]
             json[last_name_key] = name[-1]
-
             email_res = requests.get(
                 'https://api.github.com/user/emails',
                 headers={
@@ -222,7 +235,6 @@ async def handle_oauth_callback(
                 )
             emails = email_res.json()
             primary_email = next(e for e in emails if e['primary'])['email']
-
             json[email_key] = primary_email
 
         user_infos = schemas.UserRegister(
@@ -241,7 +253,7 @@ async def handle_oauth_callback(
         if already_registered_email or already_registered_user_name:
             import base64
             error_message = (
-                "Sorry, this {} is already registered by " \
+                "Sorry, this {} is already registered by "
                 .format("email" if already_registered_email else "username") +
                 "another user.\nPlease try again with another one."
             )
@@ -361,4 +373,4 @@ async def auth_github_callback(
         return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
-###########################################################################################
+###############################################################################
