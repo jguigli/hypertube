@@ -93,6 +93,12 @@ export default function StructureComments({ videoID }: { videoID: string }) {
                 if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
                     response.data.comments[i].avatarUrl = fetchedProfileUserPicture.avatar;
                 }
+                for (let j = 0; j < response.data.comments[i].replies.length; j++) {
+                    const fetchedProfileUserPicture = await userService.getPictureById(response.data.comments[i].replies[j].user_id, token);
+                    if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
+                        response.data.comments[i].replies[j].avatarUrl = fetchedProfileUserPicture.avatar;
+                    }
+                }
             }
 
             setCommentsData(response.data.comments);

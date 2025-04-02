@@ -437,7 +437,7 @@ async def download_movie(
     # 202 : Movie is downloading
     # return Response(status_code=status.HTTP_202_ACCEPTED)
     # 200 : Movie is already downloaded and converted
-    # return Response(status_code=status.HTTP_200_OK)
+    return Response(status_code=status.HTTP_200_OK)
 
     movie = get_movie_by_id(db, movie_id)
     if not movie:
