@@ -23,7 +23,7 @@
     - [ ] Ajouter une gestion des erreurs pour les cas ou le telechargement / la conversion echoue
 
 - [ ] Stream :
-    - [ ] Reussir a streamer un film
+    - [X] Reussir a streamer un film
     - [ ] Sous-titres : Ajouter une gestion des sous-titres pour les films
 
 
