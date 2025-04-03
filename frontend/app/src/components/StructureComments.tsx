@@ -72,10 +72,10 @@ export default function StructureComments({ videoID }: { videoID: string }) {
     };
 
     const token = getToken();
-    const userService = new UserService();
-
+    
     useEffect(() => {
-
+        
+        const userService = new UserService();
         async function getMovieInfo() {
             const movieService = new MovieService();
 
@@ -106,7 +106,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
 
         getMovieInfo();
 
-    }, [getToken, videoID, user.language])
+    }, [getToken, videoID, user.language, token]);
 
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");
@@ -141,31 +141,37 @@ export default function StructureComments({ videoID }: { videoID: string }) {
     };
     return (
         <div className="Video_view">
-            <CustomCard additionalClasses="flex flex-col align-center w-[700px] p-3">
+            <CustomCard additionalClasses="flex flex-col items-start w-[700px] p-3 gap-4">
 
                 <>
                     <input
                         type="text"
-                        className="inputContainer__input first_input"
+                        className="w-full border border-gray-300 p-3 rounded"
                         autoFocus
                         value={input}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && onAddComment()}
-                        placeholder="Type your comment here"
-                        style={{ marginRight: "20px", border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
+                        placeholder="  Type your comment here"
+                        style={{ border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
                     />
-                    <Button variant="contained" onClick={onAddComment}>Add your comment</Button>
+                    <Button
+                        variant="contained"
+                        onClick={onAddComment}
+                        className="w-full"
+                    >
+                        Add your comment
+                    </Button>
                 </>
-
-                <Comments
-                    comments={commentsData}
-                    handleInsertNode={handleInsertNode}
-                    handleEditNode={handleEditNode}
-                    handleDeleteNode={handleDeleteNode}
-                    setCommentsData={setCommentsData}
-                />
+                    <div className="w-full">
+                    <Comments
+                        comments={commentsData}
+                        handleInsertNode={handleInsertNode}
+                        handleEditNode={handleEditNode}
+                        handleDeleteNode={handleDeleteNode}
+                        setCommentsData={setCommentsData}
+                    />
+                </div>
             </CustomCard>
-
         </div>
     );
 }
