@@ -13,7 +13,7 @@
 - [ ] Recherche :
     - [ ] Ajouter une seconde source externe pour la recherche
     - [ ] Redis key a mettre en place pour eviter de faire trop de requetes
-    - [ ] Verifier le bon ajout des films dans la BDD
+    - [X] Verifier le bon ajout des films dans la BDD
     - [ ] Verifier le bon fonctionnement de la recherche
 
 - [ ] Watch :

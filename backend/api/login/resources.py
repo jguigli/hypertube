@@ -237,9 +237,23 @@ async def handle_oauth_callback(
             primary_email = next(e for e in emails if e['primary'])['email']
             json[email_key] = primary_email
 
+        def generate_unique_username(base_username):
+            existing_usernames = [
+                username[0] for username in db.query(user_models.User.user_name).all()
+            ]
+            print("Existing usernames:", existing_usernames)
+            new_username = base_username
+            counter = 1
+            while new_username in existing_usernames:
+                new_username = f"{base_username}_#{counter}"
+                counter += 1
+            return new_username
+
+        unique_username = generate_unique_username(json[name_key])
+
         user_infos = schemas.UserRegister(
             email=json[email_key],
-            user_name=json[name_key],
+            user_name=unique_username,
             first_name=json[first_name_key],
             last_name=json[last_name_key],
             password=""
@@ -316,8 +330,9 @@ async def auth_42_callback(
             first_name_key="first_name", last_name_key="last_name",
             picture_key=("image", "link")
         )
-    except Exception:
+    except Exception as error:
         # Credentials expired
+        print(f"Error: {error}")
         return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
@@ -342,8 +357,9 @@ async def auth_google_callback(
             first_name_key="given_name", last_name_key="name",
             picture_key=("picture",)
         )
-    except Exception:
+    except Exception as error:
         # Credentials expired
+        print(f"Error: {error}")
         return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
 
