@@ -6,14 +6,16 @@
 
 
 - [ ] Authentification :
-    - [ ] Enregistrement avec les auth providers : Verifier les cles utilisees dans le json en fonction de profils vides (pas d'email, pas de name) et choisir les plus adaptees
+    - [ ] Enregistrement avec les auth providers : Verifier les cles utilisees dans le json en fonction de profils vides (pas d'email, pas de name) et choisir les plus adaptees (faire test avec Tristan)
     - [X] Enregistrement avec les auth providers : Ajouter une gestion des erreurs pour les cas ou les usernames / emails sont deja utilises par d'autres utilisateurs
     - [ ] Refresh token a mettre en place pour la gestion de l'authentification (pas demande dans le sujet mais c'est chiant de se reconnecter a chaque fois)
+    - [ ] Verifier le login avec un mauvais mot de passe, chez Thomas on etait redirige vers / et aucun message d'erreur n'etait affiche
 
 - [ ] Recherche :
     - [ ] Ajouter une seconde source externe pour la recherche
     - [ ] Redis key a mettre en place pour eviter de faire trop de requetes
     - [X] Verifier le bon ajout des films dans la BDD
+    - [ ] Ajout des films dans la bdd en background ?
     - [ ] Verifier le bon fonctionnement de la recherche
 
 - [ ] Watch :

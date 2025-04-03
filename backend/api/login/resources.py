@@ -38,6 +38,7 @@ import re
 import requests
 from io import BytesIO
 from api.login.models import AuthProvider
+import base64
 
 
 router = APIRouter(tags=["Login"])
@@ -51,7 +52,7 @@ async def login_for_access_token(
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
@@ -346,9 +347,13 @@ async def auth_42_callback(
             picture_key=("image", "link")
         )
     except Exception as error:
-        # Credentials expired
-        print(f"Error: {error}")
-        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
+        error_message = str(error)
+        encoded_error_message = error_message.encode("utf-8")
+        error_message = base64.b64encode(encoded_error_message) \
+            .decode("utf-8")
+        return RedirectResponse(
+            url="http://localhost:3000/login/?error=" + error_message
+        )
 
 
 @router.get("/auth/google")
@@ -373,9 +378,13 @@ async def auth_google_callback(
             picture_key=("picture",)
         )
     except Exception as error:
-        # Credentials expired
-        print(f"Error: {error}")
-        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
+        error_message = str(error)
+        encoded_error_message = error_message.encode("utf-8")
+        error_message = base64.b64encode(encoded_error_message) \
+            .decode("utf-8")
+        return RedirectResponse(
+            url="http://localhost:3000/login/?error=" + error_message
+        )
 
 
 @router.get("/auth/github")
@@ -400,8 +409,12 @@ async def auth_github_callback(
             picture_key=("avatar_url",)
         )
     except Exception as error:
-        print(f"Error: {error}")
-        return Response(status_code=status.HTTP_424_FAILED_DEPENDENCY)
-
+        error_message = str(error)
+        encoded_error_message = error_message.encode("utf-8")
+        error_message = base64.b64encode(encoded_error_message) \
+            .decode("utf-8")
+        return RedirectResponse(
+            url="http://localhost:3000/login/?error=" + error_message
+        )
 
 ###############################################################################

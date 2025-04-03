@@ -108,7 +108,6 @@ export default function Login() {
         loginService.registerOAuth("github");
     }
 
-
     // UseEffect to detect if there is an error in the URL
     // If there is an error, display it
     // If there is no error, do nothing
@@ -118,8 +117,6 @@ export default function Login() {
         const url = new URL(window.location.href);
         const error = url.searchParams.get("error");
         if (error) {
-
-            // decode base64
             const decodedError = atob(error);
             setErrorInUrl(decodedError);
         }
