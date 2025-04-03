@@ -134,11 +134,12 @@ async def search_movies(
         genres = await fetch_genres_movies_tmdb(language)
 
         # Search key in redis
-        already_search_key = f"search:{search}:{language}"
-        already_searched = redis_client.get(already_search_key)
+        # already_search_key = f"search:{search}:{language}"
+        # already_searched = redis_client.get(already_search_key)
+        already_searched = False
         if not already_searched:
             search_page = 1
-            redis_client.setex(already_search_key, 86400, json.dumps(True))
+            # redis_client.setex(already_search_key, 86400, json.dumps(True))
             while True:
                 movies_data = await search_movies_tmdb(search, language, search_page)
                 if not movies_data:
@@ -153,24 +154,24 @@ async def search_movies(
                             for genre in genres:
                                 if genre['id'] in genre_ids:
                                     categories.append(genre['name'])
-                        print(movie)
-                        # movie_db = create_movie(
-                        #     db, Movie(
-                        #         id=movie["id"],
-                        #         original_language=movie["original_language"],
-                        #         language=language,
-                        #         original_title=movie["original_title"],
-                        #         overview=movie["overview"],
-                        #         popularity=movie["popularity"],
-                        #         poster_path=movie["poster_path"],
-                        #         backdrop_path=movie["backdrop_path"],
-                        #         release_date=movie["release_date"],
-                        #         category=categories,
-                        #         title=movie["title"],
-                        #         vote_average=movie["vote_average"],
-                        #         vote_count=movie["vote_count"]
-                        #     )
-                        # )
+                        print(f"Trying to create movie {movie}")
+                        movie_db = create_movie(
+                            db, Movie(
+                                id=movie["id"],
+                                original_language=movie["original_language"],
+                                language=language,
+                                original_title=movie["original_title"],
+                                overview=movie["overview"],
+                                popularity=movie["popularity"] if movie.get("popularity") is not None else 0,
+                                poster_path=movie["poster_path"],
+                                backdrop_path=movie["backdrop_path"],
+                                release_date=movie["release_date"] if movie.get("release_date") is not None else None,
+                                category=categories,
+                                title=movie["title"],
+                                vote_average=movie["vote_average"] if movie.get("vote_average") is not None else 0,
+                                vote_count=movie["vote_count"] if movie.get("vote_count") is not None else 0
+                            )
+                        )
                 search_page += 1
 
         # Search movies in database
