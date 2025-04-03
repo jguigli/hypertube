@@ -184,6 +184,50 @@ oauth.register(
 ##############################################################################
 
 
+def get_github_email(token):
+
+    """
+    Fetches the primary email address of a GitHub user using the provided
+    access token.
+    Raises an HTTPException if the request fails.
+    """
+
+    email_res = requests.get(
+        'https://api.github.com/user/emails',
+        headers={
+            'Authorization': f'token {token["access_token"]}',
+        },
+    )
+    if email_res.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Failed to fetch user email"
+        )
+    emails = email_res.json()
+    return next(e for e in emails if e['primary'])['email']
+
+
+def generate_unique_username(db: Session, base_username: str) -> str:
+
+    """
+    Generate a unique username by checking the existing usernames in the
+    database. If the base username already exists, append a number to it
+    until a unique username is found.
+    """
+
+    existing_usernames = [
+        username[0] for username in
+        db.query(user_models.User.user_name).all()
+    ]
+    print("Existing usernames:", existing_usernames)
+    new_username = base_username
+    counter = 1
+    while new_username in existing_usernames:
+        new_username = f"{base_username}_{counter}"
+        counter += 1
+    return new_username
+
+
 async def handle_oauth_callback(
     request: Request,
     db: Session,
@@ -205,10 +249,7 @@ async def handle_oauth_callback(
     if response.status_code != 200:
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
     json = response.json()
-    print(f"JSON for {provider}:\n{json}")
-
     provider_id = json[provider_id_key]
-
     # Get the user by provider_id and provider
     auth_provider = db.query(AuthProvider) \
         .filter(AuthProvider.provider == provider) \
@@ -216,40 +257,14 @@ async def handle_oauth_callback(
 
     # If the user doesn't exist, create it
     if not auth_provider:
-
         # For github split the name into first_name and last_name
         if provider == "github":
             name = json[name_key].split(" ")
             json[first_name_key] = name[0]
             json[last_name_key] = name[-1]
-            email_res = requests.get(
-                'https://api.github.com/user/emails',
-                headers={
-                    'Authorization': f'token {token["access_token"]}',
-                },
-            )
-            if email_res.status_code != 200:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Failed to fetch user email"
-                )
-            emails = email_res.json()
-            primary_email = next(e for e in emails if e['primary'])['email']
-            json[email_key] = primary_email
+            json[email_key] = get_github_email(token)
 
-        def generate_unique_username(base_username):
-            existing_usernames = [
-                username[0] for username in db.query(user_models.User.user_name).all()
-            ]
-            print("Existing usernames:", existing_usernames)
-            new_username = base_username
-            counter = 1
-            while new_username in existing_usernames:
-                new_username = f"{base_username}_#{counter}"
-                counter += 1
-            return new_username
-
-        unique_username = generate_unique_username(json[name_key])
+        unique_username = generate_unique_username(db, json[name_key])
 
         user_infos = schemas.UserRegister(
             email=json[email_key],
