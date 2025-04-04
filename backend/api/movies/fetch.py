@@ -2,8 +2,8 @@ import json
 import aiohttp
 from api.redis_client import redis_client
 
-from api.config import TMDB_API_BEARER_TOKEN
-# from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
+# from api.config import TMDB_API_BEARER_TOKEN
+from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
 
 
 # #################### TMDB #####################
@@ -83,10 +83,29 @@ async def search_movies_tmdb(search: str, language: str, page: int):
             if response.status != 200:
                 return None
             response_json = await response.json()
+            print(f"TMDB API RESPONSE : {response_json}")
 
     movies_data = response_json["results"]
     redis_client.setex(key_search, 86400, json.dumps(movies_data))
     return movies_data
+
+
+async def search_movie_omdb(search: str, page: int):
+    url = (
+        f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}" +
+        f"&s={search}&type=movie&page={page}"
+    )
+    key_search = f"search_omdb:{search}:{page}"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status != 200:
+                return None
+            response_json = await response.json()
+            print(f"OMDB API RESPONSE : {response_json}")
+
+    movie_data = response_json
+    redis_client.setex(key_search, 86400, json.dumps(movie_data))
+    return movie_data
 
 
 async def fetch_movie_detail_tmdb(movie_id: int, language: str):

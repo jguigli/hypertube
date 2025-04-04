@@ -134,46 +134,54 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // If no search query is provided, it fetches popular movies
     // The function is called when the component mounts and when the user changes the filter options,
     const fetchMovies = useCallback(async (newPage: number = 1) => {
-        if (!hasMoreRef.current || isLoadingRef.current) return;
+        if (isLoadingRef.current || !hasMoreRef.current) return;
 
         isLoadingRef.current = true;
         setIsLoading(true);
 
-        const token = getToken();
-        const response = searchQuery
-            ? await movieService.searchMovies(searchQuery, user.language, newPage, filterOptions, sortOptions, token)
-            : await movieService.getPopularMovies(newPage, user.language, filterOptions, sortOptions, token);
+        try {
+            const token = getToken();
+            const response = searchQuery
+                ? await movieService.searchMovies(searchQuery, user.language, newPage, filterOptions, sortOptions, token)
+                : await movieService.getPopularMovies(newPage, user.language, filterOptions, sortOptions, token);
 
-        if (response.success) {
-            setMovies((prevMovies) => {
-                const newMovies = response.data.filter(
-                    (movie: Movie) => !prevMovies.some((prevMovie) => prevMovie.id === movie.id)
-                );
-                return newPage === 1 ? response.data : [...prevMovies, ...newMovies];
-            });
-            setHasMore(response.data.length > 0);
-        } else {
+            if (response.success) {
+                setMovies((prevMovies) => {
+                    const newMovies = response.data.filter(
+                        (movie: Movie) => !prevMovies.some((prevMovie) => prevMovie.id === movie.id)
+                    );
+                    return newPage === 1 ? newMovies : [...prevMovies, ...newMovies];
+                });
+                setHasMore(response.data.length > 0);
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            console.error("Failed to fetch movies:", error);
             setHasMore(false);
+        } finally {
+            isLoadingRef.current = false;
+            setIsLoading(false);
         }
-
-        isLoadingRef.current = false;
-        setIsLoading(false);
     }, [searchQuery, user.language, filterOptions, sortOptions, getToken]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            // setIsLoading(false);
-            setHasMore(true);
-            fetchMovies();
-        }, 300); // Ajouter un délai pour regrouper les changements
+            if (searchQuery || filterOptions || sortOptions || user.language) {
+                setPage(1);
+                setMovies([]);
+                setHasMore(true);
+                fetchMovies(1);
+            }
+        }, 300); // Ajout d'un délai pour éviter les appels redondants
         return () => clearTimeout(timeout);
-    }, [user, user.language, filterOptions, sortOptions, searchQuery]);
+    }, [searchQuery, filterOptions, sortOptions, user.language, fetchMovies]);
 
     useEffect(() => {
-        setPage(1); // Réinitialiser la page à 1
-        setMovies([]); // Réinitialiser les films
-        setHasMore(true); // Réinitialiser la pagination
-        fetchMovies(1); // Charger la première page
+        setPage(1);
+        setMovies([]);
+        setHasMore(true);
+        fetchMovies(1);
     }, [user, user.language, filterOptions, sortOptions, searchQuery]);
 
     const incrementPage = useCallback(() => {
@@ -200,7 +208,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                 moviesInformation,
                 isLoading,
                 page,
-                incrementPage, // Exposez la fonction pour incrémenter la page
+                incrementPage,
                 fetchMovies
             }}
         >

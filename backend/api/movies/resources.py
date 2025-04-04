@@ -17,7 +17,8 @@ from .fetch import (
     fetch_movie_detail_tmdb,
     fetch_top_rated_movies_tmdb,
     fetch_genres_movies_tmdb,
-    search_movies_tmdb
+    search_movies_tmdb,
+    search_movie_omdb
 )
 from .crud import (
     get_watched_movies_id,
@@ -123,6 +124,8 @@ async def search_movies(
         "imdb_rating": Movie.vote_average,
     }.get(sort_options.type.value, Movie.popularity)
 
+    print(f"sort_column: {sort_column}")
+
     # redis_key = get_redis_key(searchBody=searchBody)
     # cached_searches = redis_client.get(redis_key)
     cached_searches = False
@@ -142,6 +145,7 @@ async def search_movies(
             # redis_client.setex(already_search_key, 86400, json.dumps(True))
             while True:
                 movies_data = await search_movies_tmdb(search, language, search_page)
+                omdb_movies = await search_movie_omdb(search, page)
                 if not movies_data:
                     break
                 # Add movies to database
@@ -154,7 +158,6 @@ async def search_movies(
                             for genre in genres:
                                 if genre['id'] in genre_ids:
                                     categories.append(genre['name'])
-                        print(f"Trying to create movie {movie}")
                         movie_db = create_movie(
                             db, Movie(
                                 id=movie["id"],
@@ -174,6 +177,7 @@ async def search_movies(
                         )
                 search_page += 1
 
+        print("ORDER BY :", sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none") else sort_column.desc())
         # Search movies in database
         movies_data = db.query(
             Movie.id,
@@ -329,10 +333,19 @@ async def get_movies_informations(
     ).all()
 
     if not movies_informations:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No movies found"
-        )
+        informations = {
+            "vote_average": {
+                "min": 0,
+                "max": 10
+            },
+            "release_date": {
+                "min": datetime.now().year - 100,
+                "max": datetime.now().year
+            },
+            "genres": ["All"]
+        }
+
+        return informations
 
     vote_average = [movie.vote_average for movie in movies_informations if movie.vote_average]
     release_date = [movie.release_date for movie in movies_informations if movie.release_date]
@@ -345,7 +358,7 @@ async def get_movies_informations(
         },
         "release_date": {
             "min": min([int(date.split('-')[0]) for date in release_date]) if release_date else 1900,
-            "max": max([int(date.split('-')[0]) for date in release_date]) if release_date else datetime.datetime.now().year
+            "max": max([int(date.split('-')[0]) for date in release_date]) if release_date else datetime.now().year
         },
         "genres": ["All"] + sorted(list(genres))
     }
@@ -436,7 +449,7 @@ async def download_movie(
     #     detail="Movie not available"
     # )
     # 202 : Movie is downloading
-    # return Response(status_code=status.HTTP_202_ACCEPTED)
+    return Response(status_code=status.HTTP_202_ACCEPTED)
     # 200 : Movie is already downloaded and converted
     # return Response(status_code=status.HTTP_200_OK)
 
