@@ -6,7 +6,7 @@ import os
 DOWNLOAD_MOVIES_FOLDER = "./downloads"
 
 
-async def download_torrent(magnet_link: str, movie_id: int):
+async def download_torrent(magnet_link: str, movie):
 
     session = lt.session()
     session.listen_on(6881, 6891)
@@ -66,7 +66,7 @@ async def download_torrent(magnet_link: str, movie_id: int):
 
     while not handle.is_seed():
         print(
-            f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
+            f"Downloading '{movie.title}': {handle.status().progress * 100:.2f}%", flush=True
         )
         await asyncio.sleep(5)
 

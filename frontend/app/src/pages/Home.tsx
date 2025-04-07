@@ -2,12 +2,12 @@ import { useEffect, useRef, useCallback } from "react";
 import { useMovies } from "../contexts/MovieContext";
 import MovieCard from "../components/MovieCard";
 import { FilterSortMenu } from "../components/FilterSortMenu";
-import { CircularProgress, Typography } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 
 
 export default function Home() {
 
-    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage } = useMovies();
+    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage, resetSearch, resetFilter, resetSort } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
     const handleScroll = useCallback(() => {
@@ -33,9 +33,18 @@ export default function Home() {
 
     useEffect(() => {
         if (movies.length === 0 && page === 1 && !isLoading) {
-            fetchMovies(1); // Charger la première page si aucun film n'est chargé
+            fetchMovies(1);
         }
     }, [movies, page, isLoading, fetchMovies]);
+
+    // Reset search and filter when the component unmounts
+    useEffect(() => {
+        return () => {
+            resetSearch();
+            resetFilter();
+            resetSort();
+        };
+    }, []);
 
     return (
         <>

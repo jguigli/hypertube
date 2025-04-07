@@ -27,6 +27,9 @@ interface MoviesContextType {
     page: number;
     fetchMovies: (newPage?: number) => void;
     incrementPage: () => void;
+    resetSearch: () => void;
+    resetFilter: () => void;
+    resetSort: () => void;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -184,6 +187,23 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         fetchMovies(1);
     }, [user, user.language, filterOptions, sortOptions, searchQuery]);
 
+    function resetSearch() {
+        setSearchQuery("");
+    }
+    function resetFilter() {
+        setFilterOptions({
+            genre: "All",
+            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+        });
+    }
+    function resetSort() {
+        setSortOptions({
+            type: "none",
+            ascending: false
+        });
+    }
+
     const incrementPage = useCallback(() => {
         setPage((prevPage) => {
             if (!hasMoreRef.current || isLoadingRef.current) {
@@ -209,7 +229,10 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                 isLoading,
                 page,
                 incrementPage,
-                fetchMovies
+                fetchMovies,
+                resetSearch,
+                resetFilter,
+                resetSort
             }}
         >
             {children}
