@@ -117,13 +117,6 @@ async def search_movies(
     sort_options = searchBody.sort_options
     filter_options = searchBody.filter_options
 
-    sort_column = {
-        "none": Movie.title,
-        "name": Movie.title,
-        "production_year": Movie.release_date,
-        "imdb_rating": Movie.vote_average,
-    }.get(sort_options.type.value, Movie.popularity)
-
     # redis_key = get_redis_key(searchBody=searchBody)
     # cached_searches = redis_client.get(redis_key)
     cached_searches = False
@@ -131,166 +124,63 @@ async def search_movies(
         movies_data = json.loads(cached_searches)
     else:
 
-        # Search movies in TMDB and add to database
         genres = await fetch_genres_movies_tmdb(language)
 
-        # Search key in redis
-        # already_search_key = f"search:{search}:{language}"
-        # already_searched = redis_client.get(already_search_key)
-        already_searched = False
-        if not already_searched:
-            search_page = 1
-            # redis_client.setex(already_search_key, 86400, json.dumps(True))
-            # while True:
-            #     movies_data = await search_movies_tmdb(search, language, search_page)
-            #     if not movies_data:
-            #         break
-            #     # Add movies to database
-            #     for movie in movies_data:
-            #         movie_db = get_movie_by_id(db, movie["id"])
-            #         if not movie_db:
-            #             categories = []
-            #             genre_ids = movie.get("genre_ids", None)
-            #             if genre_ids:
-            #                 for genre in genres:
-            #                     if genre['id'] in genre_ids:
-            #                         categories.append(genre['name'])
-            #             movie_db = create_movie(
-            #                 db, Movie(
-            #                     id=movie["id"],
-            #                     original_language=movie["original_language"],
-            #                     language=language,
-            #                     original_title=movie["original_title"],
-            #                     overview=movie["overview"],
-            #                     popularity=movie["popularity"] if movie.get("popularity") is not None else 0,
-            #                     poster_path=movie["poster_path"],
-            #                     backdrop_path=movie["backdrop_path"],
-            #                     release_date=movie["release_date"] if movie.get("release_date") is not None else None,
-            #                     category=categories,
-            #                     title=movie["title"],
-            #                     vote_average=movie["vote_average"] if movie.get("vote_average") is not None else 0,
-            #                     vote_count=movie["vote_count"] if movie.get("vote_count") is not None else 0
-            #                 )
-            #             )
-            #     search_page += 1
+        # Search movies on YTS
+        search_page = 1
+        while True:
+            yts_movies = search_yts_movies(search, page=search_page)
+            if not yts_movies:
+                break
+            for movie in yts_movies:
+                imdb_id = movie.get("imdb_code", None)
+                if not imdb_id:
+                    continue
+                tmdb_data = await fetch_movie_tmdb(imdb_id, language)
+                if not tmdb_data:
+                    continue
+                movie_db = get_movie_by_id(db, tmdb_data["id"])
+                if not movie_db:
+                    categories = find_movie_categories(genres, tmdb_data)
+                    add_movie_to_database(db, language, tmdb_data, categories)
+            search_page += 1
 
-            # # Search movies in OMDB
-            # search_page = 1
-            # while True:
-            #     omdb_movies = await search_movie_omdb(search, search_page)
-            #     if not omdb_movies:
-            #         break
-            #     for movie in omdb_movies:
-            #         omdb_movie = await fetch_by_id_omdb(movie.get("imdbID", None))
-            #         if not omdb_movie:
-            #             continue
-            #         omdb_movie_id = omdb_movie.get("imdbID", None)
-            #         if not omdb_movie_id:
-            #             continue
-            #         omdb_movie_id = int(omdb_movie_id.replace("tt", ""))
-            #         movie_db = get_movie_by_id(db, omdb_movie_id)
-            #         if movie_db:
-            #             print("Movie already in database")
-            #         else:
-            #             print("New movie found:", omdb_movie)
+    sort_column = {
+        "none": Movie.title,
+        "name": Movie.title,
+        "production_year": Movie.release_date,
+        "imdb_rating": Movie.vote_average,
+    }.get(sort_options.type.value, Movie.popularity)
 
-            #     search_page += 1
-
-            # Search movies on YTS
-            search_page = 1
-            while True:
-
-                yts_movies = search_yts_movies(search, page=search_page)
-                if not yts_movies:
-                    break
-
-                for movie in yts_movies:
-                    imdb_id = movie.get("imdb_code", None)
-                    if not imdb_id:
-                        continue
-                    tmdb_data = await fetch_movie_tmdb(imdb_id, language)
-                    if not tmdb_data:
-                        continue
-
-                    movie_db = get_movie_by_id(db, tmdb_data["id"])
-                    if not movie_db:
-                        categories = []
-                        genre_ids = tmdb_data.get("genre_ids", None)
-                        if genre_ids:
-                            for genre in genres:
-                                if genre['id'] in genre_ids:
-                                    categories.append(genre['name'])
-                        movie_db = create_movie(
-                            db, Movie(
-                                id=tmdb_data["id"],
-                                original_language=tmdb_data[
-                                    "original_language"
-                                ],
-                                language=language,
-                                original_title=tmdb_data["original_title"],
-                                overview=tmdb_data["overview"],
-                                popularity=(
-                                    tmdb_data["popularity"]
-                                    if tmdb_data.get("popularity") is not None
-                                    else 0
-                                ),
-                                poster_path=tmdb_data["poster_path"],
-                                backdrop_path=tmdb_data["backdrop_path"],
-                                release_date=(
-                                    tmdb_data["release_date"]
-                                    if tmdb_data.get(
-                                        "release_date") is not None
-                                    else None
-                                ),
-                                category=categories,
-                                title=tmdb_data["title"],
-                                vote_average=(
-                                    tmdb_data["vote_average"]
-                                    if tmdb_data.get(
-                                        "vote_average") is not None
-                                    else 0
-                                ),
-                                vote_count=(
-                                    tmdb_data["vote_count"]
-                                    if tmdb_data.get("vote_count") is not None
-                                    else 0
-                                )
-                            )
-                        )
-
-                search_page += 1
-
-        # Search movies in database
-        movies_data = db.query(
-            Movie.id,
-            Movie.title,
-            Movie.release_date,
-            Movie.vote_average,
-            Movie.poster_path
+    # Search movies in database
+    movies_data = db.query(
+        Movie.id,
+        Movie.title,
+        Movie.release_date,
+        Movie.vote_average,
+        Movie.poster_path
+    ) \
+        .filter(
+            Movie.title.ilike(f"%{search}%"),
+            Movie.language == language,
+            Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
+            Movie.vote_average >= filter_options.imdb_rating_low,
+            Movie.vote_average <= filter_options.imdb_rating_high,
+            Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
+            Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
         ) \
-            .filter(
-                Movie.title.ilike(f"%{search}%"),
-                Movie.language == language,
-                Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
-                Movie.vote_average >= filter_options.imdb_rating_low,
-                Movie.vote_average <= filter_options.imdb_rating_high,
-                Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
-                Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
-            ) \
-            .order_by(
-                sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none")
-                else sort_column.desc()) \
-            .offset((page - 1) * 20) \
-            .limit(20) \
-            .all()
+        .order_by(
+            sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none")
+            else sort_column.desc()) \
+        .offset((page - 1) * 20) \
+        .limit(20) \
+        .all()
 
-        if not movies_data:
-            raise HTTPException(
-                status_code=status.HTTP_204_NO_CONTENT,
-                detail="Search movies not available"
-            )
-
-        # redis_client.set(redis_key, json.dumps(movies_data))
+    if not movies_data:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="Search movies not available"
+        )
 
     watched_movies = get_watched_movies_id(db, current_user.id)
 
@@ -313,6 +203,35 @@ async def search_movies(
         )
 
     return movies
+
+def find_movie_categories(genres, tmdb_data):
+    categories = []
+    genre_ids = tmdb_data.get("genre_ids", None)
+    if genre_ids:
+        for genre in genres:
+            if genre['id'] in genre_ids:
+                categories.append(genre['name'])
+    return categories
+
+def add_movie_to_database(db, language, tmdb_data, categories):
+    create_movie(
+        db,
+        Movie(
+            id=tmdb_data["id"],
+            original_language=tmdb_data["original_language"],
+            language=language,
+            original_title=tmdb_data["original_title"],
+            overview=tmdb_data["overview"],
+            popularity=tmdb_data.get("popularity", 0),
+            poster_path=tmdb_data["poster_path"],
+            backdrop_path=tmdb_data["backdrop_path"],
+            release_date=tmdb_data.get("release_date"),
+            category=categories,
+            title=tmdb_data["title"],
+            vote_average=tmdb_data.get("vote_average", 0),
+            vote_count=tmdb_data.get("vote_count", 0),
+        ),
+    )
 
 
 @router.post('/movies/popular/{page}', response_model=List[MovieDisplay])
