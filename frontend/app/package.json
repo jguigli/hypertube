@@ -25,7 +25,10 @@
         "react-lazyload": "^3.2.1",
         "react-router-dom": "^7.2.0",
         "tailwindcss": "^4.0.7",
-        "video.js": "^8.21.0"
+        "video.js": "^8.21.0",
+        "i18next": "^23.6.15",
+        "react-i18next": "^13.2.2",
+        "i18next-browser-languagedetector": "^7.0.1"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
