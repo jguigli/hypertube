@@ -238,3 +238,179 @@
 2025-04-10 20:50:46.2789 Info Checking for updates... Jackett variant: CoreLinuxMuslArm64
 2025-04-10 20:50:46.2864 Info Updates are disabled via --NoUpdates.
 2025-04-11 09:18:49.4512 Info Jackett stopped
+2025-04-11 09:49:17.2558 Info Starting Jackett v0.22.1760
+2025-04-11 09:49:31.8035 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-11 09:49:31.8756 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-11 09:49:31.8779 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 09:49:31.9410 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-11 09:49:31.9608 Info Running in Docker: Yes (image build: v0.22.1760-ls733)
+2025-04-11 09:49:31.9619 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-11 09:49:31.9624 Info App config/log directory: /config/Jackett
+2025-04-11 09:49:31.9641 Info Using proxy: Disabled
+2025-04-11 09:49:31.9641 Info Using FlareSolverr: No
+2025-04-11 09:49:31.9666 Info Using HTTP Client: HttpWebClient2
+2025-04-11 09:49:31.9694 Info Loading Native indexers ...
+2025-04-11 09:49:32.1325 Info Loaded 78 Native indexers.
+2025-04-11 09:49:32.3426 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-11 09:49:45.9219 Info Loaded 535 Cardigann indexers.
+2025-04-11 09:49:45.9222 Info Loaded 613 indexers in total
+2025-04-11 09:49:45.9281 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 09:49:45.9315 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 09:49:45.9315 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 09:49:45.9315 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 09:49:46.9377 Info Jackett startup finished in 31.004 s
+2025-04-11 09:51:50.0941 Info Jackett stopped
+2025-04-11 09:52:28.1973 Info Starting Jackett v0.22.1760
+2025-04-11 09:52:28.5256 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-11 09:52:28.5303 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-11 09:52:28.5320 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 09:52:28.5322 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-11 09:52:28.5322 Info Running in Docker: Yes (image build: v0.22.1760-ls733)
+2025-04-11 09:52:28.5322 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-11 09:52:28.5332 Info App config/log directory: /config/Jackett
+2025-04-11 09:52:28.5344 Info Using proxy: Disabled
+2025-04-11 09:52:28.5344 Info Using FlareSolverr: No
+2025-04-11 09:52:28.5344 Info Using HTTP Client: HttpWebClient2
+2025-04-11 09:52:28.5376 Info Loading Native indexers ...
+2025-04-11 09:52:28.5585 Info Loaded 78 Native indexers.
+2025-04-11 09:52:28.5602 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-11 09:52:31.0354 Info Loaded 535 Cardigann indexers.
+2025-04-11 09:52:31.0358 Info Loaded 613 indexers in total
+2025-04-11 09:52:31.0424 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 09:52:31.0461 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 09:52:31.0461 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 09:52:31.0461 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 09:52:31.1880 Info Jackett startup finished in 3.172 s
+2025-04-11 09:54:18.7796 Info Jackett stopped
+2025-04-11 09:55:06.2337 Info Starting Jackett v0.22.1760
+2025-04-11 09:55:07.7864 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-11 09:55:07.7914 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-11 09:55:07.7939 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 09:55:07.8060 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-11 09:55:07.8119 Info Running in Docker: Yes (image build: v0.22.1760-ls733)
+2025-04-11 09:55:07.8138 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-11 09:55:07.8142 Info App config/log directory: /config/Jackett
+2025-04-11 09:55:07.8159 Info Using proxy: Disabled
+2025-04-11 09:55:07.8161 Info Using FlareSolverr: No
+2025-04-11 09:55:07.8172 Info Using HTTP Client: HttpWebClient2
+2025-04-11 09:55:07.8209 Info Loading Native indexers ...
+2025-04-11 09:55:07.8667 Info Loaded 78 Native indexers.
+2025-04-11 09:55:07.8703 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-11 09:55:13.8905 Info Loaded 535 Cardigann indexers.
+2025-04-11 09:55:13.8905 Info Loaded 613 indexers in total
+2025-04-11 09:55:13.8967 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 09:55:13.9001 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 09:55:13.9001 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 09:55:13.9001 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 09:55:14.0236 Info Jackett startup finished in 8.178 s
+2025-04-11 09:59:05.0293 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 09:59:05.0293 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 09:59:05.0293 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 09:59:05.0302 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 09:59:05.5333 Info Restarting webhost due to configuration change
+2025-04-11 09:59:05.5333 Info Restart of the web application host (not process) initiated
+2025-04-11 09:59:05.5416 Info Jackett stopped
+2025-04-11 09:59:05.5756 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-11 09:59:05.5756 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-11 09:59:05.5762 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 09:59:05.5762 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-11 09:59:05.5762 Info Running in Docker: Yes (image build: v0.22.1760-ls733)
+2025-04-11 09:59:05.5762 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-11 09:59:05.5762 Info App config/log directory: /config/Jackett
+2025-04-11 09:59:05.5762 Info Using proxy: Disabled
+2025-04-11 09:59:05.5762 Info Using FlareSolverr: No
+2025-04-11 09:59:05.5771 Info Using HTTP Client: HttpWebClient2
+2025-04-11 09:59:05.5771 Info Loading Native indexers ...
+2025-04-11 09:59:05.5845 Info Loaded 78 Native indexers.
+2025-04-11 09:59:05.5848 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-11 09:59:06.0953 Info Loaded 535 Cardigann indexers.
+2025-04-11 09:59:06.0953 Info Loaded 613 indexers in total
+2025-04-11 09:59:06.0991 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 09:59:06.0991 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 09:59:06.0991 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 09:59:06.0991 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 09:59:06.1186 Info Jackett startup finished in 240.275 s
+2025-04-11 09:59:23.6017 Info Manual search in 1337x, YTS for Inception => Found 83 releases [7824ms]
+2025-04-11 09:59:48.0605 Info Manual search in YTS for Inception => Found 3 releases (from cache) [2ms]
+2025-04-11 10:00:06.1506 Info Manual search in 1337x for Inception => Found 80 releases (from cache) [16ms]
+2025-04-11 10:00:32.1784 Info Manual search in 1337x for Inception => Found 47 releases [6532ms]
+2025-04-11 10:01:19.9263 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [3ms]
+2025-04-11 10:01:31.6382 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [4ms]
+2025-04-11 10:55:13.9131 Info Checking for updates... Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 10:55:13.9131 Info Updates are disabled via --NoUpdates.
+2025-04-11 10:59:06.1016 Info Checking for updates... Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 10:59:06.1016 Info Updates are disabled via --NoUpdates.
+2025-04-11 11:14:38.7266 Info Manual search in 1337x, YTS for Inception => Found 50 releases [7384ms]
+2025-04-11 11:15:29.5435 Info Manual search in 1337x, YTS for Inception => Found 83 releases [6490ms]
+2025-04-11 11:15:31.0985 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [3ms]
+2025-04-11 11:16:37.7092 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [3ms]
+2025-04-11 11:16:39.1166 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [3ms]
+2025-04-11 11:17:40.4954 Info Manual search in 1337x, YTS for Inception => Found 83 releases (from cache) [4ms]
+2025-04-11 11:18:04.3903 Info Manual search in 1337x, YTS for Interstellar => Found 85 releases [6505ms]
+2025-04-11 11:18:36.9937 Info Manual search in 1337x, YTS for Lady and the Tramp => Found 86 releases [7399ms]
+2025-04-11 11:19:04.9756 Info Manual search in 1337x, YTS for The Da Vinci Code => Found 72 releases [7383ms]
+2025-04-11 11:19:19.8579 Info Manual search in 1337x, YTS for The Da Vinci Code => Found 72 releases (from cache) [2ms]
+2025-04-11 11:19:43.3175 Info Manual search in 1337x, YTS for Unthinkable => Found 88 releases [7499ms]
+2025-04-11 11:20:23.4424 Info Manual search in 1337x, YTS for Mary Poppins Returns => Found 82 releases [7249ms]
+2025-04-11 11:23:59.4558 Info Manual search in 1337x, The Pirate Bay, YTS for Awakenings => Found 178 releases [7336ms]
+2025-04-11 11:24:08.5273 Info Manual search in 1337x, The Pirate Bay, YTS for Awakenings => Found 178 releases (from cache) [5ms]
+2025-04-11 11:24:41.0313 Info Manual search in 1337x, The Pirate Bay, YTS for Awakenings => Found 178 releases (from cache) [22ms]
+2025-04-11 11:25:01.5478 Info Manual search in 1337x, The Pirate Bay, YTS for Awakenings => Found 178 releases (from cache) [4ms]
+2025-04-11 12:00:01.0056 Info Manual search in 1337x, The Pirate Bay, YTS for Inferno => Found 241 releases [7696ms]
+2025-04-11 12:00:22.8746 Info Manual search in 1337x, The Pirate Bay, YTS for Inferno => Found 241 releases (from cache) [6ms]
+2025-04-11 12:00:37.8636 Info Manual search in 1337x, The Pirate Bay, YTS for Inferno => Found 241 releases (from cache) [5ms]
+2025-04-11 12:01:11.7405 Info Manual search in 1337x, The Pirate Bay, YTS for Rocky III => Found 61 releases [7028ms]
+2025-04-11 12:01:20.2316 Info Manual search in 1337x, The Pirate Bay, YTS for Rocky III => Found 61 releases (from cache) [1ms]
+2025-04-11 12:04:30.3863 Info Manual search in 1337x, The Pirate Bay, YTS for Rocky III => Found 61 releases (from cache) [1ms]
+2025-04-11 12:05:06.5663 Info Manual search in 1337x, The Pirate Bay, YTS for Labyrinth => Found 204 releases [7498ms]
+2025-04-11 12:06:42.0415 Info Manual search in 1337x, The Pirate Bay, YTS for Intrusion => Found 191 releases [7476ms]
+2025-04-11 12:06:58.1893 Info Manual search in 1337x, The Pirate Bay, YTS for Intrusion => Found 191 releases (from cache) [2ms]
+2025-04-11 12:07:59.8547 Info Manual search in 1337x, The Pirate Bay, YTS for Brüno => Found 102 releases [6852ms]
+2025-04-11 12:08:08.7229 Info Manual search in 1337x, The Pirate Bay, YTS for Brüno => Found 102 releases (from cache) [0ms]
+2025-04-11 12:08:58.9784 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases [7000ms]
+2025-04-11 12:09:01.1026 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases (from cache) [1ms]
+2025-04-11 12:09:50.5752 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases (from cache) [0ms]
+2025-04-11 12:09:51.1036 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases (from cache) [1ms]
+2025-04-11 12:11:21.6106 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases (from cache) [1ms]
+2025-04-11 12:11:22.0739 Info Manual search in 1337x, The Pirate Bay, YTS for My Neighbors the Yamadas => Found 22 releases (from cache) [0ms]
+2025-04-11 12:12:37.8213 Info Manual search in 1337x, The Pirate Bay, YTS for The Cell => Found 193 releases [7559ms]
+2025-04-11 12:13:11.9896 Info Manual search in 1337x, The Pirate Bay, YTS for BlacKkKlansman => Found 158 releases [7413ms]
+2025-04-11 12:16:12.3744 Info Manual search in 1337x, The Pirate Bay, YTS for Why Did I Get Married => Found 85 releases [7101ms]
+2025-04-11 12:16:38.4703 Info Manual search in 1337x, The Pirate Bay, YTS for Emma. => Found 208 releases [7455ms]
+2025-04-11 12:16:50.3723 Info Manual search in 1337x, The Pirate Bay, YTS for Practical Magic => Found 60 releases [7063ms]
+2025-04-11 12:17:32.0614 Info Jackett stopped
+2025-04-11 12:18:58.1180 Info Starting Jackett v0.22.1760
+2025-04-11 12:18:59.7233 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-11 12:18:59.7283 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-11 12:18:59.7303 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 12:18:59.7318 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-11 12:18:59.7383 Info Running in Docker: Yes (image build: v0.22.1760-ls733)
+2025-04-11 12:18:59.7393 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-11 12:18:59.7393 Info App config/log directory: /config/Jackett
+2025-04-11 12:18:59.7465 Info Using proxy: Disabled
+2025-04-11 12:18:59.7465 Info Using FlareSolverr: No
+2025-04-11 12:18:59.7480 Info Using HTTP Client: HttpWebClient2
+2025-04-11 12:18:59.7505 Info Loading Native indexers ...
+2025-04-11 12:18:59.7888 Info Loaded 78 Native indexers.
+2025-04-11 12:18:59.8118 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-11 12:19:04.7273 Info Loaded 535 Cardigann indexers.
+2025-04-11 12:19:04.7276 Info Loaded 613 indexers in total
+2025-04-11 12:19:04.7339 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-11 12:19:04.7371 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-11 12:19:04.7374 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-11 12:19:04.7374 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-11 12:19:05.1634 Info Jackett startup finished in 8.476 s
+2025-04-11 12:21:45.9529 Info Manual search in 1337x, The Pirate Bay, YTS for Hacksaw Ridge => Found 183 releases [7484ms]
+2025-04-11 12:22:43.1890 Info Manual search in 1337x, The Pirate Bay, YTS for Hot Rod => Found 184 releases [7498ms]
+2025-04-11 12:23:14.4769 Info Manual search in 1337x, The Pirate Bay, YTS for Hot Rod => Found 184 releases (from cache) [10ms]
+2025-04-11 12:25:02.5888 Info Manual search in 1337x, The Pirate Bay, YTS for Magnolia => Found 188 releases [7380ms]
+2025-04-11 12:51:37.2231 Info Manual search in 1337x, The Pirate Bay, YTS for Inception => Found 183 releases [8471ms]
+2025-04-11 12:52:46.0526 Info Manual search in 1337x, The Pirate Bay, YTS for Inception => Found 183 releases (from cache) [12ms]
+2025-04-11 12:52:57.8695 Info Manual search in 1337x, The Pirate Bay, YTS for Inception => Found 183 releases (from cache) [21ms]
+2025-04-11 13:19:04.7818 Info Checking for updates... Jackett variant: CoreLinuxMuslAmdx64
+2025-04-11 13:19:04.7823 Info Updates are disabled via --NoUpdates.
+2025-04-11 13:36:57.2398 Info Manual search in 1337x, The Pirate Bay, YTS for Slumdog Millionaire => Found 157 releases [7123ms]
+2025-04-11 13:37:14.1443 Info Manual search in 1337x, The Pirate Bay, YTS for Slumdog Millionaire => Found 157 releases (from cache) [4ms]
+2025-04-11 13:37:27.5599 Info Manual search in 1337x, The Pirate Bay, YTS for Moon => Found 294 releases [7230ms]
+2025-04-11 13:37:52.9843 Info Manual search in 1337x, The Pirate Bay, YTS for Moon => Found 294 releases (from cache) [10ms]
+2025-04-11 14:03:40.1443 Info Manual search in 1337x, The Pirate Bay, YTS for Hunter Killer => Found 181 releases [8398ms]

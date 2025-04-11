@@ -154,7 +154,9 @@ async def search_movies(
             for imdb_id in unique_imdb_ids:
                 print(f"Fetching movie data for IMDb ID: {imdb_id}")
                 tmdb_data = await fetch_movie_tmdb(imdb_id, language)
+
                 if not tmdb_data:
+                    print(f"Movie data not found for IMDb ID: {imdb_id}")
                     continue
 
                 # Check if the movie already exists in the database
@@ -455,7 +457,7 @@ async def download_movie(
     # 202 : Movie is downloading
     # return Response(status_code=status.HTTP_202_ACCEPTED)
     # 200 : Movie is already downloaded and converted
-    return Response(status_code=status.HTTP_200_OK)
+    # return Response(status_code=status.HTTP_200_OK)
 
     movie = get_movie_by_id(db, movie_id)
     if not movie:
