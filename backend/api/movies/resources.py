@@ -17,7 +17,6 @@ from .fetch import (
     fetch_movie_detail_tmdb,
     fetch_top_rated_movies_tmdb,
     fetch_genres_movies_tmdb,
-    search_yts_movies,
     fetch_movie_tmdb,
 )
 from .crud import (
@@ -28,6 +27,12 @@ from .crud import (
     map_to_movie_info,
     mark_movie_as_watched,
     map_to_movie_display
+)
+from .search import (
+    search_in_db,
+    find_movie_categories,
+    parse_jackett_results,
+    add_movie_to_database
 )
 from . import schemas
 import os
@@ -42,6 +47,8 @@ import zipfile
 from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
+import requests
+from api.config import JACKETT_API_KEY
 
 
 router = APIRouter(tags=["Movies"])
@@ -124,26 +131,48 @@ async def search_movies(
         movies_data = json.loads(cached_searches)
     else:
 
-        genres = await fetch_genres_movies_tmdb(language)
+        JACKETT_URL = "http://nginx:8080/jackett/api/v2.0/indexers/all/results"
 
-        # Search movies on YTS
-        search_page = 1
-        while True:
-            yts_movies = search_yts_movies(search, page=search_page)
-            if not yts_movies:
-                break
-            for movie in yts_movies:
-                imdb_id = movie.get("imdb_code", None)
-                if not imdb_id:
-                    continue
+        # Search movies on Jackett
+        params = {
+            "apikey": JACKETT_API_KEY,
+            "Query": search
+        }
+        try:
+            response = requests.get(
+                JACKETT_URL, params=params, timeout=100
+            )
+            response.raise_for_status()
+            data = response.json()
+            results = parse_jackett_results(data)
+            print(f"Jackett results: {results}")
+            unique_imdb_ids = set(
+                result['imdb_id'] for result in results if result["imdb_id"]
+            )
+            genres = await fetch_genres_movies_tmdb(language)
+            # Fetch movie details from TMDB for each unique IMDb ID
+            for imdb_id in unique_imdb_ids:
+                print(f"Fetching movie data for IMDb ID: {imdb_id}")
                 tmdb_data = await fetch_movie_tmdb(imdb_id, language)
                 if not tmdb_data:
                     continue
+
+                # Check if the movie already exists in the database
                 movie_db = get_movie_by_id(db, tmdb_data["id"])
                 if not movie_db:
-                    categories = find_movie_categories(genres, tmdb_data)
-                    add_movie_to_database(db, language, tmdb_data, categories)
-            search_page += 1
+                    categories = find_movie_categories(
+                        genres=genres,
+                        tmdb_data=tmdb_data
+                    )
+                    add_movie_to_database(
+                        db=db,
+                        language=language,
+                        tmdb_data=tmdb_data,
+                        categories=categories
+                    )
+        except Exception as e:
+            print(f"Error fetching data from Jackett: {e}")
+            raise HTTPException(status_code=400, detail=str(e))
 
     sort_column = {
         "none": Movie.title,
@@ -153,28 +182,9 @@ async def search_movies(
     }.get(sort_options.type.value, Movie.popularity)
 
     # Search movies in database
-    movies_data = db.query(
-        Movie.id,
-        Movie.title,
-        Movie.release_date,
-        Movie.vote_average,
-        Movie.poster_path
-    ) \
-        .filter(
-            Movie.title.ilike(f"%{search}%"),
-            Movie.language == language,
-            Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
-            Movie.vote_average >= filter_options.imdb_rating_low,
-            Movie.vote_average <= filter_options.imdb_rating_high,
-            Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
-            Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
-        ) \
-        .order_by(
-            sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none")
-            else sort_column.desc()) \
-        .offset((page - 1) * 20) \
-        .limit(20) \
-        .all()
+    movies_data = search_in_db(
+        db, search, language, page, sort_options, filter_options, sort_column
+    )
 
     if not movies_data:
         raise HTTPException(
@@ -203,35 +213,6 @@ async def search_movies(
         )
 
     return movies
-
-def find_movie_categories(genres, tmdb_data):
-    categories = []
-    genre_ids = tmdb_data.get("genre_ids", None)
-    if genre_ids:
-        for genre in genres:
-            if genre['id'] in genre_ids:
-                categories.append(genre['name'])
-    return categories
-
-def add_movie_to_database(db, language, tmdb_data, categories):
-    create_movie(
-        db,
-        Movie(
-            id=tmdb_data["id"],
-            original_language=tmdb_data["original_language"],
-            language=language,
-            original_title=tmdb_data["original_title"],
-            overview=tmdb_data["overview"],
-            popularity=tmdb_data.get("popularity", 0),
-            poster_path=tmdb_data["poster_path"],
-            backdrop_path=tmdb_data["backdrop_path"],
-            release_date=tmdb_data.get("release_date"),
-            category=categories,
-            title=tmdb_data["title"],
-            vote_average=tmdb_data.get("vote_average", 0),
-            vote_count=tmdb_data.get("vote_count", 0),
-        ),
-    )
 
 
 @router.post('/movies/popular/{page}', response_model=List[MovieDisplay])

@@ -1,11 +1,7 @@
 FROM lscr.io/linuxserver/jackett:latest
 
-COPY ./Indexers /config/Jackett/Indexers
-
-# TODO: Set a default admin password
-# COPY ./ServerConfig.json /config/Jackett/ServerConfig.json
-# COPY ./set_admin_password.sh /config/set_admin_password.sh
-# RUN chmod +x /config/set_admin_password.sh
+COPY ./config/Indexers /config/Jackett/Indexers
+COPY ./config/ServerConfig.json /config/Jackett/ServerConfig.json
 
 EXPOSE 9117
 

@@ -2,7 +2,7 @@ import json
 import aiohttp
 from api.redis_client import redis_client
 import requests
-from api.config import TMDB_API_BEARER_TOKEN, OMDB_API_KEY
+from api.config import TMDB_API_BEARER_TOKEN
 
 
 # #################### TMDB #####################
@@ -125,46 +125,46 @@ async def fetch_movie_tmdb(movie_id: int, language: str):
     return movie_data
 
 
-async def search_movie_omdb(search: str, page: int):
-    url = (
-        f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}" +
-        f"&s={search}&type=movie&page={page}"
-    )
-    key_search = f"search_omdb:{search}:{page}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status != 200:
-                print("Error fetching data from OMDB API")
-                return None
-            response_json = await response.json()
-            if not response_json.get("Search"):
-                print("No movies found")
-                return None
-    json_movies_data = json.dumps(response_json["Search"])
-    if not json_movies_data:
-        print("No movies found in the response")
-        return None
-    redis_client.setex(key_search, 86400, json_movies_data)
-    return response_json["Search"]
+# async def search_movie_omdb(search: str, page: int):
+#     url = (
+#         f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}" +
+#         f"&s={search}&type=movie&page={page}"
+#     )
+#     key_search = f"search_omdb:{search}:{page}"
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url) as response:
+#             if response.status != 200:
+#                 print("Error fetching data from OMDB API")
+#                 return None
+#             response_json = await response.json()
+#             if not response_json.get("Search"):
+#                 print("No movies found")
+#                 return None
+#     json_movies_data = json.dumps(response_json["Search"])
+#     if not json_movies_data:
+#         print("No movies found in the response")
+#         return None
+#     redis_client.setex(key_search, 86400, json_movies_data)
+#     return response_json["Search"]
 
 
-async def fetch_by_id_omdb(imdbID: str | None):
-    if not imdbID:
-        return None
-    url = (
-        f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}" +
-        f"&i={imdbID}&type=movie&plot=full"
-    )
-    key_id = f"id_omdb:{imdbID}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status != 200:
-                return None
-            response_json = await response.json()
+# async def fetch_by_id_omdb(imdbID: str | None):
+#     if not imdbID:
+#         return None
+#     url = (
+#         f"http://www.omdbapi.com/?apikey={OMDB_API_KEY}" +
+#         f"&i={imdbID}&type=movie&plot=full"
+#     )
+#     key_id = f"id_omdb:{imdbID}"
+#     async with aiohttp.ClientSession() as session:
+#         async with session.get(url) as response:
+#             if response.status != 200:
+#                 return None
+#             response_json = await response.json()
 
-    movie_data = response_json
-    redis_client.setex(key_id, 86400, json.dumps(movie_data))
-    return movie_data
+#     movie_data = response_json
+#     redis_client.setex(key_id, 86400, json.dumps(movie_data))
+#     return movie_data
 
 
 def search_yts_movies(query, page=1):
