@@ -81,7 +81,7 @@ async def file_streamer(file_path: str, start: int, end: int):
             remaining -= len(chunk)
 
 
-async def download_full_torrent(magnet_link: str, movie_id: int):
+async def download_torrent(magnet_link: str, movie_id: int):
 
     session = lt.session()
     session.listen_on(6881, 6891)
@@ -138,10 +138,9 @@ async def download_full_torrent(magnet_link: str, movie_id: int):
 
     torrent_info = handle.get_torrent_info()
 
-    while not handle.is_seed():
-        print(
-            f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
-        )
+
+    while handle.status().progress < 0.05:
+        print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)
         await asyncio.sleep(5)
 
     file_path = ""
@@ -151,8 +150,26 @@ async def download_full_torrent(magnet_link: str, movie_id: int):
         if file_entry.endswith((".mp4", ".mkv", ".avi", ".mov", ".flv")):
             file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER, file_entry)
             break
+    
+    key_movie = f"movie_path:{movie_id}"
+    redis_client.setex(key_movie, 60, file_path)
 
-    return file_path
+
+    while not handle.is_seed():
+        print(
+            f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
+        )
+        await asyncio.sleep(5)
+
+    # file_path = ""
+    # for index in range(torrent_info.num_files()):
+    #     file_entry = torrent_info.files().file_path(index)
+
+    #     if file_entry.endswith((".mp4", ".mkv", ".avi", ".mov", ".flv")):
+    #         file_path = os.path.join(DOWNLOAD_MOVIES_FOLDER, file_entry)
+    #         break
+
+    # return file_path
 
 
 async def download_partially_torrent(magnet_link: str, movie_id: int):
