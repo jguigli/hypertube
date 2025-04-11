@@ -6,7 +6,7 @@ import os
 DOWNLOAD_MOVIES_FOLDER = "./downloads"
 
 
-async def download_torrent(magnet_link: str, movie_id: int):
+async def download_torrent(magnet_link: str, movie):
 
     session = lt.session()
     session.listen_on(6881, 6891)
@@ -48,24 +48,25 @@ async def download_torrent(magnet_link: str, movie_id: int):
     for tracker in trackers:
         handle.add_tracker({"url": tracker})
 
-    current_try = 0
-    max_try = 42
+    # Boucle infinie ici :/
+    # current_try = 0
+    # max_try = 42
     while not handle.has_metadata():
         print("Waiting for torrent metadata", flush=True)
         alerts = session.pop_alerts()
         for a in alerts:
             print(a)
         await asyncio.sleep(5)
-        current_try += 1
-        if current_try >= max_try:
-            print("Failed to get metadata", flush=True)
-            return None
+        # current_try += 1
+        # if current_try >= max_try:
+        #     print("Failed to get metadata", flush=True)
+        #     return None
 
     torrent_info = handle.get_torrent_info()
 
     while not handle.is_seed():
         print(
-            f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
+            f"Downloading '{movie.title}': {handle.status().progress * 100:.2f}%", flush=True
         )
         await asyncio.sleep(5)
 

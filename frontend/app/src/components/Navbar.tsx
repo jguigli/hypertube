@@ -10,19 +10,29 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import { useMovies } from "../contexts/MovieContext.tsx";
-import { set } from "video.js/dist/types/tech/middleware";
 
 
 function Logo() {
 
     const { setActiveLink } = useActiveLink();
+    const { resetFilter, resetSearch, resetSort } = useMovies();
+
+    // Function to handle link click
+    function navigateTo(link: string) {
+        if (link === "/") {
+            resetFilter();
+            resetSearch();
+            resetSort();
+        }
+        setActiveLink(link);
+    }
 
     return (
         <div className="flex flex-row items-center gap-1">
-            <Link to="/" id="logo" onClick={() => setActiveLink("/")}>
+            <Link to="/" id="logo" onClick={() => navigateTo("/")}>
                 <PlayCircleOutlineIcon />
             </Link>
-            <Link to="/" id="logo" onClick={() => setActiveLink("/")}>
+            <Link to="/" id="logo" onClick={() => navigateTo("/")}>
                 <Typography variant="h6">Hypertube</Typography>
             </Link>
         </div>

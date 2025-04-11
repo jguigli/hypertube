@@ -6,6 +6,7 @@ import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useActiveLink } from '../contexts/ActiveLinkContext';
+import { useMovies } from '../contexts/MovieContext';
 
 
 export default function Sidebar() {
@@ -59,6 +60,18 @@ export default function Sidebar() {
         } : null,
     ].filter(Boolean);
 
+    const { resetFilter, resetSearch, resetSort } = useMovies();
+
+    // Function to handle link click
+    function navigateTo(link: string) {
+        if (link === "/") {
+            resetFilter();
+            resetSearch();
+            resetSort();
+        }
+        setActiveLink(link);
+    }
+
     return (
         <nav
             id="sidebar"
@@ -67,7 +80,7 @@ export default function Sidebar() {
             onMouseLeave={() => setMenuOpen(false)}
         >
             {links.map((link) => link && (
-                <Link to={link.url} onClick={() => setActiveLink(link.activeLink)} className='w-full' key={link.url}>
+                <Link to={link.url} onClick={() => navigateTo(link.activeLink)} className='w-full' key={link.url}>
 
                     {
                         menuOpen ?

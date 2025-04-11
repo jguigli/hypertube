@@ -17,7 +17,7 @@ from .fetch import (
     fetch_movie_detail_tmdb,
     fetch_top_rated_movies_tmdb,
     fetch_genres_movies_tmdb,
-    search_movies_tmdb
+    fetch_movie_tmdb,
 )
 from .crud import (
     get_watched_movies_id,
@@ -27,6 +27,12 @@ from .crud import (
     map_to_movie_info,
     mark_movie_as_watched,
     map_to_movie_display
+)
+from .search import (
+    search_in_db,
+    find_movie_categories,
+    parse_jackett_results,
+    add_movie_to_database
 )
 from . import schemas
 import os
@@ -41,6 +47,8 @@ import zipfile
 from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
+import requests
+from api.config import JACKETT_API_KEY
 
 
 router = APIRouter(tags=["Movies"])
@@ -116,13 +124,6 @@ async def search_movies(
     sort_options = searchBody.sort_options
     filter_options = searchBody.filter_options
 
-    sort_column = {
-        "none": Movie.title,
-        "name": Movie.title,
-        "production_year": Movie.release_date,
-        "imdb_rating": Movie.vote_average,
-    }.get(sort_options.type.value, Movie.popularity)
-
     # redis_key = get_redis_key(searchBody=searchBody)
     # cached_searches = redis_client.get(redis_key)
     cached_searches = False
@@ -130,81 +131,88 @@ async def search_movies(
         movies_data = json.loads(cached_searches)
     else:
 
-        # Search movies in TMDB and add to database
-        genres = await fetch_genres_movies_tmdb(language)
+        JACKETT_URL = "http://nginx:8080/jackett/api/v2.0/indexers/all/results"
 
-        # Search key in redis
-        # already_search_key = f"search:{search}:{language}"
-        # already_searched = redis_client.get(already_search_key)
-        already_searched = False
-        if not already_searched:
-            search_page = 1
-            # redis_client.setex(already_search_key, 86400, json.dumps(True))
-            while True:
-                movies_data = await search_movies_tmdb(search, language, search_page)
-                if not movies_data:
-                    break
-                # Add movies to database
-                for movie in movies_data:
-                    movie_db = get_movie_by_id(db, movie["id"])
-                    if not movie_db:
-                        categories = []
-                        genre_ids = movie.get("genre_ids", None)
-                        if genre_ids:
-                            for genre in genres:
-                                if genre['id'] in genre_ids:
-                                    categories.append(genre['name'])
-                        print(f"Trying to create movie {movie}")
-                        movie_db = create_movie(
-                            db, Movie(
-                                id=movie["id"],
-                                original_language=movie["original_language"],
-                                language=language,
-                                original_title=movie["original_title"],
-                                overview=movie["overview"],
-                                popularity=movie["popularity"] if movie.get("popularity") is not None else 0,
-                                poster_path=movie["poster_path"],
-                                backdrop_path=movie["backdrop_path"],
-                                release_date=movie["release_date"] if movie.get("release_date") is not None else None,
-                                category=categories,
-                                title=movie["title"],
-                                vote_average=movie["vote_average"] if movie.get("vote_average") is not None else 0,
-                                vote_count=movie["vote_count"] if movie.get("vote_count") is not None else 0
-                            )
-                        )
-                search_page += 1
-
-        # Search movies in database
-        movies_data = db.query(
-            Movie.id,
-            Movie.title,
-            Movie.release_date,
-            Movie.vote_average,
-            Movie.poster_path
-        ) \
-            .filter(
-                Movie.title.ilike(f"%{search}%"),
-                Movie.language == language,
-                Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
-                Movie.vote_average >= filter_options.imdb_rating_low,
-                Movie.vote_average <= filter_options.imdb_rating_high,
-                Movie.release_date >= str(filter_options.production_year_low) + '-01-01',
-                Movie.release_date <= str(filter_options.production_year_high) + '-12-31'
-            ) \
-            .order_by(
-                sort_column.asc() if (sort_options.ascending or sort_options.type.value == "none")
-                else sort_column.desc()) \
-            .offset((page - 1) * 20) \
-            .limit(20) \
-            .all()
-
-        if not movies_data:
-            raise HTTPException(
-                status_code=status.HTTP_204_NO_CONTENT,
-                detail="Search movies not available"
+        # Search movies on Jackett
+        params = {
+            "apikey": JACKETT_API_KEY,
+            "Query": search
+        }
+        try:
+            response = requests.get(
+                JACKETT_URL, params=params, timeout=100
             )
+            response.raise_for_status()
+            data = response.json()
+            results = parse_jackett_results(data)
+            print(f"Jackett results: {results}")
+            unique_imdb_ids = set(
+                result['imdb_id'] for result in results if result["imdb_id"]
+            )
+            genres = await fetch_genres_movies_tmdb(language)
+            # Fetch movie details from TMDB for each unique IMDb ID
+            for imdb_id in unique_imdb_ids:
+                print(f"Fetching movie data for IMDb ID: {imdb_id}")
+                tmdb_data = await fetch_movie_tmdb(imdb_id, language)
 
-        # redis_client.set(redis_key, json.dumps(movies_data))
+                if not tmdb_data:
+                    print(f"Movie data not found for IMDb ID: {imdb_id}")
+                    continue
+
+                # Check if the movie already exists in the database
+                movie_db = get_movie_by_id(db, tmdb_data["id"])
+                if not movie_db:
+                    categories = find_movie_categories(
+                        genres=genres,
+                        tmdb_data=tmdb_data
+                    )
+                    add_movie_to_database(
+                        db=db,
+                        language=language,
+                        tmdb_data=tmdb_data,
+                        categories=categories
+                    )
+        except Exception as e:
+            print(f"Error fetching data from Jackett: {e}")
+            raise HTTPException(status_code=400, detail=str(e))
+
+    #     genres = await fetch_genres_movies_tmdb(language)
+    #     # Search movies on YTS
+    #     search_page = 1
+    #     while True:
+    #         yts_movies = search_yts_movies(search, page=search_page)
+    #         if not yts_movies:
+    #             break
+    #         for movie in yts_movies:
+    #             imdb_id = movie.get("imdb_code", None)
+    #             if not imdb_id:
+    #                 continue
+    #             tmdb_data = await fetch_movie_tmdb(imdb_id, language)
+    #             if not tmdb_data:
+    #                 continue
+    #             movie_db = get_movie_by_id(db, tmdb_data["id"])
+    #             if not movie_db:
+    #                 categories = find_movie_categories(genres, tmdb_data)
+    #                 add_movie_to_database(db, language, tmdb_data, categories)
+    #         search_page += 1
+
+    sort_column = {
+        "none": Movie.title,
+        "name": Movie.title,
+        "production_year": Movie.release_date,
+        "imdb_rating": Movie.vote_average,
+    }.get(sort_options.type.value, Movie.popularity)
+
+    # Search movies in database
+    movies_data = search_in_db(
+        db, search, language, page, sort_options, filter_options, sort_column
+    )
+
+    if not movies_data:
+        raise HTTPException(
+            status_code=status.HTTP_204_NO_CONTENT,
+            detail="Search movies not available"
+        )
 
     watched_movies = get_watched_movies_id(db, current_user.id)
 
@@ -329,10 +337,19 @@ async def get_movies_informations(
     ).all()
 
     if not movies_informations:
-        raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="No movies found"
-        )
+        informations = {
+            "vote_average": {
+                "min": 0,
+                "max": 10
+            },
+            "release_date": {
+                "min": datetime.now().year - 100,
+                "max": datetime.now().year
+            },
+            "genres": ["All"]
+        }
+
+        return informations
 
     vote_average = [movie.vote_average for movie in movies_informations if movie.vote_average]
     release_date = [movie.release_date for movie in movies_informations if movie.release_date]
@@ -345,7 +362,7 @@ async def get_movies_informations(
         },
         "release_date": {
             "min": min([int(date.split('-')[0]) for date in release_date]) if release_date else 1900,
-            "max": max([int(date.split('-')[0]) for date in release_date]) if release_date else datetime.datetime.now().year
+            "max": max([int(date.split('-')[0]) for date in release_date]) if release_date else datetime.now().year
         },
         "genres": ["All"] + sorted(list(genres))
     }
@@ -396,7 +413,8 @@ async def download_and_convert(movie_id: int, user_id: int):
             await manager_websocket.send_message(
                 user_id, "Movie is downloading."
             )
-            file_path = await download_torrent(movie.magnet_link, movie.id)
+            file_path = await download_torrent(movie.magnet_link, movie)
+            print("Download status : OK")
             movie.file_path = file_path
             movie.is_download = True
             db.commit()
@@ -406,6 +424,7 @@ async def download_and_convert(movie_id: int, user_id: int):
                 "Movie is being converted to HLS."
             )
             await convert_to_hls(movie.file_path, movie.id)
+            print("Conversion status : OK")
             movie.is_convert = True
             db.commit()
     finally:

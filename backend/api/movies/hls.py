@@ -26,7 +26,7 @@ def run_ffmpeg(
                 hls_segment_filename=segment_pattern,
                 hls_playlist_type="vod",
                 movflags="+faststart",
-                loglevel="quiet"
+                # loglevel="quiet"
             )
             .run(overwrite_output=True)
         )

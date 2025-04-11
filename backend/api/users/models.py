@@ -41,5 +41,3 @@ class User(Base):
     @property
     def profile_picture(self):
         return FileResponse(self.profile_picture_path)
-
-

@@ -2,23 +2,21 @@ import { useEffect, useRef, useCallback } from "react";
 import { useMovies } from "../contexts/MovieContext";
 import MovieCard from "../components/MovieCard";
 import { FilterSortMenu } from "../components/FilterSortMenu";
-import { CircularProgress, Typography } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 
 
 export default function Home() {
 
-    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage } = useMovies();
+    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage, resetSearch, resetFilter, resetSort } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
 
     const handleScroll = useCallback(() => {
-        let timeout: ReturnType<typeof setTimeout> | null = null;
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && hasMore && !isLoading) {
-            if (timeout !== null) {
-                clearTimeout(timeout);
-            }
-            timeout = setTimeout(() => {
-                incrementPage();
-            }, 200);
+        if (
+            window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
+            hasMore &&
+            !isLoading
+        ) {
+            incrementPage();
         }
     }, [hasMore, isLoading, incrementPage]);
 
@@ -34,14 +32,27 @@ export default function Home() {
     }, [page, fetchMovies]);
 
     useEffect(() => {
-        if (movies.length === 0 && page === 1) {
-            fetchMovies(1); // Charger la première page si aucun film n'est chargé
+        if (movies.length === 0 && page === 1 && !isLoading) {
+            fetchMovies(1);
         }
-    }, [movies, page, fetchMovies]);
+    }, [movies, page, isLoading, fetchMovies]);
+
+    // Reset search and filter when the component unmounts
+    useEffect(() => {
+        return () => {
+            resetSearch();
+            resetFilter();
+            resetSort();
+        };
+    }, []);
 
     return (
         <>
-            {movies.length === 0 && !isLoading ? (
+            {isLoading && movies.length === 0 ? (
+                <div className="flex justify-center items-center h-screen">
+                    <CircularProgress />
+                </div>
+            ) : movies.length === 0 ? (
                 <div className="flex justify-center items-center">
                     <p className="text-3xl">No movies found</p>
                 </div>
@@ -53,15 +64,10 @@ export default function Home() {
                 </div>
             )}
 
-            {isLoading && (
-                <>
-                    <div ref={loadingRef} className="flex justify-center py-4">
-                        <CircularProgress />
-                    </div>
-                    <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
-                        Loading more movies...
-                    </Typography>
-                </>
+            {isLoading && movies.length > 0 && (
+                <div ref={loadingRef} className="flex justify-center py-4">
+                    <CircularProgress />
+                </div>
             )}
 
             <FilterSortMenu />
