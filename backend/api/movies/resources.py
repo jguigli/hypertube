@@ -174,6 +174,26 @@ async def search_movies(
             print(f"Error fetching data from Jackett: {e}")
             raise HTTPException(status_code=400, detail=str(e))
 
+    #     genres = await fetch_genres_movies_tmdb(language)
+    #     # Search movies on YTS
+    #     search_page = 1
+    #     while True:
+    #         yts_movies = search_yts_movies(search, page=search_page)
+    #         if not yts_movies:
+    #             break
+    #         for movie in yts_movies:
+    #             imdb_id = movie.get("imdb_code", None)
+    #             if not imdb_id:
+    #                 continue
+    #             tmdb_data = await fetch_movie_tmdb(imdb_id, language)
+    #             if not tmdb_data:
+    #                 continue
+    #             movie_db = get_movie_by_id(db, tmdb_data["id"])
+    #             if not movie_db:
+    #                 categories = find_movie_categories(genres, tmdb_data)
+    #                 add_movie_to_database(db, language, tmdb_data, categories)
+    #         search_page += 1
+
     sort_column = {
         "none": Movie.title,
         "name": Movie.title,
