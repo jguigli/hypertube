@@ -413,9 +413,9 @@ async def download_and_convert(movie_id: int, user_id: int):
             await manager_websocket.send_message(
                 user_id, "Movie is downloading."
             )
-            file_path = await download_torrent(movie.magnet_link, movie)
-            print("Download status : OK")
-            movie.file_path = file_path
+            # file_path = await download_torrent(movie.magnet_link, movie.id)
+            await download_torrent(movie.magnet_link, movie.id)
+            # movie.file_path = file_path
             movie.is_download = True
             db.commit()
         if movie.is_convert is False:
@@ -436,59 +436,59 @@ async def download_and_convert(movie_id: int, user_id: int):
     )
 
 
-@router.post('/movies/{movie_id}/download')
-async def download_movie(
-    movie_id: int,
-    background_tasks: BackgroundTasks,
-    current_user: Annotated[User, Depends(security.get_current_user)],
-    db: Session = Depends(get_db)
-):
+# @router.post('/movies/{movie_id}/download')
+# async def download_movie(
+#     movie_id: int,
+#     background_tasks: BackgroundTasks,
+#     current_user: Annotated[User, Depends(security.get_current_user)],
+#     db: Session = Depends(get_db)
+# ):
 
-    # Status_code tests:
-    # 400 : Invalid movie
-    # raise HTTPException(
-    #     status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
-    # )
-    # 404 : Movie not available
-    # raise HTTPException(
-    #     status_code=status.HTTP_404_NOT_FOUND,
-    #     detail="Movie not available"
-    # )
-    # 202 : Movie is downloading
-    # return Response(status_code=status.HTTP_202_ACCEPTED)
-    # 200 : Movie is already downloaded and converted
-    # return Response(status_code=status.HTTP_200_OK)
+#     # Status_code tests:
+#     # 400 : Invalid movie
+#     # raise HTTPException(
+#     #     status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
+#     # )
+#     # 404 : Movie not available
+#     # raise HTTPException(
+#     #     status_code=status.HTTP_404_NOT_FOUND,
+#     #     detail="Movie not available"
+#     # )
+#     # 202 : Movie is downloading
+#     # return Response(status_code=status.HTTP_202_ACCEPTED)
+#     # 200 : Movie is already downloaded and converted
+#     return Response(status_code=status.HTTP_200_OK)
 
-    movie = get_movie_by_id(db, movie_id)
-    if not movie:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
-        )
+#     movie = get_movie_by_id(db, movie_id)
+#     if not movie:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
+#         )
 
-    if movie.is_download and movie.is_convert:
-        return Response(status_code=status.HTTP_200_OK)
+#     if movie.is_download and movie.is_convert:
+#         return Response(status_code=status.HTTP_200_OK)
 
-    if not movie.magnet_link:
-        year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
-        magnet_link = await get_magnet_link_piratebay(
-            movie.original_title, year)
-        if not magnet_link:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Movie not available"
-            )
-        movie.magnet_link = magnet_link
-        db.commit()
+#     if not movie.magnet_link:
+#         year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
+#         magnet_link = await get_magnet_link_piratebay(
+#             movie.original_title, year)
+#         if not magnet_link:
+#             raise HTTPException(
+#                 status_code=status.HTTP_404_NOT_FOUND,
+#                 detail="Movie not available"
+#             )
+#         movie.magnet_link = magnet_link
+#         db.commit()
 
-    if not redis_client.exists(f"download_and_convert:{movie_id}"):
-        background_tasks.add_task(
-            download_and_convert, movie_id, current_user.id)
+#     if not redis_client.exists(f"download_and_convert:{movie_id}"):
+#         background_tasks.add_task(
+#             download_and_convert, movie_id, current_user.id)
 
-    db.refresh(movie)
-    if movie.is_download and movie.is_convert:
-        return Response(status_code=status.HTTP_200_OK)
+#     db.refresh(movie)
+#     if movie.is_download and movie.is_convert:
+#         return Response(status_code=status.HTTP_200_OK)
 
-    return Response(status_code=status.HTTP_202_ACCEPTED)
+#     return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
@@ -547,6 +547,22 @@ async def standard_stream_movie(
         movie.magnet_link = magnet_link
         db.commit()
 
+    if not movie.file_path:
+
+        # asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
+
+        if not redis_client.exists(f"download_and_convert:{movie_id}", 1):
+            background_tasks.add_task(download_and_convert, movie_id, current_user.id)
+
+        while not redis_client.exists(f"movie_path:{movie_id}"):
+            await asyncio.sleep(1)
+
+        movie.file_path = redis_client.get(f"movie_path:{movie_id}")
+        redis_client.delete(f"movie_path:{movie_id}")
+        db.commit()
+
+    ###############################################################################################
+
     watched_movie = get_watched_movie(db, current_user.id, movie_id)
     if not watched_movie:
         mark_movie_as_watched(db, current_user.id, movie_id)
@@ -554,19 +570,14 @@ async def standard_stream_movie(
         watched_movie.watched_at = datetime.now()
         db.commit()
 
-    if not movie.file_path:
-        asyncio.create_task(download_torrent(movie.magnet_link, movie.id))
-        while not redis_client.get(f"movie_path:{movie_id}"):
-            await asyncio.sleep(1)
-        movie.file_path = redis_client.get(f"movie_path:{movie_id}")
-        db.commit()
+    ###############################################################################################
 
-    file_path = "./downloads/gladiator2.mkv" #######################
+    # file_path = "./downloads/gladiator2.mkv" #######################
 
-    file_extension = os.path.splitext(file_path)[1].lower().strip(".")
+    file_extension = os.path.splitext(movie.file_path)[1].lower().strip(".")
 
     if file_extension in ['mp4', 'webm']:
-        file_size = os.path.getsize(file_path)
+        file_size = os.path.getsize(movie.file_path)
         range_header = request.headers.get("range")
 
         if range_header:
@@ -579,7 +590,7 @@ async def standard_stream_movie(
                 raise HTTPException(status_code=400, detail="Invalid Range request")
 
             return StreamingResponse(
-                file_streamer(file_path, start, end),
+                file_streamer(movie.file_path, start, end),
                 status_code=206,
                 media_type="video/mp4",
                 headers={
@@ -590,7 +601,7 @@ async def standard_stream_movie(
             )
 
         return StreamingResponse(
-            file_streamer(file_path, 0, file_size - 1),
+            file_streamer(movie.file_path, 0, file_size - 1),
             media_type="video/mp4",
             headers={
                 "Content-Length": str(file_size),
@@ -598,7 +609,7 @@ async def standard_stream_movie(
             }
         )
     else:
-        return StreamingResponse(await convert_stream(file_path), media_type="video/mp4")
+        return StreamingResponse(await convert_stream(movie.file_path), media_type="video/mp4")
 
 
 @router.get('/movies/{movie_id}/subtitles')
