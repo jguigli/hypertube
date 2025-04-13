@@ -5,6 +5,7 @@ import { Button, InputLabel, Typography } from "@mui/material";
 import CustomCard from "../components/Card";
 import LoginService from "../services/LoginService";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
+import { useTranslation } from 'react-i18next';
 
 
 export default function ResetPassword() {
@@ -16,6 +17,7 @@ export default function ResetPassword() {
     const [email, setEmail] = useState("");
     const [responseMessage, setResponseMessage] = useState("");
     const [error, setError] = useState("");
+    const { t } = useTranslation();
 
 
     async function sendResetEmail(event: React.FormEvent) {
@@ -27,12 +29,12 @@ export default function ResetPassword() {
         const response = await loginService.resetPassword(email);
         if (response.success) {
             setError("");
-            setResponseMessage("An email with a link to reset your password has been sent.");
+            setResponseMessage(t("An email with a link to reset your password has been sent."));
         } else {
             if (response.error.message) {
                 setError(response.error.message);
             } else {
-                setError("An unexpected error occurred.");
+                setError(t("An unexpected error occurred."));
             }
             setResponseMessage("");
         }
@@ -50,14 +52,14 @@ export default function ResetPassword() {
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
             <div className="flex flex-col items-start gap-5 ">
                 <Typography variant="h4" className="font-bold text-center w-full">
-                    Reset your password
+                    {t("Reset your password")}
                 </Typography>
                 <Typography variant="body1" className="text-center w-full">
-                    Enter your email address and we will send you a link to reset your password.
+                    {t("Enter your email address and we will send you a link to reset your password.")}
                 </Typography>
                 <form onSubmit={sendResetEmail} className="flex flex-col items-start gap-2 w-full">
                     <div className="flex flex-col gap-2 w-full">
-                        <InputLabel htmlFor="email_reset_password">Email</InputLabel>
+                        <InputLabel htmlFor="email_reset_password">{t("Email")}</InputLabel>
                         <Input
                             type="text"
                             placeholder="Email associated with your account"
@@ -68,13 +70,13 @@ export default function ResetPassword() {
                         />
                     </div>
                     <div className="flex gap-5 w-full items-center ">
-                        <Button variant="contained" className="w-full" type="submit">Send me a mail</Button>
+                        <Button variant="contained" className="w-full" type="submit">{t("Send me an email")}</Button>
                     </div>
                 </form>
                 {responseMessage && <Typography variant="caption" className="text-center">{responseMessage}</Typography>}
                 {error && <Typography variant="caption" className="text-center text-red-500">{error}</Typography>}
                 <Typography variant="body1" color="primary" onClick={() => navigate("/login")} className="cursor-pointer">
-                    Back to login
+                    {t("Back to login")}
                 </Typography>
             </div >
         </CustomCard>
@@ -96,6 +98,8 @@ export function ChangePassword() {
 
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
+
+    const { t } = useTranslation();
 
     const { setActiveLink } = useActiveLink();
 
@@ -136,7 +140,7 @@ export function ChangePassword() {
                 setError(response.error.message);
             }
             else {
-                setError("An unexpected error occurred.");
+                setError(t("An unexpected error occurred."));
             }
         }
     }
@@ -146,31 +150,31 @@ export function ChangePassword() {
             <div className="flex flex-col items-start gap-5 ">
 
                 <Typography variant="h4" className="font-bold text-center w-full">
-                    Reset your password
+                    {t("Reset your password")}
                 </Typography>
                 <Typography variant="body1" className="text-center w-full">
-                    Enter your new password below.
+                    {t("Enter your new password below.")}
                 </Typography>
                 <form onSubmit={handleSubmit} className="flex flex-col items-start gap-2 w-full">
                     <div className="flex flex-col gap-2 w-full">
                         <InputLabel htmlFor="password_register">Your new password</InputLabel>
                         <PasswordInput placeholder="Password" value={newPassword} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
-                        <Typography variant="caption" className="text-xs" color="textSecondary">Passwords must be at least 8 characters long.</Typography>
+                        <Typography variant="caption" className="text-xs" color="textSecondary">{t("Passwords must be at least 8 characters long.")}</Typography>
                         {passwordError && <Typography variant="caption" className="text-xs text-red-500">{passwordError}</Typography>}
                     </div>
                     <div className="flex flex-col gap-2 w-full">
-                        <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
-                        <PasswordInput placeholder="Password confirmation" value={confirmPassword} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
+                        <InputLabel htmlFor="password_confirmation_register">{t("Password confirmation")}</InputLabel>
+                        <PasswordInput placeholder={t("Password confirmation")} value={confirmPassword} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
                     </div>
-                    {success && <Typography variant="caption" >Password changed successfully, you can now <span className="text-blue-500 cursor-pointer" onClick={() => navigate("/login")}>login</span>.
+                    {success && <Typography variant="caption" >{t("Password changed successfully, you can now ")}<span className="text-blue-500 cursor-pointer" onClick={() => navigate("/login")}>{t("login")}</span>.
                     </Typography>}
                     {error && <Typography variant="caption" className="text-xs text-red-500">{error}</Typography>}
                     <div className="flex gap-5 w-full items-center ">
                         <Button variant="contained" className="w-full" type="submit">
-                            Reset password
+                            {t("Reset your password")}
                         </Button>
                         <Button variant="outlined" className="w-full" onClick={() => navigate("/login")}>
-                            Back to login
+                            {t("Back to login")}
                         </Button>
                     </div>
                 </form>

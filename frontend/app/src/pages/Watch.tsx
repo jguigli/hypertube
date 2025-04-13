@@ -7,6 +7,7 @@ import StructureComments from "../components/StructureComments";
 import { Stack } from "@mui/material";
 import MoviePresentation from "../components/MoviePresentation";
 import Movie from "../types/Movie";
+import { useTranslation } from 'react-i18next';
 
 export default function Watch() {
 
@@ -19,6 +20,8 @@ export default function Watch() {
     const [ismovieReady, setMovieReady] = useState<boolean>(false);
     const [isInvalidMovieID, setIsInvalidMovieID] = useState<boolean>(false);
     const [isTorrentNotFound, setIsTorrentNotFound] = useState<boolean>(false);
+
+    const { t } = useTranslation();
 
 
     const navigate = useNavigate();
@@ -98,7 +101,7 @@ export default function Watch() {
     } else if (isTorrentNotFound) {
         return (
             <div className="flex justify-center items-center">
-                <p className="text-3xl">No torrent file found for this movie.</p>
+                <p className="text-3xl">{t("No torrent file found for this movie.")}</p>
             </div>
         );
     } else {

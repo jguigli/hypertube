@@ -4,6 +4,7 @@ import Input, { FileInput } from "../components/Input";
 import CustomCard from "../components/Card";
 import { Avatar, Button, InputLabel, Typography } from "@mui/material";
 import UserService from "../services/UserService";
+import { useTranslation } from 'react-i18next';
 
 export default function UserSettings() {
     const { user, changeUserInfo, getToken } = useAuth();
@@ -20,20 +21,21 @@ export default function UserSettings() {
     const [emailError, setEmailError] = useState<string | null>(null);
     const [firstNameError, setFirstNameError] = useState<string | null>(null);
     const [lastNameError, setLastNameError] = useState<string | null>(null);
+    const { t } = useTranslation();
 
     const handleAvatarChange = async (file: File | null) => {
         const token = getToken();
         if (!token) {
-            alert("You are not authenticated");
+            alert(t("You are not authenticated"));
             return;
         } else if (!file) {
-            alert("Please select a file");
+            alert(t("Please select a file"));
             return;
         }
 
         const response = await userService.setPicture(token, file);
         if (!response.success) {
-            alert("An error occurred while uploading the avatar" + response.error || "An unexpected error occurred");
+            alert(t("An error occurred while uploading the avatar") + response.error || t("An unexpected error occurred"));
             return;
         }
 
@@ -44,50 +46,50 @@ export default function UserSettings() {
             changeUserInfo({ ...user, avatar: response.avatar });
         }
 
-        alert("Avatar updated successfully");
+        alert(t("Avatar updated successfully"));
     };
 
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const token = getToken();
         if (!token) {
-            alert("You are not authenticated");
+            alert(t("You are not authenticated"));
             return;
         }
 
         const response = await userService.setInformations(token, email, username, firstName, lastName);
         if (!response.success) {
-            if (response.error === "Username already taken") {
-                setUsernameError("Username already taken");
-            } else if (response.error === "Email already taken") {
-                setEmailError("Email already taken");
-            } else if (response.error === "Invalid email format") {
-                setEmailError("Invalid email format");
-            } else if (response.error === "First name cannot be empty.") {
-                setFirstNameError("First name cannot be empty.");
-            } else if (response.error === "Last name cannot be empty.") {
-                setLastNameError("Last name cannot be empty.");
+            if (response.error === t("Username already taken")) {
+                setUsernameError(t("Username already taken"));
+            } else if (response.error === t("Email already taken")) {
+                setEmailError(t("Email already taken"));
+            } else if (response.error === t("Invalid email format")) {
+                setEmailError(t("Invalid email format"));
+            } else if (response.error === t("First name cannot be empty.")) {
+                setFirstNameError(t("First name cannot be empty."));
+            } else if (response.error === t("Last name cannot be empty.")) {
+                setLastNameError(t("Last name cannot be empty."));
             } else {
-                alert("An error occurred while updating the user information: " + response.error || "An unexpected error occurred");
+                alert(t("An error occurred while updating the user information: ") + response.error || t("An unexpected error occurred"));
             }
             return;
         }
         changeUserInfo({ ...user, username, email, firstName, lastName });
-        alert("User information updated successfully");
+        alert(t("User information updated successfully"));
     }
 
     return (
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
             <Typography variant="h4" className="font-bold text-center">
-                Customize your profile
+                {t("Customize your profile")}
             </Typography>
             <form onSubmit={handleSubmit} className="flex flex-col space-y-4 my-5 items-center w-full">
                 <Avatar src={avatar} alt="Avatar" sx={{ width: 100, height: 100 }} className="m-auto" />
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="username_profile">Username:</InputLabel>
+                    <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>
                     <Input
                         value={username}
-                        placeholder="Your new username"
+                        placeholder={t("Your new username")}
                         type="text"
                         onChange={(e) => {
                             setUsername(e.target.value);
@@ -99,10 +101,10 @@ export default function UserSettings() {
                     {usernameError && <Typography variant="body2" className="text-red-500">{usernameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="email_profile">Email:</InputLabel>
+                    <InputLabel htmlFor="email_profile">{t("Email")}:</InputLabel>
                     <Input
                         value={email}
-                        placeholder="Your new email"
+                        placeholder={t("Your new email")}
                         type="email"
                         onChange={(e) => {
                             setEmail(e.target.value);
@@ -114,10 +116,10 @@ export default function UserSettings() {
                     {emailError && <Typography variant="body2" className="text-red-500">{emailError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="firstName_profile">First name:</InputLabel>
+                    <InputLabel htmlFor="firstName_profile">{t("First Name")}:</InputLabel>
                     <Input
                         value={firstName}
-                        placeholder="Your new first name"
+                        placeholder={t("Your new first name")}
                         type="text"
                         onChange={(e) => {
                             setFirstName(e.target.value);
@@ -129,10 +131,10 @@ export default function UserSettings() {
                     {firstNameError && <Typography variant="body2" className="text-red-500">{firstNameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="lastName_profile">Last name:</InputLabel>
+                    <InputLabel htmlFor="lastName_profile">{t("Last Name")}:</InputLabel>
                     <Input
                         value={lastName}
-                        placeholder="Your new last name"
+                        placeholder={t("Your new last name")}
                         type="text"
                         onChange={(e) => {
                             setLastName(e.target.value);
@@ -144,11 +146,11 @@ export default function UserSettings() {
                     {lastNameError && <Typography variant="body2" className="text-red-500">{lastNameError}</Typography>}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                    <InputLabel htmlFor="avatar_profile">Avatar:</InputLabel>
+                    <InputLabel htmlFor="avatar_profile">{t("Avatar")}:</InputLabel>
                     <FileInput file={newAvatar} onChange={handleAvatarChange} />
                 </div>
                 <div className="flex gap-5 w-full items-center ">
-                    <Button variant="contained" className="w-full" type="submit">Save</Button>
+                    <Button variant="contained" className="w-full" type="submit">{t("Save")}</Button>
                 </div>
             </form>
         </CustomCard>

@@ -3,12 +3,14 @@ import { useMovies } from "../contexts/MovieContext";
 import MovieCard from "../components/MovieCard";
 import { FilterSortMenu } from "../components/FilterSortMenu";
 import { CircularProgress, Typography } from "@mui/material";
+import { useTranslation } from 'react-i18next';
 
 
 export default function Home() {
 
     const { movies, isLoading, hasMore, page, fetchMovies, incrementPage } = useMovies();
     const loadingRef = useRef<HTMLDivElement | null>(null);
+    const { t } = useTranslation();
 
     const handleScroll = useCallback(() => {
         let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -43,7 +45,7 @@ export default function Home() {
         <>
             {movies.length === 0 && !isLoading ? (
                 <div className="flex justify-center items-center">
-                    <p className="text-3xl">No movies found</p>
+                    <p className="text-3xl">{t("No movies found")}</p>
                 </div>
             ) : (
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
@@ -59,7 +61,7 @@ export default function Home() {
                         <CircularProgress />
                     </div>
                     <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
-                        Loading more movies...
+                        {t("Loading more movies...")}
                     </Typography>
                 </>
             )}

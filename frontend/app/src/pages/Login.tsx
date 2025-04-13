@@ -12,6 +12,7 @@ import UserService from "../services/UserService.tsx";
 import User from "../types/User.tsx";
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import { GitHub } from "@mui/icons-material";
+import { useTranslation } from 'react-i18next';
 
 
 export default function Login() {
@@ -23,6 +24,7 @@ export default function Login() {
     const navigate = useNavigate();
     const userService = new UserService();
     const { setActiveLink} = useActiveLink();
+    const { t } = useTranslation();
 
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value);
@@ -46,7 +48,7 @@ export default function Login() {
             if (response.error) {
                 setError(response.error);
             } else {
-                setError("An unexpected error occurred, please try again later");
+                setError(t("An unexpected error occurred, please try again later"));
             }
             return;
         }
@@ -61,7 +63,7 @@ export default function Login() {
             if (userResponse.error) {
                 setError(userResponse.error);
             } else {
-                setError("An unexpected error occurred, please try again later");
+                setError(t("An unexpected error occurred, please try again later"));
             }
             return;
         }
@@ -131,14 +133,14 @@ export default function Login() {
             <div id="login" className="flex flex-col align-center space-y-2 gap-2">
                 <form onSubmit={handleSubmit} className="flex flex-col items-start gap-2">
                     <Typography variant="h4" className="font-bold text-center w-full">
-                        Login
+                        {t("Login")}
                     </Typography>
                     <Separator text='Enter your credentials to login' />
                     <div className="flex flex-col gap-2 w-full">
-                        <InputLabel htmlFor="username_register">Username</InputLabel>
+                        <InputLabel htmlFor="username_register">{t("Username")}</InputLabel>
                         <Input
                             type="text"
-                            placeholder="Username"
+                            placeholder={t("Username")}
                             value={username}
                             onChange={handleUsernameChange}
                             required
@@ -146,19 +148,19 @@ export default function Login() {
                         />
                     </div>
                     <div className="flex flex-col gap-2 w-full">
-                        <InputLabel htmlFor="password_register">Password</InputLabel>
-                        <PasswordInput placeholder="Password" value={password} onChange={handlePasswordChange} required id="password_register" />
+                        <InputLabel htmlFor="password_register">{t("Password")}</InputLabel>
+                        <PasswordInput placeholder={t("Password")} value={password} onChange={handlePasswordChange} required id="password_register" />
                     </div>
                     {error && <Typography variant="body1" color="error">{error}</Typography>}
                     <div className="flex gap-5 w-full items-center ">
-                        <Button variant="contained" className="w-full" type="submit">Login</Button>
+                        <Button variant="contained" className="w-full" type="submit">{t("Login")}</Button>
                     </div>
                     <div className="flex gap-2 w-full items-center">
-                        <Typography variant="body1" color="primary" onClick={() => navigate("/forgot-password")} className="cursor-pointer">Forgot password?</Typography>
+                        <Typography variant="body1" color="primary" onClick={() => navigate("/forgot-password")} className="cursor-pointer">{t("Forgot password?")}</Typography>
                     </div>
                 </form>
                 <>
-                    <Separator text='Or login with:' />
+                    <Separator text={t('Or login with:')} />
                     <Stack direction="column" spacing={2} className="w-full">
                         <Button variant="outlined"
                             onClick={handle42Login}
@@ -183,7 +185,7 @@ export default function Login() {
                 <>
                     <Separator text="Don't have an account?" />
                     <Link to="/register" onClick={() => setActiveLink("/register")} className="w-full">
-                        <Button variant="text" className="w-full">Register</Button>
+                        <Button variant="text" className="w-full">{t("Register")}</Button>
                     </Link>
                 </>
             </div>

@@ -13,6 +13,7 @@ import User from "../types/User";
 import { useAuth } from "../contexts/AuthContext";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
 import { GitHub } from "@mui/icons-material";
+import { useTranslation } from 'react-i18next';
 
 
 function RegisterFormFirstPart(
@@ -34,6 +35,8 @@ function RegisterFormFirstPart(
     }
 ) {
 
+    const { t } = useTranslation();
+
     function handlePasswordChange(event: React.ChangeEvent<HTMLInputElement>, type: "password" | "passwordConfirmation") {
         event.preventDefault();
         if (type === "password") {
@@ -52,10 +55,10 @@ function RegisterFormFirstPart(
     return (
         <>
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="username_register">Username</InputLabel>
+                <InputLabel htmlFor="username_register">{t("Username")}</InputLabel>
                 <Input
                     type="text"
-                    placeholder="Username"
+                    placeholder={t("Username")}
                     value={props.username}
                     onChange={(e) => props.setUsername(e.target.value)}
                     required
@@ -67,11 +70,11 @@ function RegisterFormFirstPart(
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_register">Password</InputLabel>
-                <PasswordInput placeholder="Password" value={props.password} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
+                <PasswordInput placeholder={t("Password")} value={props.password} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
                 {
                     !props.passwordFormatError && (
                         <Typography variant="caption" className="text-xs" color="textSecondary">
-                            Passwords must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, one digit and one special character.
+                            {t("Passwords must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, one digit and one special character.")}
                         </Typography>
                     )
                 }
@@ -79,8 +82,8 @@ function RegisterFormFirstPart(
                 {props.passwordFormatError && <Typography variant="caption" className="text-xs text-red-500">{props.passwordFormatError}</Typography>}
             </div>
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="password_confirmation_register">Password confirmation</InputLabel>
-                <PasswordInput placeholder="Password confirmation" value={props.passwordConfirmation} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
+                <InputLabel htmlFor="password_confirmation_register">{t("Password confirmation")}</InputLabel>
+                <PasswordInput placeholder={t("Password confirmation")} value={props.passwordConfirmation} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
             </div>
         </>
     );

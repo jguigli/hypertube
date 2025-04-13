@@ -6,14 +6,16 @@ import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import UserService from "../services/UserService";
 import { useActiveLink } from "../contexts/ActiveLinkContext";
+import { useTranslation } from 'react-i18next';
 
 
 export default function PublicProfile() {
 
     const username = useParams<{ username: string }>().username;
+    const { t } = useTranslation();
 
     if (!username) {
-        return <div>User not found</div>;
+        return <div>{t("User not found")}</div>;
     }
 
     const { user, getToken } = useAuth();
@@ -85,16 +87,16 @@ export default function PublicProfile() {
             {
                 !userFound ? (
                     <>
-                    <Typography variant="h4" className="font-bold text-center">User not found</Typography>
+                    <Typography variant="h4" className="font-bold text-center">{t("User not found")}</Typography>
                     <Link to="/" className="w-full" onClick={() => setActiveLink("/")}>
-                        <Button variant="contained" color="primary" className="w-full">Go back to home</Button>
+                        <Button variant="contained" color="primary" className="w-full">{t("Go back to home")}</Button>
                     </Link>
                     </>
                 ) : (
 
                     <>
                         <Typography variant="h4" className="font-bold text-center">
-                            Public Profile
+                            {t("Public Profile")}
                         </Typography>
                         <div className="flex flex-col space-y-4 my-5 items-center w-full">
                             <Avatar src={profileUser.avatar || ""}
@@ -102,15 +104,15 @@ export default function PublicProfile() {
                                 sx={{ width: 100, height: 100 }}
                             />
                             <div className="flex flex-col gap-2 w-full">
-                                <InputLabel htmlFor="username_profile">Username:</InputLabel>
+                                <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>
                                 <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.username}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
-                                <InputLabel htmlFor="first_name_profile">First Name:</InputLabel>
+                                <InputLabel htmlFor="first_name_profile">{t("First Name")}:</InputLabel>
                                 <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.firstName}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
-                                <InputLabel htmlFor="last_name_profile">Last Name:</InputLabel>
+                                <InputLabel htmlFor="last_name_profile">{t("Last Name")}:</InputLabel>
                                 <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.lastName}</Typography>
                             </div>
                         </div>

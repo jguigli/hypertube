@@ -8,11 +8,13 @@ import { useNode } from "../components/Comments";
 import { Button } from "@mui/material";
 import CommentType from "../types/Comments";
 import UserService from "../services/UserService";
+import { useTranslation } from 'react-i18next';
 
 export default function StructureComments({ videoID }: { videoID: string }) {
     const [commentsData, setCommentsData] = useState<CommentType[]>([]);
     const { getToken, user } = useAuth();
     const { insertNode, editNode, deleteNode } = useNode();
+    const { t } = useTranslation();
 
     const handleInsertNode = (commentId: number, value: string): void => {
         if (!value.trim() || !videoID) return;
@@ -151,7 +153,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
                         value={input}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && onAddComment()}
-                        placeholder="  Type your comment here"
+                        placeholder={t("Type your comment here")}
                         style={{ border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
                     />
                     <Button
@@ -159,7 +161,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
                         onClick={onAddComment}
                         className="w-full"
                     >
-                        Add your comment
+                        {t("Add your comment")}
                     </Button>
                 </>
                     <div className="w-full">

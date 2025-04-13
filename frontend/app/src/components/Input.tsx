@@ -3,6 +3,7 @@ import { IconButton, InputAdornment, OutlinedInput } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useState } from 'react';
 import { MuiFileInput } from 'mui-file-input'
+import { useTranslation } from 'react-i18next';
 
 export default function Input(
     props: {
@@ -87,10 +88,11 @@ export function FileInput(
         file: File | null;
         onChange: (e: File | null) => void;
     }) {
+        const { t } = useTranslation();
     return (
         <MuiFileInput
             value={props.file}
-            placeholder={props.file ? props.file.name : 'Choose a file'}
+            placeholder={props.file ? props.file.name : t('Choose a file')}
             size='small'
             InputProps={{
                 inputProps: {

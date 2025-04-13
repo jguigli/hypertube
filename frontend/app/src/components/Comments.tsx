@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import CommentType from "../types/Comments";
 import UserService from "../services/UserService";
 import MovieService from "../services/MovieService";
+import { useTranslation  } from "react-i18next";
 
 
 
@@ -86,6 +87,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
   const { getToken, user } = useAuth();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [editedContent, setEditedContent] = useState<{ [key: number]: string }>({});
+  const { t } = useTranslation();
 
 
 
@@ -174,7 +176,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
       setActiveReplyId(null);
     }
   };
-
+  
   return (
     <div className="comment-wrapper">
       {[...comments]
@@ -252,7 +254,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         });
                       }}
                     >
-                      Save
+                      {t("Save")}
                     </Button>
                     <Button
                       variant="outlined"
@@ -270,7 +272,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         });
                       }}
                     >
-                      Cancel
+                      {t("Cancel")}
                     </Button>
                   </Stack>
                 )}
@@ -284,14 +286,14 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                 <Stack direction="row" spacing={1.5}>
                   <ActionComments
                     className="reply"
-                    type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} Reply</>}
+                    type={<>{expand ? <ArrowDropUp fontSize="medium" /> : <ArrowDropDown fontSize="medium" />} {t("Reply")}</>}
                     handleClick={() => {
                       setActiveReplyId(prev => prev === comment.id ? null : comment.id)
                     }}
                   />
                   <ActionComments
                     className="reply"
-                    type="Edit"
+                    type={t("Edit")}
                     handleClick={() => {
                       setEditedContent(prev => ({ ...prev, [comment.id]: comment.content }));
                       setEditMode(true);
@@ -301,9 +303,9 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                     className="reply"
                     variant="outlined"
                     color="error"
-                    type="Delete"
+                    type={t("Delete")}
                     handleClick={() => {
-                      if (confirm("Are you sure you want to delete this comment?")) {
+                      if (confirm(t("Are you sure you want to delete this comment?"))) {
                         handleDeleteNode(comment.id);
                       }
                     }}
@@ -322,13 +324,13 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         className="inputContainer__input"
                         autoFocus onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && onReplyComment(e as any, comment.id)}
-                        placeholder="Type your reply here"
+                        placeholder={t("Type your reply here")}
                       />
                       <Stack direction="row" spacing={2}>
                         <Button
                           variant="contained"
                           size='small'
-                          onClick={(event) => onReplyComment(event, comment.id)}>Add reply
+                          onClick={(event) => onReplyComment(event, comment.id)}>{t("Add reply")}
                         </Button>
                         <Button
                           variant="outlined"
@@ -338,7 +340,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                             setActiveReplyId(null);
                             setInput("");
                           }}
-                        >Cancel
+                        >{t("Cancel")}
                         </Button>
                       </Stack>
                     </Stack>
