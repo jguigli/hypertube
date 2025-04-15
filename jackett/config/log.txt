@@ -438,3 +438,29 @@
 2025-04-11 13:37:27.5599 Info Manual search in 1337x, The Pirate Bay, YTS for Moon => Found 294 releases [7230ms]
 2025-04-11 13:37:52.9843 Info Manual search in 1337x, The Pirate Bay, YTS for Moon => Found 294 releases (from cache) [10ms]
 2025-04-11 14:03:40.1443 Info Manual search in 1337x, The Pirate Bay, YTS for Hunter Killer => Found 181 releases [8398ms]
+2025-04-15 12:08:31.5616 Info Starting Jackett v0.22.1778
+2025-04-15 12:08:35.7475 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-15 12:08:35.7520 Info OS version: Unix 6.8.0.57 (64bit OS) (64bit process)
+2025-04-15 12:08:35.7540 Info Jackett variant: CoreLinuxMuslAmdx64
+2025-04-15 12:08:35.7617 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-15 12:08:35.7699 Info Running in Docker: Yes (image build: v0.22.1778-ls737)
+2025-04-15 12:08:35.7711 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-15 12:08:35.7711 Info App config/log directory: /config/Jackett
+2025-04-15 12:08:35.7731 Info Using proxy: Disabled
+2025-04-15 12:08:35.7733 Info Using FlareSolverr: No
+2025-04-15 12:08:35.7744 Info Using HTTP Client: HttpWebClient2
+2025-04-15 12:08:35.7773 Info Loading Native indexers ...
+2025-04-15 12:08:35.8132 Info Loaded 78 Native indexers.
+2025-04-15 12:08:35.8510 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-15 12:08:40.9952 Info Loaded 537 Cardigann indexers.
+2025-04-15 12:08:40.9952 Info Loaded 615 indexers in total
+2025-04-15 12:08:41.0044 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-15 12:08:41.0044 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-15 12:08:41.0081 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-15 12:08:41.0081 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-15 12:08:41.9226 Info Jackett startup finished in 15.435 s
+2025-04-15 12:11:08.3755 Info Manual search in 1337x, The Pirate Bay, YTS for Death of a Salesman => Found 30 releases [7429ms]
+2025-04-15 12:11:11.0336 Info Manual search in 1337x, The Pirate Bay, YTS for Death of a Salesman => Found 30 releases (from cache) [2ms]
+2025-04-15 12:11:55.2514 Info Manual search in 1337x, The Pirate Bay, YTS for Interstellar => Found 185 releases [7210ms]
+2025-04-15 13:08:41.8377 Info Checking for updates... Jackett variant: CoreLinuxMuslAmdx64
+2025-04-15 13:08:42.1074 Info Updates are disabled via --NoUpdates.

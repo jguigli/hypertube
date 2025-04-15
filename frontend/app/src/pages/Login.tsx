@@ -132,7 +132,7 @@ export default function Login() {
                     <Typography variant="h4" className="font-bold text-center w-full">
                         {t("Login")}
                     </Typography>
-                    <Separator text='Enter your credentials to login' />
+                    <Separator text={t("Enter your credentials to login")} />
                     <div className="flex flex-col gap-2 w-full">
                         <InputLabel htmlFor="username_register">{t("Username")}</InputLabel>
                         <Input
@@ -180,7 +180,7 @@ export default function Login() {
                     </Stack>
                 </>
                 <>
-                    <Separator text="Don't have an account?" />
+                    <Separator text={t("Don't have an account?")} />
                     <Link to="/register" onClick={() => setActiveLink("/register")} className="w-full">
                         <Button variant="text" className="w-full">{t("Register")}</Button>
                     </Link>

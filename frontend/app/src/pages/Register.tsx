@@ -66,10 +66,10 @@ function RegisterFormFirstPart(
                     autocomplete="new-username"
                 />
                 {props.usernameError && <Typography variant="caption" className="text-xs text-red-500">{props.usernameError}</Typography>}
-                <Typography variant="caption" className="text-xs" color="textSecondary">This is your public display name. It can be your real name or a pseudonym.</Typography>
+                <Typography variant="caption" className="text-xs" color="textSecondary">{t("This is your public display name. It can be your real name or a pseudonym.")}</Typography>
             </div>
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="password_register">Password</InputLabel>
+                <InputLabel htmlFor="password_register">{t("Password")}</InputLabel>
                 <PasswordInput placeholder={t("Password")} value={props.password} onChange={(e) => handlePasswordChange(e, "password")} required id="password_register" autocomplete="new-password" />
                 {
                     !props.passwordFormatError && (
@@ -83,7 +83,7 @@ function RegisterFormFirstPart(
             </div>
             <div className="flex flex-col gap-2 w-full">
                 <InputLabel htmlFor="password_confirmation_register">{t("Password confirmation")}</InputLabel>
-                <PasswordInput placeholder={t("Password confirmation")} value={props.passwordConfirmation} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
+                <PasswordInput placeholder={t("Please confirm your password")} value={props.passwordConfirmation} onChange={(e) => handlePasswordChange(e, "passwordConfirmation")} required id="password_confirmation_register" autocomplete="new-password" />
             </div>
         </>
     );
@@ -110,6 +110,8 @@ function RegisterFormSecondPart(
     }
 ) {
 
+    const { t } = useTranslation();
+
     const handleAvatarChange = (file: File | null) => {
         props.setAvatar(file);
     };
@@ -117,10 +119,10 @@ function RegisterFormSecondPart(
     return (
         <>
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="email_register">Email</InputLabel>
+                <InputLabel htmlFor="email_register">{t("Email")}</InputLabel>
                 <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder={t("Email")}
                     value={props.email}
                     onChange={(e) => props.setEmail(e.target.value)}
                     required
@@ -128,14 +130,14 @@ function RegisterFormSecondPart(
                 />
                 {props.emailError && <Typography variant="caption" className="text-xs text-red-500">{props.emailError}</Typography>}
                 {props.emailFormatError && <Typography variant="caption" className="text-xs text-red-500">{props.emailFormatError}</Typography>}
-                <Typography variant="caption" className="text-xs" color="textSecondary">We'll never share your email with anyone else.</Typography>
+                <Typography variant="caption" className="text-xs" color="textSecondary">{t("We'll never share your email with anyone else.")}</Typography>
             </div>
 
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="firstName_register">First Name</InputLabel>
+                <InputLabel htmlFor="firstName_register">{t("First Name")}</InputLabel>
                 <Input
                     type="text"
-                    placeholder="First Name"
+                    placeholder={t("First Name")}
                     value={props.firstName}
                     onChange={(e) => props.setFirstName(e.target.value)}
                     required
@@ -145,10 +147,10 @@ function RegisterFormSecondPart(
             </div>
 
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="lastName_register">Last Name</InputLabel>
+                <InputLabel htmlFor="lastName_register">{t("Last Name")}</InputLabel>
                 <Input
                     type="text"
-                    placeholder="Last Name"
+                    placeholder={t("Last Name")}
                     value={props.lastName}
                     onChange={(e) => props.setLastName(e.target.value)}
                     required
@@ -158,12 +160,12 @@ function RegisterFormSecondPart(
             </div>
 
             <div className="flex flex-col gap-2 w-full">
-                <InputLabel htmlFor="avatar_register">Avatar</InputLabel>
+                <InputLabel htmlFor="avatar_register">{t("Avatar")}</InputLabel>
                 <FileInput
                     file={props.avatar}
                     onChange={handleAvatarChange}
                 />
-                <Typography variant="caption" className="text-xs" color="textSecondary">This is your public display picture. It can be a photo of you or an avatar.</Typography>
+                <Typography variant="caption" className="text-xs" color="textSecondary">{t("This is your public display picture. It can be a photo of you or an avatar.")}</Typography>
             </div>
         </>
     );
@@ -174,10 +176,11 @@ export function Separator(
         text: string;
     }
 ) {
+    const { t } = useTranslation();
     return (
         <div className="flex items-center gap-2 w-full">
             <Divider className="flex-1" />
-            <Typography variant="h6" color="textSecondary">{props.text}</Typography>
+            <Typography variant="h6" color="textSecondary">{t(props.text)}</Typography>
             <Divider className="flex-1" />
         </div>
     );
@@ -210,6 +213,8 @@ export default function Register() {
     const loginService = new LoginService();
 
     const { setActiveLink } = useActiveLink();
+
+    const { t } = useTranslation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -352,11 +357,11 @@ export default function Register() {
         <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
             <div id="register" className="flex flex-col align-center gap-2"></div>
             <Typography variant="h4" className="font-bold text-center">
-                Register
+                {t("Register")}
             </Typography>
             {currentStep === 1 && (
                 <>
-                    <Separator text='With an existing account:' />
+                    <Separator text={t("With an existing account:")} />
                     <Stack direction="column" spacing={2} className="w-full">
                         <Button variant="outlined"
                             onClick={handle42Register}
@@ -381,7 +386,7 @@ export default function Register() {
             <form onSubmit={handleSubmit} className="flex flex-col items-start gap-5 my-3">
                 {currentStep === 1 ? (
                     <>
-                        <Separator text='Or with a new account:' />
+                        <Separator text={t("Or with a new account:")} />
                         <RegisterFormFirstPart
                             username={username}
                             setUsername={setUsername}
@@ -398,7 +403,7 @@ export default function Register() {
                             passwordError={passwordError}
                             setPasswordError={setPasswordError}
                         />
-                        <Button variant="contained" onClick={handleNextPage} className="w-full">Next</Button>
+                        <Button variant="contained" onClick={handleNextPage} className="w-full">{t("Next")}</Button>
                     </>
                 ) : (
                     <>
@@ -421,17 +426,17 @@ export default function Register() {
                             setLastNameError={setLastNameError}
                         />
                         <div className="flex gap-3 w-full">
-                            <Button variant="outlined" onClick={() => setCurrentStep(1)} className="flex-1">Previous</Button>
-                            <Button variant="contained" type="submit" className="flex-1">Register</Button>
+                            <Button variant="outlined" onClick={() => setCurrentStep(1)} className="flex-1">{t("Previous")}</Button>
+                            <Button variant="contained" type="submit" className="flex-1">{t("Register")}</Button>
                         </div>
                     </>
                 )}
             </form>
             {currentStep === 1 && (
                 <>
-                    <Separator text='Already have an account?' />
+                    <Separator text={t("Already have an account?")} />
                     <Link to="/login" onClick={() => setActiveLink("/login")} className="w-full">
-                        <Button variant="text" className="w-full">Login</Button>
+                        <Button variant="text" className="w-full">{t("Login")}</Button>
                     </Link>
                 </>
             )}

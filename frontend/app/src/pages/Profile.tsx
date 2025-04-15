@@ -83,7 +83,7 @@ export default function PublicProfile() {
     }, [username]);
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
+        <CustomCard additionalClasses="flex flex-col align-center space-y-5 p-5">
             {
                 !userFound ? (
                     <>

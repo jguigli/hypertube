@@ -81,12 +81,12 @@
     "Error 404: Page not found": "Erreur 404 : Page non trouvée",
     "Sorry, the page you are looking for does not exist.": "Désolé, la page que vous recherchez n'existe pas.",
     "Go back to home": "Retour à l'accueil",
-    "No movies found":"Aucun film disponible",
+    "No movies found": "Aucun film disponible",
     "Loading more movies...": "Chargement de plus de films...",
-    "An unexpected error occurred, please try again later":"Une erreur inattendue s'est produite, veuillez réessayer plus tard",
+    "An unexpected error occurred, please try again later": "Une erreur inattendue s'est produite, veuillez réessayer plus tard",
     "Passwords must be at least 8 characters long, contain at least one lowercase letter, one uppercase letter, one digit and one special character.": "Les mots de passe doivent comporter au moins 8 caractères, au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial.",
-    "An email with a link to reset your password has been sent.":"Un courriel contenant un lien pour réinitialiser votre mot de passe a été envoyé.",
-    "An unexpected error occurred.":"Une erreur inattendue s'est produite.",
+    "An email with a link to reset your password has been sent.": "Un courriel contenant un lien pour réinitialiser votre mot de passe a été envoyé.",
+    "An unexpected error occurred.": "Une erreur inattendue s'est produite.",
     "Reset your password": "Réinitialisez votre mot de passe",
     "Enter your email address and we will send you a link to reset your password.": "Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.",
     "Send me an email": "Envoyez-moi un e-mail",
@@ -111,6 +111,14 @@
     "Your new email": "Votre nouvelle adresse e-mail",
     "Your new first name": "Votre nouveau prénom",
     "Your new last name": "Votre nouveau nom de famille",
-    "Public Profile": "Profil public"
-  }
-  
+    "Public Profile": "Profil public",
+    "With an existing account:": "Avec un compte existant :",
+    "Or with a new account:": "Ou avec un nouveau compte :",
+    "Already have an account?": "Vous avez déjà un compte ?",
+    "Next": "Suivant",
+    "Previous": "Précédent",
+    "Passwords and password confirmation do not match.": "Les mots de passe et la confirmation ne correspondent pas.",
+    "Password confirmation": "Confirmation du mot de passe",
+    "Please confirm your password": "Veuillez confirmer votre mot de passe",
+    "This is your public display name. It can be your real name or a pseudonym.": "Ceci est votre nom d'affichage public. Utilisez votre vrai nom ou un pseudonyme."
+}
