@@ -236,7 +236,7 @@ export default function Register() {
         if (!response.success || !response.token) {
 
             if (response.error === "Username already taken") {
-                setUsernameError("Username already taken");
+                setUsernameError(t("Username already taken"));
                 setCurrentStep(1);
                 return;
             } else {
@@ -244,7 +244,7 @@ export default function Register() {
             }
 
             if (response.error === "Email already registered") {
-                setEmailError("Email already registered");
+                setEmailError(t("Email already registered"));
                 setCurrentStep(2);
                 return;
             } else {
@@ -252,7 +252,7 @@ export default function Register() {
             }
 
             if (response.error === "Invalid email format") {
-                setEmailFormatError("Invalid email format");
+                setEmailFormatError(t("Invalid email format"));
                 setCurrentStep(2);
                 return;
             } else {
@@ -260,7 +260,7 @@ export default function Register() {
             }
 
             if (response.error === "The new password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character") {
-                setPasswordFormatError("The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character");
+                setPasswordFormatError(t("The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character"));
                 setCurrentStep(1);
                 return;
             } else {
@@ -268,7 +268,7 @@ export default function Register() {
             }
 
             if (response.error === "First name cannot be empty.") {
-                setFirstNameError("First name cannot be empty.");
+                setFirstNameError(t("First name cannot be empty."));
                 setCurrentStep(2);
                 return;
             } else {
@@ -276,14 +276,14 @@ export default function Register() {
             }
 
             if (response.error === "Last name cannot be empty.") {
-                setLastNameError("Last name cannot be empty.");
+                setLastNameError(t("Last name cannot be empty."));
                 setCurrentStep(2);
                 return;
             } else {
                 setLastNameError(null);
             }
 
-            alert("An error occurred: " + response.error || "An unexpected error occurred");
+            alert(t("An error occurred") + ": " + response.error || t("An unexpected error occurred"));
             return;
         }
 
@@ -292,7 +292,7 @@ export default function Register() {
         const userResponse = await userService.getMe(token);
 
         if (!userResponse.success || !userResponse.user) {
-            alert("An error occurred: " + userResponse.error || "An unexpected error occurred");
+            alert(t("An error occurred") + ": " + userResponse.error ||  t("An unexpected error occurred"));
             return;
         }
 
@@ -347,7 +347,7 @@ export default function Register() {
         event.preventDefault();
 
         if (password !== passwordConfirmation) {
-            setPasswordError("Passwords and password confirmation do not match.");
+            setPasswordError(t("Passwords and password confirmation do not match."));
             return;
         }
         setCurrentStep(2);

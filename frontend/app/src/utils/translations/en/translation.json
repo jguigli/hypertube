@@ -120,5 +120,14 @@
     "Passwords and password confirmation do not match.": "Passwords and password confirmation do not match.",
     "Password confirmation": "Password confirmation",
     "Please confirm your password": "Please confirm your password",
-    "This is your public display name. It can be your real name or a pseudonym.": "This is your public display name. It can be your real name or a pseudonym."
+    "This is your public display name. It can be your real name or a pseudonym.": "This is your public display name. It can be your real name or a pseudonym.",
+    "This is your public display picture. It can be a photo of you or an avatar.": "This is your public display picture. It can be a photo of you or an avatar.",
+    "We'll never share your email with anyone else.":"We'll never share your email with anyone else.",
+    "An error occurred while getting the user's avatar": "An error occurred while getting the user's avatar",
+    "An error occurred while fetching the list of users": "An error occurred while fetching the list of users",
+    "User not found": "User not found",
+    "An error occurred while fetching the user infos": "An error occurred while fetching the user infos",
+    "An error occurred": "An error occurred",
+    "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character": "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character",
+    "Email associated with your account": "Email associated with your account"
 }

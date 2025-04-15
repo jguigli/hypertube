@@ -62,7 +62,7 @@ export default function ResetPassword() {
                         <InputLabel htmlFor="email_reset_password">{t("Email")}</InputLabel>
                         <Input
                             type="text"
-                            placeholder="Email associated with your account"
+                            placeholder={t("Email associated with your account")}
                             value={email}
                             onChange={handleEmailChange}
                             required

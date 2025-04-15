@@ -40,13 +40,13 @@ export default function PublicProfile() {
                 }
                 const response = await userService.getUsers(token);
                 if (!response.success || !response.users) {
-                    alert("An error occurred while fetching the list of users" + (response.error || "An unexpected error occurred"));
+                    alert(t("An error occurred while fetching the list of users") + (response.error || t("An unexpected error occurred")));
                     return;
                 }
                 const users = response.users;
                 const correspondingUserID = users.find((u: any) => u.user_name === username)?.id;
                 if (!correspondingUserID) {
-                    alert("User not found: " + username);
+                    alert(t("User not found") + ": " + username);
                     setUserFound(false);
                     return;
                 }
@@ -56,7 +56,7 @@ export default function PublicProfile() {
                 // GET /users/:id
                 const fetchedProfileUser = await userService.getUser(correspondingUserID, token);
                 if (!fetchedProfileUser.success || !fetchedProfileUser.user) {
-                    alert("An error occurred while fetching the user infos" + (fetchedProfileUser.error || "An unexpected error occurred"));
+                    alert(t("An error occurred while fetching the user infos") + (fetchedProfileUser.error || t("An unexpected error occurred")));
                     return;
                 }
 
