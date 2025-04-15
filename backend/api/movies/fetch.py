@@ -98,6 +98,14 @@ async def search_movies_tmdb(search: str, language: str, page: int):
 
 
 async def fetch_movie_tmdb(movie_id: int, language: str):
+    movie_id = str(movie_id)
+    if len(movie_id) != 7:
+        movie_id = movie_id.zfill(7)
+    if not movie_id.startswith("tt"):
+        movie_id = "tt" + movie_id
+
+    print(f"Fetching movie with ID: {movie_id}")
+
     url = (
         f"https://api.themoviedb.org/3/find/{movie_id}?"
         f"external_source=imdb_id&language={language}"

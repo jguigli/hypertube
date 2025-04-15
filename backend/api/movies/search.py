@@ -19,8 +19,13 @@ def parse_jackett_results(data):
         if not any(cat in film_categories for cat in categories):
             continue
 
+        print("Processing item:", item)
+
         title = item.get("Title")
         imdb_id = item.get("Imdb") or get_imdb_id_from_title(title)
+
+        if not imdb_id:
+            continue
 
         results.append({
             "title": title,
@@ -40,17 +45,14 @@ def extract_imdb_id(description_link: str) -> str | None:
 
 def get_imdb_id_from_title(title):
     try:
-        print("Fetching IMDb ID for title:", title)
         response = requests.get("http://www.omdbapi.com/", params={
             "apikey": OMDB_API_KEY,
             "t": title
         })
         response.raise_for_status()
         data = response.json()
-        print("OMDB API response:", data)
         return data.get("imdbID") if data.get("Response") == "True" else None
-    except Exception as e:
-        print("Error fetching IMDb ID:", e)
+    except Exception:
         return None
 
 
