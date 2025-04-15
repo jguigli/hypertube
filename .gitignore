@@ -19,3 +19,6 @@ backend/hls_movies
 **/.DS_Store/**
 
 ./backend/downloads/*
+
+./jackett/config/DataProtection
+./jackett/config/log.txt

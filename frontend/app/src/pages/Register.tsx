@@ -354,7 +354,7 @@ export default function Register() {
     }
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
+        <CustomCard additionalClasses="flex flex-col align-center md:w-[500px] p-5">
             <div id="register" className="flex flex-col align-center gap-2"></div>
             <Typography variant="h4" className="font-bold text-center">
                 {t("Register")}

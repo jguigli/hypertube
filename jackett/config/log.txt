@@ -464,3 +464,8 @@
 2025-04-15 12:11:55.2514 Info Manual search in 1337x, The Pirate Bay, YTS for Interstellar => Found 185 releases [7210ms]
 2025-04-15 13:08:41.8377 Info Checking for updates... Jackett variant: CoreLinuxMuslAmdx64
 2025-04-15 13:08:42.1074 Info Updates are disabled via --NoUpdates.
+2025-04-15 14:38:54.2724 Info Manual search in 1337x, The Pirate Bay, YTS for Interstellar => Found 185 releases [9979ms]
+2025-04-15 14:38:56.9406 Info Manual search in 1337x, The Pirate Bay, YTS for Interstellar => Found 185 releases (from cache) [7ms]
+2025-04-15 14:39:29.9516 Info Manual search in 1337x, The Pirate Bay, YTS for Interstel => Found 80 releases [8113ms]
+2025-04-15 14:39:31.7489 Info Manual search in 1337x, The Pirate Bay, YTS for Interstel => Found 80 releases (from cache) [3ms]
+2025-04-15 15:23:35.6058 Info Jackett stopped

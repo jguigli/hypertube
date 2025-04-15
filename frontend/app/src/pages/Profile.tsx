@@ -83,7 +83,7 @@ export default function PublicProfile() {
     }, [username]);
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center space-y-5 p-5">
+        <CustomCard additionalClasses="flex flex-col align-center space-y-5 p-5 md:w-[500px] max-w-[100%]">
             {
                 !userFound ? (
                     <>
@@ -101,19 +101,19 @@ export default function PublicProfile() {
                         <div className="flex flex-col space-y-4 my-5 items-center w-full">
                             <Avatar src={profileUser.avatar || ""}
                                 alt="Avatar"
-                                sx={{ width: 100, height: 100 }}
+                                sx={{ width: { xs: 80, sm: 100 }, height: { xs: 80, sm: 100 } }}
                             />
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.username}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.username}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="first_name_profile">{t("First Name")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.firstName}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.firstName}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="last_name_profile">{t("Last Name")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md">{profileUser.lastName}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.lastName}</Typography>
                             </div>
                         </div>
                     </>
