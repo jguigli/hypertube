@@ -19,7 +19,11 @@ class ConnectionManager:
     async def send_message(self, user_id: int, message: str):
         websocket = self.active_connections.get(user_id)
         if websocket:
-            await websocket.send_text(message)
+            try:
+                await websocket.send_text(message)
+            except Exception as e:
+                print(f"Error user {user_id}: {e}")
+                self.disconnect(user_id)
 
 
 manager_websocket = ConnectionManager()
@@ -27,7 +31,7 @@ manager_websocket = ConnectionManager()
 
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
-    user_id = 1
+    # user_id = 1
     await manager_websocket.connect(websocket, user_id)
     try:
         while True:

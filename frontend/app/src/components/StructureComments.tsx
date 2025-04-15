@@ -82,7 +82,7 @@ export default function StructureComments({ videoID }: { videoID: string }) {
             const movieService = new MovieService();
 
             const response = await movieService.getMovieInfo(+videoID, getToken(), user.language);
-            if (!response.success) {
+            if (response.status !== 200) {
                 console.error("Failed to fetch comments", response);
                 return;
             }

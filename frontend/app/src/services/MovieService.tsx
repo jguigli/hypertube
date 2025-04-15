@@ -151,20 +151,23 @@ export default class MovieService {
                 );
                 console.log(response);
                 if (response.status === 200) {
-                    return {
-                        success: true,
-                        data: response.data
-                    }
+                    return { status: 200, data: response.data }
                 }
+                else if (response.status === 400) {
+                    return { status: 400, data: null }
+                }
+                else if (response.status === 404) {
+                    return { status: 404, data: null }
+                } 
             }
             return {
-                success: false,
+                status: 401,
                 data: null
             }
         }
-        catch (error) {
+        catch (error: any) {
             return {
-                success: false,
+                status: error.response?.status || 0,
                 data: null
             }
         }
@@ -236,44 +239,44 @@ export default class MovieService {
     }
 
     //Recuperation de la reponse de la route /movies/{movie_id}/download
-    async checkMovieDownloadStatus(movie_id: string, token: string) {
-        try {
+    // async checkMovieDownloadStatus(movie_id: string, token: string) {
+    //     try {
 
-            if (!token) return {
-                status: 401,
-                message: "Unauthorized"
-            }
+    //         if (!token) return {
+    //             status: 401,
+    //             message: "Unauthorized"
+    //         }
 
-            const response = await axios.post(
-                `/movies/${movie_id}/download`,
-                { movie_id },
-                {
-                    headers: {
-                        Authorization: `${token}`
-                    }
-                }
-            );
+    //         const response = await axios.post(
+    //             `/movies/${movie_id}/download`,
+    //             { movie_id },
+    //             {
+    //                 headers: {
+    //                     Authorization: `${token}`
+    //                 }
+    //             }
+    //         );
 
-            // 400 : Invalid movie id -> Redirect to 404 page
-            // 404 : No torrent file found for this movie
-            // 200 : Download in progress
-            // 202 : Movie is available for streaming
+    //         // 400 : Invalid movie id -> Redirect to 404 page
+    //         // 404 : No torrent file found for this movie
+    //         // 200 : Download in progress
+    //         // 202 : Movie is available for streaming
 
-            if (response.status === 200) {
-                return { status: 200, message: "Download in progress" }
-            } else if (response.status === 202) {
-                return { status: 202, message: "Movie is available for streaming" }
-            } else if (response.status === 400) {
-                return { status: 400, message: "Invalid movie_id" }
-            } else if (response.status === 404) {
-                return { status: 404, message: "No torrent file found for this movie" }
-            } else {
-                return { status: 0, message: "Unexpected error" }
-            }
-        } catch (error: any) {
-            console.log(error);
-            return { status: error.response?.status || 0, message: "Unexpected error" }
-        }
-    }
+    //         if (response.status === 200) {
+    //             return { status: 200, message: "Download in progress" }
+    //         } else if (response.status === 202) {
+    //             return { status: 202, message: "Movie is available for streaming" }
+    //         } else if (response.status === 400) {
+    //             return { status: 400, message: "Invalid movie_id" }
+    //         } else if (response.status === 404) {
+    //             return { status: 404, message: "No torrent file found for this movie" }
+    //         } else {
+    //             return { status: 0, message: "Unexpected error" }
+    //         }
+    //     } catch (error: any) {
+    //         console.log(error);
+    //         return { status: error.response?.status || 0, message: "Unexpected error" }
+    //     }
+    // }
 
 }
