@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useActiveLink } from '../contexts/ActiveLinkContext';
 import { useMovies } from '../contexts/MovieContext';
+import { useTranslation } from 'react-i18next';
 
 
 export default function Sidebar() {
@@ -15,6 +16,7 @@ export default function Sidebar() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const { activeLink, setActiveLink } = useActiveLink();
+    const { t } = useTranslation();
 
     // // UseEffect to set the active link when the page loads
     // useEffect(() => {
@@ -23,37 +25,37 @@ export default function Sidebar() {
 
     const links = [
         {
-            name: "Home",
+            name: t("Home"),
             url: "/",
             icon: HomeIcon,
             activeLink: "/"
         },
         user.is_logged_in ? {
-            name: "Profile",
+            name: t("Profile"),
             url: `/profile/${user.username}`,
             icon: AccountCircleIcon,
             activeLink: `/profile`
         } : null,
         user.is_logged_in ? {
-            name: "Settings",
+            name: t("Settings"),
             url: "/settings",
             icon: Settings,
             activeLink: "/settings"
         } : null,
         user.is_logged_in ? {
-            name: "Logout",
+            name: t("Logout"),
             url: "/logout",
             icon: LogoutOutlined,
             activeLink: "/logout"
         } : null,
         !user.is_logged_in ? {
-            name: "Login",
+            name: t("Login"),
             url: "/login",
             icon: LoginOutlined,
             activeLink: "/login"
         } : null,
         !user.is_logged_in ? {
-            name: "Register",
+            name: t("Register"),
             url: "/register",
             icon: AppRegistrationOutlined,
             activeLink: "/register"

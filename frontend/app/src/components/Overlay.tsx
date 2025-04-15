@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import MovieService from "../services/MovieService";
 import { useAuth } from "../contexts/AuthContext";
 import Movie from "../types/Movie";
+import { useTranslation  } from "react-i18next";
 
 export interface OverlayProps {
     movieID: number;
@@ -16,6 +17,7 @@ const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
     const [movieDetail, setMovieDetail] = useState<Movie | null>(null);
     const [movieDuration, setMovieDuration] = useState<number | undefined>(undefined);
     const rootRef = useRef<any>(null);
+    const { t } = useTranslation();
 
     // Récupérer les infos du film
     useEffect(() => {
@@ -38,19 +40,19 @@ const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
 
     // Récupérer les acteurs principaux
     const getTopActors = (casting: any[] | undefined) => {
-        if (!casting) return "Casting non disponible";
+        if (!casting) return t("Acteurs non disponible");
         return casting
             .filter((member) => member.role === "Acting")
             .slice(0, 3)
             .map((member) => member.name)
-            .join(", ") || "Acteurs non disponibles";
+            .join(", ") || t("Acteurs non disponibles");
     };
 
     // Récupérer le réalisateur
     const getDirector = (crew: any[] | undefined) => {
         if (!crew) return "Réalisateur non disponible";
         const director = crew.find((member) => member.role === "Directing");
-        return director ? director.name : "Réalisateur non disponible";
+        return director ? director.name : t("Réalisateur non disponible");
     };
 
     // Créer l'overlay et l'injecter dans le DOM du player
@@ -59,14 +61,14 @@ const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
 
         const overlayContent = (
             <div className="overlay-content">
-                <div className="watching-label">Vous regardez</div>
+                <div className="watching-label">{t("Vous regardez")}</div>
                 <h2 className="movie-title">{movieDetail.title}</h2>
                 <div className="movie-info">
                     <span>{new Date(movieDetail.release_date || "").getFullYear() || "N/A"}</span>
                     <span>• {formatDuration(movieDuration || 0)}</span>
                 </div>
                 <div className="casting">
-                    Réalisé par {getDirector(movieDetail.crew)}, Avec {getTopActors(movieDetail.casting)}
+                    Réalisé par {getDirector(movieDetail.crew)}, {t("Avec")} {getTopActors(movieDetail.casting)}
                 </div>
                 <div className="synopsis">{movieDetail.overview}</div>
             </div>

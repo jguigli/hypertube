@@ -10,25 +10,26 @@ import { useAuth } from "../contexts/AuthContext";
 import MovieCard from "./MovieCard";
 import Movie from "../types/Movie";
 import Carousel from 'react-material-ui-carousel'
+import { useTranslation  } from "react-i18next";
 
 const accordionItems = [
     {
         panel: 'panel1',
         icon: <PlayArrow />,
-        title: 'Instant Streaming',
-        content: 'Watch movies seamlessly without waiting! Hypertube uses BitTorrent technology for smooth, buffer-free streaming.'
+        title: "Instant Streaming",
+        content:"Watch movies seamlessly without waiting! Hypertube uses BitTorrent technology for smooth, buffer-free streaming."
     },
     {
         panel: 'panel2',
         icon: <Search />,
-        title: 'Smart Search',
-        content: 'Find your favorite movies instantly with our advanced search engine. Filter by title, year, or popularity to get exactly what you\'re looking for.'
+        title: "Smart Search",
+        content: "Find your favorite movies instantly with our advanced search engine. Filter by title, year, or popularity to get exactly what you\'re looking for."
     },
     {
         panel: 'panel3',
         icon: <VideoLibraryOutlined />,
-        title: 'Extensive Library',
-        content: 'Discover a vast collection of movies, from timeless classics to the latest releases, all just a click away.'
+        title: "Extensive Library",
+        content: "Discover a vast collection of movies, from timeless classics to the latest releases, all just a click away."
     }
 ];
 
@@ -66,6 +67,7 @@ export default function LandingPage() {
     const [expanded, setExpanded] = useState<string | false>(false);
     const { setActiveLink } = useActiveLink();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const handleChange =
         (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
@@ -92,12 +94,12 @@ export default function LandingPage() {
             <div className="flex flex-row items-center justify-center gap-5 h-full w-full">
                 <div className="flex flex-col items-center justify-center gap-5 w-[500px]">
                     <Typography variant="h4" className="font-bold text-center w-full">
-                        Welcome
+                        {t("Welcome")}
                     </Typography>
                     <Typography variant="body1" className="text-lg text-center" color="textSecondary">
-                        Hypertube is a streaming platform that makes it easy to find and watch videos instantly.
+                        {t("Hypertube is a streaming platform that makes it easy to find and watch videos instantly.")}
                     </Typography>
-                    <Separator text="Key features" />
+                    <Separator text={t("Key features")} />
                     <div className="flex flex-col gap-3 w-full max-h-[400px] overflow-y-auto">
                         {accordionItems.map((item) => (
                             <Accordion key={item.panel} expanded={expanded === item.panel} variant="outlined" onChange={handleChange(item.panel)} >
@@ -109,25 +111,25 @@ export default function LandingPage() {
                                     <Stack direction="row" spacing={2}>
                                         {item.icon}
                                         <Typography>
-                                            {item.title}
+                                            {t(item.title)}
                                         </Typography>
                                     </Stack>
                                 </AccordionSummary>
                                 <AccordionDetails>
                                     <Typography>
-                                        {item.content}
+                                        {t(item.content)}
                                     </Typography>
                                 </AccordionDetails>
                             </Accordion>
                         ))}
 
                     </div>
-                    <Separator text="Get started" />
+                    <Separator text={t("Get started")} />
                     <Link to="/login" className="w-full" onClick={() => setActiveLink("/login")}>
-                        <Button variant="contained" className="w-full">Login</Button>
+                        <Button variant="contained" className="w-full">{t("Login")}</Button>
                     </Link>
                     <Link to="/register" className="w-full" onClick={() => setActiveLink("/register")}>
-                        <Button variant="outlined" className="w-full">Register</Button>
+                        <Button variant="outlined" className="w-full">{t("Register")}</Button>
                     </Link>
                 </div>
                 <TopMovies />

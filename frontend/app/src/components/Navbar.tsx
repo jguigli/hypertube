@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { MenuItem } from "@mui/material";
 import { Clear, Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import { useMovies } from "../contexts/MovieContext.tsx";
+import { useTranslation } from 'react-i18next';
 
 
 function Logo() {
@@ -41,6 +42,7 @@ function Logo() {
 
 function MovieSearchBar() {
 
+    const { t } = useTranslation();
     const { searchQuery, setSearchQuery } = useMovies();
     const [search, setSearch] = useState("");
 
@@ -64,10 +66,10 @@ function MovieSearchBar() {
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
-                        placeholder="Search movies"
+                        placeholder={t("Search movies")}
                         value={search}
                         onChange={handleSearchChange}
-                        inputProps={{ 'aria-label': 'search movies' }}
+                        inputProps={{ 'aria-label': t('Search movies') }}
                     />
                     {searchQuery.length > 0 && (
                         <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
@@ -84,29 +86,30 @@ function MovieSearchBar() {
 }
 
 export function LanguageSelection() {
-
-    const { user, changeUserLanguage } = useAuth();
+    const { i18n, t } = useTranslation();
 
     const handleChange = (event: SelectChangeEvent) => {
-        const language = event.target.value;
-        if (language === "en" || language === "fr") {
-            changeUserLanguage(language);
+        const lang = event.target.value;
+        if (lang === 'en' || lang === 'fr') {
+            i18n.changeLanguage(lang);
         }
     };
 
     return (
         <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-            <InputLabel size="small" id="demo-select-small-label" sx={{ paddingTop: 0.5 }}>Language</InputLabel>
+            <InputLabel id="language-label" sx={{ paddingTop: 0.5 }}>
+                {t("Language")}
+            </InputLabel>
             <Select
-                labelId="demo-select-small-label"
-                id="demo-select-small"
-                value={user.language}
-                label="Language"
+                labelId="language-label"
+                id="language-select"
+                value={i18n.language}
+                label={t("Language")}
                 onChange={handleChange}
                 size="small"
             >
-                <MenuItem value="en">English</MenuItem>
-                <MenuItem value="fr">French</MenuItem>
+                <MenuItem value="en">{t("English")}</MenuItem>
+                <MenuItem value="fr">{t("Français")}</MenuItem>
             </Select>
         </FormControl>
     );
@@ -114,6 +117,7 @@ export function LanguageSelection() {
 
 function UserSearchBar() {
 
+    const { t } = useTranslation();
     const [userSearch, setUserSearch] = useState("");
     const { setActiveLink } = useActiveLink();
     const navigate = useNavigate()
@@ -135,7 +139,7 @@ function UserSearchBar() {
                 <div className="flex flex-row items-center w-full">
                     <InputBase
                         sx={{ ml: 2, flex: 1, color: 'inherit' }}
-                        placeholder="Search users"
+                        placeholder={t("Search users")}
                         value={userSearch}
                         onChange={handleUserSearchChange}
                         inputProps={{ 'aria-label': 'search movies' }}

@@ -238,3 +238,27 @@
 2025-04-10 20:50:46.2789 Info Checking for updates... Jackett variant: CoreLinuxMuslArm64
 2025-04-10 20:50:46.2864 Info Updates are disabled via --NoUpdates.
 2025-04-11 09:18:49.4512 Info Jackett stopped
+2025-04-14 14:45:35.0596 Info Starting Jackett v0.22.1775
+2025-04-14 14:45:35.3561 Info Environment version: 8.0.15 (/app/Jackett/)
+2025-04-14 14:45:35.3611 Info OS version: Unix 6.10.14.0 (64bit OS) (64bit process)
+2025-04-14 14:45:35.3639 Info Jackett variant: CoreLinuxMuslArm64
+2025-04-14 14:45:35.3656 Info File /etc/issue: Welcome to Alpine Linux 3.21
+2025-04-14 14:45:35.3672 Info Running in Docker: Yes (image build: v0.22.1775-ls736)
+2025-04-14 14:45:35.3688 Info ThreadPool MaxThreads: 32767 workerThreads, 1000 completionPortThreads
+2025-04-14 14:45:35.3688 Info App config/log directory: /config/Jackett
+2025-04-14 14:45:35.3711 Info Using proxy: Disabled
+2025-04-14 14:45:35.3723 Info Using FlareSolverr: No
+2025-04-14 14:45:35.3749 Info Using HTTP Client: HttpWebClient2
+2025-04-14 14:45:35.3782 Info Loading Native indexers ...
+2025-04-14 14:45:35.3985 Info Loaded 78 Native indexers.
+2025-04-14 14:45:35.4006 Info Loading Cardigann indexers from: /config/cardigann/definitions/, /etc/xdg/cardigan/definitions/, /app/Jackett/Definitions
+2025-04-14 14:45:37.9087 Info Loaded 537 Cardigann indexers.
+2025-04-14 14:45:37.9094 Info Loaded 615 indexers in total
+2025-04-14 14:45:37.9354 Info Adding aggregate indexer ('all' indexer) ...
+2025-04-14 14:45:37.9389 Info Adding filter indexer ('type:public' indexer) ...
+2025-04-14 14:45:37.9396 Info Adding filter indexer ('type:private' indexer) ...
+2025-04-14 14:45:37.9396 Info Adding filter indexer ('type:semi-public' indexer) ...
+2025-04-14 14:45:38.0419 Info Jackett startup finished in 3.126 s
+2025-04-14 16:53:37.7099 Info Checking for updates... Jackett variant: CoreLinuxMuslArm64
+2025-04-14 16:53:37.7193 Info Updates are disabled via --NoUpdates.
+2025-04-15 10:37:21.6506 Info Jackett stopped
