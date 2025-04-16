@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import User from "../types/User";
+import { useTranslation } from "react-i18next";
 
 interface AuthContextType {
     user: User;
@@ -16,6 +17,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 
+    const { i18n } = useTranslation();
+
     const [user, setUser] = useState<User>(getUser());
 
     function getUser() {
@@ -24,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedUser) {
             return { ...JSON.parse(storedUser), language };
         }
+        i18n.changeLanguage(language);
         return defaultUser(language);
     }
 
