@@ -80,6 +80,8 @@ scheduler = BackgroundScheduler()
 
 
 async def populate_movies():
+
+    return
     db = SessionLocal()
 
     # Return if there are already movies in the database
