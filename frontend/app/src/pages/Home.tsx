@@ -50,9 +50,14 @@ export default function Home() {
 
     return (
         <>
-            {isLoading && movies.length === 0 ? (
-                <div className="flex justify-center items-center h-screen">
-                    <CircularProgress />
+            {isLoading ? (
+                <div className="flex flex-col justify-center items-center h-full">
+                    <div ref={loadingRef} className="flex justify-center py-4">
+                        <CircularProgress />
+                    </div>
+                    <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
+                        {t("Loading more movies...")}
+                    </Typography>
                 </div>
             ) : movies.length === 0 ? (
                 <div className="flex justify-center items-center">
@@ -66,18 +71,7 @@ export default function Home() {
                 </div>
             )}
 
-            {isLoading && (
-                <>
-                    <div ref={loadingRef} className="flex justify-center py-4">
-                        <CircularProgress />
-                    </div>
-                    <Typography variant="body2" color="textSecondary" sx={{ ml: 2 }}>
-                        {t("Loading more movies...")}
-                    </Typography>
-                </>
-            )}
-
-    <FilterSortMenu />
+            <FilterSortMenu />
         </>
     );
 }

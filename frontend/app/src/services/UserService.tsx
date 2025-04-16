@@ -76,8 +76,11 @@ export default class UserService {
                 }
             );
 
+            console.log(userResponse);
+
             if (userResponse.status === 200) {
                 const user: User = {
+                    id: userResponse.data.id,
                     email: userResponse.data.email,
                     username: userResponse.data.user_name,
                     firstName: userResponse.data.first_name,
