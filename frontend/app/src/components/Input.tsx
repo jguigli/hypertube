@@ -30,6 +30,7 @@ export default function Input(
             variant='outlined'
             autoComplete={props.autocomplete ? (props.autocomplete) : 'off'}
             disabled={props.disabled ? props.disabled : false}
+            className='overflow-scroll'
         />
     );
 }
@@ -105,6 +106,7 @@ export function FileInput(
                 children: <Close fontSize="small" />
             }}
             onChange={(e) => { props.onChange(e); }}
+            className='overflow-hidden'
         />
     );
 }

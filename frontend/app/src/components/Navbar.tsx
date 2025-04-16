@@ -87,11 +87,13 @@ function MovieSearchBar() {
 
 export function LanguageSelection() {
     const { i18n, t } = useTranslation();
+    const { changeUserLanguage } = useAuth();
 
     const handleChange = (event: SelectChangeEvent) => {
         const lang = event.target.value;
         if (lang === 'en' || lang === 'fr') {
             i18n.changeLanguage(lang);
+            changeUserLanguage(lang);
         }
     };
 

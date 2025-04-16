@@ -49,7 +49,7 @@ export default function ResetPassword() {
 
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
+        <CustomCard additionalClasses="flex flex-col align-center md:w-[500px] p-5">
             <div className="flex flex-col items-start gap-5 ">
                 <Typography variant="h4" className="font-bold text-center w-full">
                     {t("Reset your password")}

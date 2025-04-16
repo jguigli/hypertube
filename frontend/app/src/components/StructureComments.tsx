@@ -74,9 +74,9 @@ export default function StructureComments({ videoID }: { videoID: string }) {
     };
 
     const token = getToken();
-    
+
     useEffect(() => {
-        
+
         const userService = new UserService();
         async function getMovieInfo() {
             const movieService = new MovieService();
@@ -142,38 +142,36 @@ export default function StructureComments({ videoID }: { videoID: string }) {
         setInput("")
     };
     return (
-        <div className="Video_view">
-            <CustomCard additionalClasses="flex flex-col items-start w-[700px] p-3 gap-4">
+        <CustomCard additionalClasses="flex flex-col items-start w-full p-3 gap-4">
 
-                <>
-                    <input
-                        type="text"
-                        className="w-full border border-gray-300 p-3 rounded"
-                        autoFocus
-                        value={input}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && onAddComment()}
-                        placeholder={t("Type your comment here")}
-                        style={{ border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
-                    />
-                    <Button
-                        variant="contained"
-                        onClick={onAddComment}
-                        className="w-full"
-                    >
-                        {t("Add your comment")}
-                    </Button>
-                </>
-                    <div className="w-full">
-                    <Comments
-                        comments={commentsData}
-                        handleInsertNode={handleInsertNode}
-                        handleEditNode={handleEditNode}
-                        handleDeleteNode={handleDeleteNode}
-                        setCommentsData={setCommentsData}
-                    />
-                </div>
-            </CustomCard>
-        </div>
+            <>
+                <input
+                    type="text"
+                    className="w-full border border-gray-300 p-3 rounded"
+                    autoFocus
+                    value={input}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && onAddComment()}
+                    placeholder={t("Type your comment here")}
+                    style={{ border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
+                />
+                <Button
+                    variant="contained"
+                    onClick={onAddComment}
+                    className="w-full"
+                >
+                    {t("Add your comment")}
+                </Button>
+            </>
+            <div className="w-full">
+                <Comments
+                    comments={commentsData}
+                    handleInsertNode={handleInsertNode}
+                    handleEditNode={handleEditNode}
+                    handleDeleteNode={handleDeleteNode}
+                    setCommentsData={setCommentsData}
+                />
+            </div>
+        </CustomCard>
     );
 }

@@ -19,9 +19,14 @@ import shutil
 from api.movies.fetch import (
     fetch_popular_movies_tmdb, fetch_genres_movies_tmdb
 )
-from api.movies.crud import get_movie_by_id, create_movie
+from api.movies.crud import get_movie_by_id
 import os
 import asyncio
+import requests
+from .config import JACKETT_API_KEY
+from api.movies.search import (
+    parse_jackett_results, find_movie_categories, add_movie_to_database
+)
 
 
 app = FastAPI()
@@ -81,6 +86,8 @@ async def populate_movies():
     if db.query(Movie).first():
         return
 
+    JACKETT_URL = "http://nginx:8080/jackett/api/v2.0/indexers/all/results"
+
     languages = ["en", "fr"]
     for language in languages:
         genres = await fetch_genres_movies_tmdb(language)
@@ -91,34 +98,70 @@ async def populate_movies():
                 break
             for movie in movies_data:
                 try:
+                    params = {
+                        "apikey": JACKETT_API_KEY,
+                        "Query": movie["original_title"],
+                    }
+                    response = requests.get(
+                        JACKETT_URL, params=params, timeout=100
+                    )
+                    response.raise_for_status()
+                    data = response.json()
+                    results = parse_jackett_results(data)
+                    unique_imdb_ids = set(
+                        result['imdb_id'] for result in results if result["imdb_id"]
+                    )
+
+                    if not unique_imdb_ids:
+                        # No valid results found
+                        continue
+
+                    # Check if the movie already exists in the database
                     movie_db = get_movie_by_id(db, movie["id"])
                     if not movie_db:
-                        categories = []
-                        genre_ids = movie.get("genre_ids", None)
-                        if genre_ids:
-                            for genre in genres:
-                                if genre['id'] in genre_ids:
-                                    categories.append(genre['name'])
-                        movie_db = create_movie(
-                            db, Movie(
-                                id=movie["id"],
-                                original_language=movie["original_language"],
-                                language=language,
-                                original_title=movie["original_title"],
-                                overview=movie["overview"],
-                                popularity=movie["popularity"],
-                                poster_path=movie["poster_path"],
-                                backdrop_path=movie["backdrop_path"],
-                                release_date=movie["release_date"],
-                                category=categories,
-                                title=movie["title"],
-                                vote_average=movie["vote_average"],
-                                vote_count=movie["vote_count"]
-                            )
+                        categories = find_movie_categories(
+                            genres=genres,
+                            tmdb_data=movie
                         )
+                        add_movie_to_database(
+                            db=db,
+                            language=language,
+                            tmdb_data=movie,
+                            categories=categories
+                        )
+
+
+                    # END
+                    # movie_db = get_movie_by_id(db, movie["id"])
+                    # if not movie_db:
+                    #     categories = []
+                    #     genre_ids = movie.get("genre_ids", None)
+                    #     if genre_ids:
+                    #         for genre in genres:
+                    #             if genre['id'] in genre_ids:
+                    #                 categories.append(genre['name'])
+                    #     movie_db = create_movie(
+                    #         db, Movie(
+                    #             id=movie["id"],
+                    #             original_language=movie["original_language"],
+                    #             language=language,
+                    #             original_title=movie["original_title"],
+                    #             overview=movie["overview"],
+                    #             popularity=movie["popularity"],
+                    #             poster_path=movie["poster_path"],
+                    #             backdrop_path=movie["backdrop_path"],
+                    #             release_date=movie["release_date"],
+                    #             category=categories,
+                    #             title=movie["title"],
+                    #             vote_average=movie["vote_average"],
+                    #             vote_count=movie["vote_count"]
+                    #         )
+                    #     )
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
             page += 1
+            if page > 10:
+                break
 
 
 @app.on_event("startup")

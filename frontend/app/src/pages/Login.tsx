@@ -126,7 +126,7 @@ export default function Login() {
 
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] p-5">
+        <CustomCard additionalClasses="flex flex-col align-center md:w-[500px] p-5">
             <div id="login" className="flex flex-col align-center space-y-2 gap-2">
                 <form onSubmit={handleSubmit} className="flex flex-col items-start gap-2">
                     <Typography variant="h4" className="font-bold text-center w-full">
