@@ -3,7 +3,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
 from api.login.resources import router as login_router
@@ -46,7 +46,7 @@ app.include_router(websocket_router)
 
 
 def delete_one_month_movie():
-    one_month_ago = datetime.now(tz=datetime.timezone.utc) - timedelta(days=30)
+    one_month_ago = datetime.now(tz=timezone.utc) - timedelta(days=30)
 
     db = SessionLocal()
     try:
@@ -76,7 +76,7 @@ scheduler = BackgroundScheduler()
 
 async def populate_movies():
 
-    return
+    # return
 
     db = SessionLocal()
 
@@ -128,7 +128,7 @@ async def populate_movies():
 def start_scheduler():
     scheduler.add_job(
         delete_one_month_movie,
-        CronTrigger(hour=0, minute=0)
+        CronTrigger(second=10)
     )
     scheduler.start()
 

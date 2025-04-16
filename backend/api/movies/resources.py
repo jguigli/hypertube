@@ -414,17 +414,17 @@ async def get_movie_informations(
             "Movie is ready to HLS streaming."
         )
 
-    # if not db_movie.magnet_link:
-    #     year = datetime.strptime(db_movie.release_date, "%Y-%m-%d").year
-    #     magnet_link = get_magnet_link_piratebay(db_movie.original_title, year)
-    #     if not magnet_link:
-    #         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not available")
+    if not db_movie.magnet_link:
+        year = datetime.strptime(db_movie.release_date, "%Y-%m-%d").year
+        magnet_link = await get_magnet_link_piratebay(db_movie.original_title, year)
+        if not magnet_link:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not available")
 
-    #     db_movie.magnet_link = magnet_link
-    #     db.commit()
+        db_movie.magnet_link = magnet_link
+        db.commit()
 
-    # if not redis_client.exists(f"download_and_convert:{movie_id}", 1):
-    #     background_tasks.add_task(download_and_convert, movie_id, current_user.id)
+    if not redis_client.exists(f"download_and_convert:{movie_id}", 1):
+        background_tasks.add_task(download_and_convert, movie_id, current_user.id)
 
     return map_to_movie_info(detailed_movie, db_movie)
 
