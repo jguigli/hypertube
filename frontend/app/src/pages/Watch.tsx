@@ -19,6 +19,7 @@ export default function Watch() {
 
     const [movie, setMovie] = useState<Movie | null>(null);
     const [ismovieReady, setMovieReady] = useState<boolean>(false);
+    const [hlsReady, setHlsReady] = useState<boolean>(false);
     const [isInvalidMovieID, setIsInvalidMovieID] = useState<boolean>(false);
     const [isTorrentNotFound, setIsTorrentNotFound] = useState<boolean>(false);
 
@@ -37,10 +38,11 @@ export default function Watch() {
 
         socket.onmessage = (event) => {
             const data = event.data;
-            if (data === "Movie is ready.") {
+            if (data === "Movie is ready to standard streaming.") {
                 setMovieReady(true);
-            } else if (data === "Movie is being converted to HLS.") {
-                setMovieReady(false);
+            } else if (data === "Movie is ready to HLS streaming.") {
+                setMovieReady(true);
+                setHlsReady(true);
             } else if (data === "Movie is downloading.") {
                 setMovieReady(false);
             }
@@ -56,7 +58,10 @@ export default function Watch() {
 
         // Cleanup on component unmount
         return () => {
-            socket.close();
+            // socket.close();
+            if (socket.readyState === 1) {
+                socket.close();
+            }
         };
     }, []);
 
@@ -64,8 +69,15 @@ export default function Watch() {
         async function fetchMovieInfo() {
             try {
                 const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
-                if (response.success) {
+                if (response.status === 200) {
                     setMovie(response.data);
+                } else if (response.status === 400) {
+                    setIsInvalidMovieID(true);
+                }
+                else if (response.status === 404) {
+                    console.error("No torrent file found for this movie");
+                    setIsTorrentNotFound(true);
+                    return;
                 }
             } catch (error) {
                 console.error("Erreur lors du chargement du film:", error);
@@ -76,26 +88,26 @@ export default function Watch() {
 
 
     // POST /api/download
-    useEffect(() => {
-        async function getDownloadMovie() {
-            const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
-            if (response.status === 202) {
-                setMovieReady(false);
-            } else if (response.status === 200) {
-                setMovieReady(true);
-            } else if (response.status === 400 || response.status === 422) {
-                setIsInvalidMovieID(true);
-            } else if (response.status === 404) {
-                console.error("No torrent file found for this movie");
-                setIsTorrentNotFound(true);
-                return;
-            } else {
-                console.error("Unexpected error");
-                return;
-            }
-        }
-        getDownloadMovie();
-    }, [getToken, movieService])
+    // useEffect(() => {
+    //     async function getDownloadMovie() {
+    //         const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
+    //         if (response.status === 202) {
+    //             setMovieReady(false);
+    //         } else if (response.status === 200) {
+    //             setMovieReady(true);
+    //         } else if (response.status === 400 || response.status === 422) {
+    //             setIsInvalidMovieID(true);
+    //         } else if (response.status === 404) {
+    //             console.error("No torrent file found for this movie");
+    //             setIsTorrentNotFound(true);
+    //             return;
+    //         } else {
+    //             console.error("Unexpected error");
+    //             return;
+    //         }
+    //     }
+    //     getDownloadMovie();
+    // }, [getToken, movieService])
 
     if (isInvalidMovieID) {
         return navigate("/404", { replace: true });
@@ -115,7 +127,7 @@ export default function Watch() {
                         </Typography>
                         <CustomCard additionalClasses="w-full h-full">
                             <div className="w-full h-full flex justify-center items-center max-h-[80vh]">
-                                <Video video_ID={+video_ID} />
+                                <Video video_ID={+video_ID} hlsReady={hlsReady}/>
                             </div>
                         </CustomCard>
 

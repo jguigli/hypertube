@@ -120,5 +120,14 @@
     "Passwords and password confirmation do not match.": "Les mots de passe et la confirmation ne correspondent pas.",
     "Password confirmation": "Confirmation du mot de passe",
     "Please confirm your password": "Veuillez confirmer votre mot de passe",
-    "This is your public display name. It can be your real name or a pseudonym.": "Ceci est votre nom d'affichage public. Utilisez votre vrai nom ou un pseudonyme."
+    "This is your public display name. It can be your real name or a pseudonym.": "Ceci est votre nom d'affichage public. Utilisez votre vrai nom ou un pseudonyme.",
+    "This is your public display picture. It can be a photo of you or an avatar.": "Ceci est votre photo d'affichage public. Utilisez une photo de vous ou un avatar.",
+    "We'll never share your email with anyone else.": "Nous ne partagerons jamais votre e-mail avec qui que ce soit.",
+    "An error occurred while getting the user's avatar": "Une erreur est survenue lors de la récupération de l'avatar de l'utilisateur",
+    "An error occurred while fetching the list of users": "Une erreur est survenue lors de la récupération de la liste des utilisateurs",
+    "User not found": "Utilisateur non trouvé",
+    "An error occurred while fetching the user infos": "Une erreur est survenue lors de la récupération des informations utilisateur",
+    "An error occurred": "Une erreur est survenue",
+    "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character": "La mot de passe doit contenir 8 caractères avec au moins une minuscule, une majuscule, un chiffre et un caractère spécial",
+    "Email associated with your account": "Email associé à votre compte"
 }

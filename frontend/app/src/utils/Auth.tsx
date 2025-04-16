@@ -58,7 +58,7 @@ export default function Auth() {
                 if (avatarResponse.success && avatarResponse.avatar) {
                     newUser.avatar = avatarResponse.avatar;
                 } else {
-                    alert("An error occurred while getting the user's avatar" + avatarResponse.error || "An unexpected error occurred");
+                    alert(t("An error occurred while getting the user's avatar") + avatarResponse.error || t("An unexpected error occurred"));
                 }
 
                 login(newUser, token);
@@ -68,7 +68,7 @@ export default function Auth() {
             }
         } catch (error) {
             console.error(error);
-            setError("An unexpected error occurred, please try again later");
+            setError(t("An unexpected error occurred, please try again later"));
         }
     }
 

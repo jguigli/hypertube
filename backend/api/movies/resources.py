@@ -1,12 +1,13 @@
 from typing import Annotated
 from fastapi import (
-    Depends, Response, HTTPException, APIRouter, status, BackgroundTasks
+    Depends, Response, HTTPException, APIRouter, status, BackgroundTasks, Request
 )
+
 from sqlalchemy.orm import Session
 import json
 from typing import List
 from datetime import datetime
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from .schemas import MovieDisplay
 from api.redis_client import redis_client
 from api.database import get_db
@@ -34,6 +35,7 @@ from .search import (
     parse_jackett_results,
     add_movie_to_database
 )
+from api.movies.download import file_streamer, convert_stream
 from . import schemas
 import os
 from .models import Movie
@@ -374,6 +376,7 @@ async def get_movies_informations(
 async def get_movie_informations(
     movie_id: int,
     language: str,
+    background_tasks: BackgroundTasks,
     current_user: Annotated[User, Depends(security.get_current_user)],
     db: Session = Depends(get_db)
 ):
@@ -386,7 +389,7 @@ async def get_movie_informations(
         detailed_movie = await fetch_movie_detail_tmdb(movie_id, language)
         if not detailed_movie:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Detailed movie not available"
             )
 
@@ -399,30 +402,44 @@ async def get_movie_informations(
             detailed_movie['release_date']
         )
 
+    if db_movie.is_download and not db_movie.is_convert:
+        await manager_websocket.send_message(
+            current_user.id,
+            "Movie is ready to standard streaming."
+        )
+
+    if db_movie.is_download and db_movie.is_convert:
+        await manager_websocket.send_message(
+            current_user.id,
+            "Movie is ready to HLS streaming."
+        )
+
+    if not db_movie.magnet_link:
+        year = datetime.strptime(db_movie.release_date, "%Y-%m-%d").year
+        magnet_link = await get_magnet_link_piratebay(db_movie.original_title, year)
+        if not magnet_link:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movie not available")
+
+        db_movie.magnet_link = magnet_link
+        db.commit()
+
+    if not redis_client.exists(f"download_and_convert:{movie_id}", 1):
+        background_tasks.add_task(download_and_convert, movie_id, current_user.id)
+
     return map_to_movie_info(detailed_movie, db_movie)
 
 
 async def download_and_convert(movie_id: int, user_id: int):
     redis_client.set(f"download_and_convert:{movie_id}", 1)
-    file_path = ""
 
     db = SessionLocal()
     try:
         movie = get_movie_by_id(db, movie_id)
         if movie.is_download is False:
-            await manager_websocket.send_message(
-                user_id, "Movie is downloading."
-            )
-            file_path = await download_torrent(movie.magnet_link, movie)
-            print("Download status : OK")
-            movie.file_path = file_path
+            await download_torrent(movie.magnet_link, movie.id, user_id)
             movie.is_download = True
             db.commit()
         if movie.is_convert is False:
-            await manager_websocket.send_message(
-                user_id,
-                "Movie is being converted to HLS."
-            )
             await convert_to_hls(movie.file_path, movie.id)
             print("Conversion status : OK")
             movie.is_convert = True
@@ -431,68 +448,10 @@ async def download_and_convert(movie_id: int, user_id: int):
         db.close()
 
     redis_client.delete(f"download_and_convert:{movie.id}")
-    await manager_websocket.send_message(
-        user_id, "Movie is ready."
-    )
-
-
-@router.post('/movies/{movie_id}/download')
-async def download_movie(
-    movie_id: int,
-    background_tasks: BackgroundTasks,
-    current_user: Annotated[User, Depends(security.get_current_user)],
-    db: Session = Depends(get_db)
-):
-
-    # Status_code tests:
-    # 400 : Invalid movie
-    # raise HTTPException(
-    #     status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
-    # )
-    # 404 : Movie not available
-    # raise HTTPException(
-    #     status_code=status.HTTP_404_NOT_FOUND,
-    #     detail="Movie not available"
-    # )
-    # 202 : Movie is downloading
-    # return Response(status_code=status.HTTP_202_ACCEPTED)
-    # 200 : Movie is already downloaded and converted
-    # return Response(status_code=status.HTTP_200_OK)
-
-    movie = get_movie_by_id(db, movie_id)
-    if not movie:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie"
-        )
-
-    if movie.is_download and movie.is_convert:
-        return Response(status_code=status.HTTP_200_OK)
-
-    if not movie.magnet_link:
-        year = datetime.strptime(movie.release_date, "%Y-%m-%d").year
-        magnet_link = await get_magnet_link_piratebay(
-            movie.original_title, year)
-        if not magnet_link:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Movie not available"
-            )
-        movie.magnet_link = magnet_link
-        db.commit()
-
-    if not redis_client.exists(f"download_and_convert:{movie_id}"):
-        background_tasks.add_task(
-            download_and_convert, movie_id, current_user.id)
-
-    db.refresh(movie)
-    if movie.is_download and movie.is_convert:
-        return Response(status_code=status.HTTP_200_OK)
-
-    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
-async def stream_movie(
+async def stream_movie_hls(
     movie_id: int,
     token: str,
     hls_file: str,
@@ -520,6 +479,63 @@ async def stream_movie(
         db.commit()
 
     return FileResponse(file_path, media_type="application/vnd.apple.mpegurl")
+
+
+@router.get('/movies/{movie_id}/stream/{token}')
+async def standard_stream_movie(
+    movie_id: int,
+    token: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    current_user = security.get_current_user_streaming(token, db)
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid movie")
+
+    watched_movie = get_watched_movie(db, current_user.id, movie_id)
+    if not watched_movie:
+        mark_movie_as_watched(db, current_user.id, movie_id)
+    else:
+        watched_movie.watched_at = datetime.now()
+        db.commit()
+
+    file_extension = os.path.splitext(movie.file_path)[1].lower().strip(".")
+
+    if file_extension in ['mp4', 'webm']:
+        file_size = os.path.getsize(movie.file_path)
+        range_header = request.headers.get("range")
+
+        if range_header:
+            try:
+                start, end = range_header.replace("bytes=", "").split("-")
+                start = int(start)
+                end = int(end) if end else file_size - 1
+                end = min(end, file_size - 1)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="Invalid Range request")
+
+            return StreamingResponse(
+                file_streamer(movie.file_path, start, end),
+                status_code=206,
+                media_type="video/mp4",
+                headers={
+                    "Content-Range": f"bytes {start}-{end}/{file_size}",
+                    "Accept-Ranges": "bytes",
+                    "Content-Length": str(end - start + 1),
+                }
+            )
+
+        return StreamingResponse(
+            file_streamer(movie.file_path, 0, file_size - 1),
+            media_type="video/mp4",
+            headers={
+                "Content-Length": str(file_size),
+                "Accept-Ranges": "bytes",
+            }
+        )
+    else:
+        return StreamingResponse(await convert_stream(movie.file_path), media_type="video/mp4")
 
 
 @router.get('/movies/{movie_id}/subtitles')
