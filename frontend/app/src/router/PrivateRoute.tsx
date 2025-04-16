@@ -4,7 +4,6 @@ import { useAuth } from "../contexts/AuthContext";
 // PrivateRoutes are only accessible to authenticated users.
 
 import { ReactNode } from "react";
-import { useActiveLink } from "../contexts/ActiveLinkContext";
 
 interface PrivateRouteProps {
     children: ReactNode;

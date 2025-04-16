@@ -1,5 +1,5 @@
 import './utils/translations/i18n';
-import { StrictMode } from 'react'
+// import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
 import AppRouter from './router/Router.tsx'
@@ -22,21 +22,19 @@ function Main() {
 
     return (
         <ThemeProvider theme={theme}>
-            <AuthProvider>
-                <MoviesProvider>
-                    <ActiveLinkProvider>
-                        <AppRouter />
-                    </ActiveLinkProvider>
-                </MoviesProvider>
-            </AuthProvider>
+            <MoviesProvider>
+                <ActiveLinkProvider>
+                    <AppRouter />
+                </ActiveLinkProvider>
+            </MoviesProvider>
         </ThemeProvider>
     );
 }
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-        <AuthProvider>
-            <Main />
-        </AuthProvider>
-    </StrictMode>
+    // <StrictMode>
+    <AuthProvider>
+        <Main />
+    </AuthProvider>
+    // </StrictMode>
 )

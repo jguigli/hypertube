@@ -101,7 +101,8 @@ export default function PublicProfile() {
                         <div className="flex flex-col space-y-4 my-5 items-center w-full">
                             <Avatar src={profileUser.avatar || ""}
                                 alt="Avatar"
-                                sx={{ width: { xs: 80, sm: 100 }, height: { xs: 80, sm: 100 } }}
+                                sx={{ width: { xs: 60, sm: 100 }, height: { xs: 60, sm: 100 } }}
+                                className="m-auto mb-5"
                             />
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>

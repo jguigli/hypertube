@@ -51,8 +51,8 @@ function TopMovies() {
     }, [user.language]);
 
     return (
-        <div className="flex flex-col items-center justify-center gap-5 w-full lg:w-[500px] h-full">
-            <Carousel className="w-full lg:w-[500px] h-full" navButtonsAlwaysVisible={false}>
+        <div className="flex flex-col items-center justify-center gap-5 w-full lg:w-[500px] h-fill max-h-full">
+            <Carousel className="w-full lg:w-[500px] h-full max-h-full" navButtonsAlwaysVisible={false}>
                 {topMovies.map((movie, id) => (
                     <MovieCard key={id} movie={movie} lazy_load={false} />
                 ))}
@@ -90,7 +90,7 @@ export default function LandingPage() {
 
     return (
 
-        <CustomCard additionalClasses="flex flex-col align-center p-5 min-h-[80vh] max-w-[100%]">
+        <CustomCard additionalClasses="flex flex-col align-center justify-center items-center p-5 min-h-[80vh] max-w-[100%]">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-5 h-full w-full">
                 <div className="flex flex-col items-center justify-center gap-5 w-full lg:w-[500px]">
                     <Typography variant="h4" className="font-bold text-center w-full">

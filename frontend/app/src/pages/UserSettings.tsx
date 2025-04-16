@@ -79,12 +79,16 @@ export default function UserSettings() {
     }
 
     return (
-        <CustomCard additionalClasses="flex flex-col align-center w-[500px] space-y-5 p-5">
-            <Typography variant="h4" className="font-bold text-center">
+        <CustomCard additionalClasses="flex flex-col align-center space-y-5 p-5 md:w-[500px] max-w-[100%]">
+            <Typography variant="h4" className="font-bold text-center sm:text-lg md:text-2xl">
                 {t("Customize your profile")}
             </Typography>
             <form onSubmit={handleSubmit} className="flex flex-col space-y-4 my-5 items-center w-full">
-                <Avatar src={avatar} alt="Avatar" sx={{ width: 100, height: 100 }} className="m-auto" />
+                <Avatar src={avatar || ""}
+                    alt="Avatar"
+                    sx={{ width: { xs: 60, sm: 100 }, height: { xs: 60, sm: 100 } }}
+                    className="m-auto mb-5"
+                />
                 <div className="flex flex-col gap-2 w-full">
                     <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>
                     <Input

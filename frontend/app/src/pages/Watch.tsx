@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Video from "../components/VideoJS";
 import MovieService from "../services/MovieService";
 import StructureComments from "../components/StructureComments";
-import { Stack } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import MoviePresentation from "../components/MoviePresentation";
 import Movie from "../types/Movie";
 import { useTranslation } from 'react-i18next';
+import CustomCard from "../components/Card";
 
 export default function Watch() {
 
@@ -106,10 +107,19 @@ export default function Watch() {
         );
     } else {
         return (
-            <Stack spacing={2}>
+            <Stack spacing={2} className="flex flex-col items-center justify-center w-full h-full">
                 {ismovieReady ? (
-                    <><Video video_ID={+video_ID} />
-                    {movie && (<MoviePresentation movie={movie} />)}</>
+                    <>
+                        <Typography variant="h4" className="text-white font-bold w-full">
+                            {movie?.title}
+                        </Typography>
+                        <CustomCard additionalClasses="w-full h-full">
+                            <div className="w-full h-full flex justify-center items-center max-h-[80vh]">
+                                <Video video_ID={+video_ID} />
+                            </div>
+                        </CustomCard>
+
+                    </>
                 ) : (
                     <>{movie && (<MoviePresentation movie={movie} />)}</>
                 )}

@@ -176,7 +176,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
       setActiveReplyId(null);
     }
   };
-  
+
   return (
     <div className="comment-wrapper">
       {[...comments]
@@ -290,7 +290,8 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                     handleClick={() => {
                       setActiveReplyId(prev => prev === comment.id ? null : comment.id)
                     }}
-                  />
+                            />
+                            { comment.user_name === user.username && (
                   <ActionComments
                     className="reply"
                     type={t("Edit")}
@@ -299,6 +300,8 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                       setEditMode(true);
                       setEditingCommentId(comment.id);
                     }} />
+                            )}
+                    {comment.user_name === user.username && (
                   <ActionComments
                     className="reply"
                     variant="outlined"
@@ -309,7 +312,8 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         handleDeleteNode(comment.id);
                       }
                     }}
-                  />
+                                />
+                )   }
                 </Stack>
               </div>
             </CustomCard>
