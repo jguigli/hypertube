@@ -320,34 +320,41 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         {expand && (
                             <div style={{ paddingLeft: "20px" }}>
                                 {activeReplyId === comment.id && (
-                                    <div style={{ display: "flex", marginTop: "20px" }}>
-                                        <Stack direction="column" spacing={1} className="inputContainer">
-                                            <input
-                                                type="text"
-                                                className="inputContainer__input"
-                                                autoFocus onChange={(e) => setInput(e.target.value)}
-                                                onKeyDown={(e) => e.key === "Enter" && onReplyComment(e as any, comment.id)}
-                                                placeholder={t("Type your reply here")}
-                                            />
-                                            <Stack direction="row" spacing={2}>
-                                                <Button
-                                                    variant="contained"
-                                                    size='small'
-                                                    onClick={(event) => onReplyComment(event, comment.id)}>{t("Add reply")}
-                                                </Button>
-                                                <Button
-                                                    variant="outlined"
-                                                    size='small'
-                                                    className="p-2"
-                                                    onClick={() => {
-                                                        setActiveReplyId(null);
-                                                        setInput("");
-                                                    }}
-                                                >{t("Cancel")}
-                                                </Button>
+
+                                    <CustomCard additionalClasses="flex flex-col align-center w-full p-5">
+
+                                        <div style={{ display: "flex" }}>
+                                            <Stack direction="column" spacing={1} className="inputContainer w-full">
+                                                <input
+                                                    type="text"
+                                                    className="w-full border border-gray-300 p-3 rounded inputContainer__input"
+                                                    autoFocus
+                                                    onChange={(e) => setInput(e.target.value)}
+                                                    onKeyDown={(e) => e.key === "Enter" && onReplyComment(e as any, comment.id)}
+                                                    placeholder={t("Type your reply here")}
+                                                    style={{ border: "1px solid #ccc", padding: "1px", borderRadius: "5px" }}
+                                                />
+                                                <Stack direction="row" spacing={2}>
+                                                    <Button
+                                                        variant="contained"
+                                                        size='small'
+                                                        onClick={(event) => onReplyComment(event, comment.id)}>{t("Add reply")}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outlined"
+                                                        size='small'
+                                                        className="p-2"
+                                                        onClick={() => {
+                                                            setActiveReplyId(null);
+                                                            setInput("");
+                                                        }}
+                                                    >{t("Cancel")}
+                                                    </Button>
+                                                </Stack>
                                             </Stack>
-                                        </Stack>
-                                    </div>
+                                        </div>
+
+                                    </CustomCard>
                                 )}
                                 {comment.replies?.map((subComment) => (
                                     <Comments
