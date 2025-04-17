@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import User from "../types/User";
 import { useTranslation } from "react-i18next";
 
@@ -21,13 +21,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const [user, setUser] = useState<User>(getUser());
 
+    useEffect(() => {
+        i18n.changeLanguage(user.language);
+    }, [user.language]);
+
     function getUser() {
         const storedUser = localStorage.getItem("user");
         const language = getUserLanguage();
         if (storedUser) {
             return { ...JSON.parse(storedUser), language };
         }
-        i18n.changeLanguage(language);
         return defaultUser(language);
     }
 
