@@ -59,15 +59,15 @@ export default function UserSettings() {
 
         const response = await userService.setInformations(token, email, username, firstName, lastName);
         if (!response.success) {
-            if (response.error === t("Username already taken")) {
+            if (response.error === "Username already taken") {
                 setUsernameError(t("Username already taken"));
-            } else if (response.error === t("Email already taken")) {
+            } else if (response.error === "Email already taken") {
                 setEmailError(t("Email already taken"));
-            } else if (response.error === t("Invalid email format")) {
+            } else if (response.error === "Invalid email format") {
                 setEmailError(t("Invalid email format"));
-            } else if (response.error === t("First name cannot be empty.")) {
+            } else if (response.error === "First name cannot be empty.") {
                 setFirstNameError(t("First name cannot be empty."));
-            } else if (response.error === t("Last name cannot be empty.")) {
+            } else if (response.error === "Last name cannot be empty.") {
                 setLastNameError(t("Last name cannot be empty."));
             } else {
                 alert(t("An error occurred while updating the user information: ") + response.error || t("An unexpected error occurred"));

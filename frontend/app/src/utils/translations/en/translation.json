@@ -129,5 +129,10 @@
     "An error occurred while fetching the user infos": "An error occurred while fetching the user infos",
     "An error occurred": "An error occurred",
     "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character": "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character",
-    "Email associated with your account": "Email associated with your account"
+    "Email associated with your account": "Email associated with your account",
+    "This email is not associated with an account registered by email": "This email is not associated with an account registered by email",
+    "Incorrect username or password": "Incorrect username or password"
 }
+
+
+

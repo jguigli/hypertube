@@ -32,7 +32,7 @@ export default function ResetPassword() {
             setResponseMessage(t("An email with a link to reset your password has been sent."));
         } else {
             if (response.error.message) {
-                setError(response.error.message);
+                setError(t(response.error.message));
             } else {
                 setError(t("An unexpected error occurred."));
             }
@@ -73,8 +73,8 @@ export default function ResetPassword() {
                         <Button variant="contained" className="w-full" type="submit">{t("Send me an email")}</Button>
                     </div>
                 </form>
-                {responseMessage && <Typography variant="caption" className="text-center">{responseMessage}</Typography>}
-                {error && <Typography variant="caption" className="text-center text-red-500">{error}</Typography>}
+                {responseMessage && <Typography variant="caption" className="text-center">{t(responseMessage)}</Typography>}
+                {error && <Typography variant="caption" className="text-center text-red-500">{t(error)}</Typography>}
                 <Typography variant="body1" color="primary" onClick={() => navigate("/login")} className="cursor-pointer">
                     {t("Back to login")}
                 </Typography>

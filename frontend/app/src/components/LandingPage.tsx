@@ -10,14 +10,14 @@ import { useAuth } from "../contexts/AuthContext";
 import MovieCard from "./MovieCard";
 import Movie from "../types/Movie";
 import Carousel from 'react-material-ui-carousel'
-import { useTranslation  } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const accordionItems = [
     {
         panel: 'panel1',
         icon: <PlayArrow />,
         title: "Instant Streaming",
-        content:"Watch movies seamlessly without waiting! Hypertube uses BitTorrent technology for smooth, buffer-free streaming."
+        content: "Watch movies seamlessly without waiting! Hypertube uses BitTorrent technology for smooth, buffer-free streaming."
     },
     {
         panel: 'panel2',
@@ -35,10 +35,10 @@ const accordionItems = [
 
 
 function TopMovies() {
-
     const movieService = new MovieService();
     const { user } = useAuth();
     const [topMovies, setTopMovies] = useState<Movie[]>([]);
+    const [imagesLoaded, setImagesLoaded] = useState(false);
 
     useEffect(() => {
         const fetchTopMovies = async () => {
@@ -50,15 +50,33 @@ function TopMovies() {
         fetchTopMovies();
     }, [user.language]);
 
+    useEffect(() => {
+        if (topMovies.length > 0) {
+            const imagePromises = topMovies.map((movie) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '';
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            });
+
+            Promise.all(imagePromises).then(() => setImagesLoaded(true));
+        }
+    }, [topMovies]);
+
     return (
         <div className="flex flex-col items-center justify-center gap-5 w-full lg:w-[500px] h-fill max-h-full">
-            <Carousel className="w-full lg:w-[500px] h-full max-h-full" navButtonsAlwaysVisible={false}>
-                {topMovies.map((movie, id) => (
-                    <MovieCard key={id} movie={movie} lazy_load={false} />
-                ))}
-            </Carousel>
+            {!imagesLoaded && <p>Loading...</p>}
+            {imagesLoaded && (
+                <Carousel className="w-full lg:w-[500px] h-full max-h-full" navButtonsAlwaysVisible={true}>
+                    {topMovies.map((movie, id) => (
+                        <MovieCard key={id} movie={movie} lazy_load={false} />
+                    ))}
+                </Carousel>
+            )}
         </div>
-    )
+    );
 }
 
 

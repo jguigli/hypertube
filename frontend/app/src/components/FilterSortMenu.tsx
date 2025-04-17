@@ -10,6 +10,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import { useEffect, useState } from "react";
 import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 import { useMovies } from "../contexts/MovieContext";
+import { useTranslation } from "react-i18next";
 
 const sortOptionsLabels = [
     { label: "None", value: "none.desc" },
@@ -24,7 +25,7 @@ const sortOptionsLabels = [
 export function FilterSortMenu() {
     const [open, setOpen] = useState(false);
     const toggleDrawer = () => setOpen(!open);
-
+    const { t } = useTranslation();
     const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
 
     // Nouveaux états locaux pour gérer les valeurs temporaires
@@ -90,13 +91,13 @@ export function FilterSortMenu() {
             <Drawer anchor="bottom" open={open} onClose={toggleDrawer}>
                 <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }} className="bg-gray-950">
 
-                    <Typography variant="h6">Filters</Typography>
+                    <Typography variant="h6">{t("Filters")}</Typography>
 
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
                             sx={{ bgcolor: "background.paper" }}
-                        >Genres</InputLabel>
+                        >{t("Genres")}</InputLabel>
                         <Select
                             value={tempFilterOptions.genre}
                             onChange={(e) => {
@@ -110,13 +111,13 @@ export function FilterSortMenu() {
                         >
                             {moviesInformation.genres.map((genre) => (
                                 <MenuItem key={genre} value={genre}>
-                                    {genre}
+                                    {t(genre)}
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
 
-                    <Typography>Production year</Typography>
+                    <Typography>{t("Production year")}</Typography>
                     <Slider
                         value={tempFilterOptions.yearRange}
                         onChange={(_, newValue) =>
@@ -129,7 +130,7 @@ export function FilterSortMenu() {
                         size="small"
                     />
 
-                    <Typography>IMDb ratings</Typography>
+                    <Typography>{t("IMDb ratings")}</Typography>
                     <Slider
                         value={tempFilterOptions.rating}
                         onChange={(_, newValue) =>
@@ -142,13 +143,13 @@ export function FilterSortMenu() {
                         size="small"
                     />
 
-                    <Typography variant="h6">Sort</Typography>
+                    <Typography variant="h6">{t("Sort")}</Typography>
 
                     <FormControl fullWidth>
                         <InputLabel
                             size="small"
                             sx={{ bgcolor: "background.paper" }}
-                        >Sort by</InputLabel>
+                        >{t("Sort by")}</InputLabel>
                         <Select
                             value={tempSortOptions.type + (tempSortOptions.ascending ? ".asc" : ".desc")}
                             onChange={(e) => {
@@ -162,7 +163,7 @@ export function FilterSortMenu() {
                         >
                             {sortOptionsLabels.map((option) => (
                                 <MenuItem key={option.label} value={option.value}>
-                                    {option.label}
+                                    {t(option.label)}
                                 </MenuItem>
                             ))}
                         </Select>
@@ -176,10 +177,10 @@ export function FilterSortMenu() {
                             startIcon={<ClearIcon />}
                             color="secondary"
                         >
-                            Reset
+                            {t("Reset")}
                         </Button>
                         <Button variant="contained" onClick={handleApply}>
-                            Apply
+                            {t("Apply")}
                         </Button>
                     </Box>
                 </Box>

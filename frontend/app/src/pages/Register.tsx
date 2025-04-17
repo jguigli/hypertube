@@ -178,7 +178,7 @@ export function Separator(
 ) {
     const { t } = useTranslation();
     return (
-        <div className="flex items-center gap-2 w-full">
+        <div className="flex items-center gap-2 w-full mb-2 mt-2">
             <Divider className="flex-1" />
             <Typography variant="h6" color="textSecondary">{t(props.text)}</Typography>
             <Divider className="flex-1" />
@@ -357,7 +357,7 @@ export default function Register() {
     return (
         <CustomCard additionalClasses="flex flex-col align-center md:w-[500px] p-5">
             <div id="register" className="flex flex-col align-center gap-2"></div>
-            <Typography variant="h4" className="font-bold text-center">
+            <Typography variant="h4" className="font-bold text-center mb-5">
                 {t("Register")}
             </Typography>
             {currentStep === 1 && (
