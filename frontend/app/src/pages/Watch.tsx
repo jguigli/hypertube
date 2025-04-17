@@ -25,11 +25,10 @@ export default function Watch() {
 
     const { t } = useTranslation();
 
-
     const navigate = useNavigate();
 
     useEffect(() => {
-        const WS_URL = `ws://localhost:3000/api/ws/1`; // Replace '1' with the actual user ID if needed
+        const WS_URL = `ws://localhost:3000/api/ws/${user.id}`;
         const socket = new WebSocket(WS_URL);
 
         socket.onopen = () => {
@@ -63,7 +62,7 @@ export default function Watch() {
                 socket.close();
             }
         };
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         async function fetchMovieInfo() {

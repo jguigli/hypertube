@@ -45,6 +45,7 @@ export default function Auth() {
                 }
 
                 let newUser: User = {
+                    id: userResponse.user.id,
                     email: userResponse.user.email,
                     username: userResponse.user.username,
                     firstName: userResponse.user.firstName,

@@ -129,5 +129,7 @@
     "An error occurred while fetching the user infos": "Une erreur est survenue lors de la récupération des informations utilisateur",
     "An error occurred": "Une erreur est survenue",
     "The password must contain 8 characters with at least one lowercase, one uppercase, one digit and one special character": "La mot de passe doit contenir 8 caractères avec au moins une minuscule, une majuscule, un chiffre et un caractère spécial",
-    "Email associated with your account": "Email associé à votre compte"
-}
+    "Email associated with your account": "Email associé à votre compte",
+    "This email is not associated with an account registered by email": "Cet e-mail n'est pas associé à un compte enregistré par e-mail",
+    "Incorrect username or password": "Nom d'utilisateur ou mot de passe incorrect"
+ }

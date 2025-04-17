@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useActiveLink } from '../contexts/ActiveLinkContext';
 import { useMovies } from '../contexts/MovieContext';
 import { useTranslation } from 'react-i18next';
@@ -18,10 +18,10 @@ export default function Sidebar() {
     const { activeLink, setActiveLink } = useActiveLink();
     const { t } = useTranslation();
 
-    // // UseEffect to set the active link when the page loads
-    // useEffect(() => {
-    //     setActiveLink(window.location.pathname);
-    // }, [setActiveLink]);
+    // UseEffect to set the active link when the page loads
+    useEffect(() => {
+        setActiveLink(window.location.pathname);
+    }, [setActiveLink]);
 
     const links = [
         {

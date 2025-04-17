@@ -23,7 +23,7 @@ async def convert_stream(file_path):
             .output(
                 'pipe:1',
                 format='mp4',
-                preset='ultrafast', 
+                preset='ultrafast',
                 movflags='frag_keyframe+empty_moov'
             )
             .run_async(pipe_stdin=True, pipe_stdout=True, pipe_stderr=True)
@@ -126,19 +126,12 @@ async def download_torrent(magnet_link: str, movie_id: int, user_id: int):
     for tracker in trackers:
         handle.add_tracker({"url": tracker})
 
-    # Boucle infinie ici :/
-    # current_try = 0
-    # max_try = 42
     while not handle.has_metadata():
         print("Waiting for torrent metadata", flush=True)
         alerts = session.pop_alerts()
         for a in alerts:
             print(a)
         await asyncio.sleep(5)
-        # current_try += 1
-        # if current_try >= max_try:
-        #     print("Failed to get metadata", flush=True)
-        #     return None
 
     torrent_info = handle.get_torrent_info()
 

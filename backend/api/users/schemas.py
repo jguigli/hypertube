@@ -21,6 +21,7 @@ class UserRegisterReturn(BaseModel):
 
 
 class User(BaseModel):
+    id: int
     email: str
     user_name: str
     first_name: str

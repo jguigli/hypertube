@@ -31,7 +31,7 @@ manager_websocket = ConnectionManager()
 
 @router.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: int):
-    # user_id = 1
+
     await manager_websocket.connect(websocket, user_id)
     try:
         while True:

@@ -82,6 +82,7 @@ scheduler = BackgroundScheduler()
 async def populate_movies():
 
     return
+
     db = SessionLocal()
 
     # Return if there are already movies in the database
@@ -162,7 +163,7 @@ async def populate_movies():
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
             page += 1
-            if page > 10:
+            if page > 5:
                 break
 
 

@@ -46,7 +46,7 @@ export default function Login() {
         // Check if the request was successful
         if (!response.success || !response.token) {
             if (response.error) {
-                setError(response.error);
+                setError(t(response.error));
             } else {
                 setError(t("An unexpected error occurred, please try again later"));
             }
@@ -61,7 +61,7 @@ export default function Login() {
         // Check if the request was successful
         if (!userResponse.success || !userResponse.user) {
             if (userResponse.error) {
-                setError(userResponse.error);
+                setError(t(userResponse.error));
             } else {
                 setError(t("An unexpected error occurred, please try again later"));
             }
@@ -69,6 +69,7 @@ export default function Login() {
         }
 
         let newUser: User = {
+            id: userResponse.user.id,
             email: userResponse.user.email,
             username: userResponse.user.username,
             firstName: userResponse.user.firstName,
