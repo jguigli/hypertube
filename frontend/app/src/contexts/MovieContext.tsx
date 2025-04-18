@@ -67,13 +67,18 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         const timeout = setTimeout(() => {
             if (searchQuery || filterOptions || sortOptions || user.language) {
                 setPage(1);
-                setMovies([]);
                 setHasMore(true);
                 fetchMovies(1);
             }
         }, 300); // Ajout d'un délai pour éviter les appels redondants
         return () => clearTimeout(timeout);
     }, [searchQuery, filterOptions, sortOptions, user.language, fetchMovies]);
+
+    useEffect(() => {
+        if (page > 1 && hasMore) {
+            fetchMovies(page);
+        }
+    }, [page, hasMore, fetchMovies]);
 
 
 
