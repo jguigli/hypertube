@@ -17,23 +17,19 @@ interface CommentsProps {
     handleInsertNode: (commentId: number, item: string) => void;
     handleEditNode: (commentId: number, value: string, timestamp: number) => void;
     handleDeleteNode: (commentId: number) => void;
-    setCommentsData: (commentData: CommentType[]) => void;
+    setCommentsData: (updater: (prevComments: CommentType[]) => CommentType[]) => void;
 }
 
-const formatTimeAgo = (timestamp: number | string): string => {
-    if (!timestamp) return "Just now";
-
-    let timeInMs = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;
-
-
-    const now = Date.now();
-    const diffInSeconds = Math.floor((now) / 1000 - timeInMs);
-
-    if (diffInSeconds < 60) return `${diffInSeconds} sec ago`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
-};
+// const formatTimeAgo = (timestamp: number | string): string => {
+//     if (!timestamp) return "Just now";
+//     let timeInMs = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp;
+//     const now = Date.now();
+//     const diffInSeconds = Math.floor((now) / 1000 - timeInMs);
+//     if (diffInSeconds < 60) return `${diffInSeconds} sec ago`;
+//     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+//     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+//     return `${Math.floor(diffInSeconds / 86400)} days ago`;
+// };
 
 
 const commentService = new CommentService();
@@ -43,7 +39,17 @@ export const useNode = () => {
         if (tree.id === commentId) {
             return {
                 ...tree,
-                items: [...(tree.items || []), { id: Date.now(), name: item, timestamp: Date.now(), items: [], video_id: videoId }],
+                items: [...(tree.items || []), {
+                    id: Date.now(),
+                    user_id: 0,
+                    user_name: "Anonymous",
+                    parent_id: commentId,
+                    content: item,
+                    replies: [],
+                    avatarUrl: "",
+                    timestamp: Date.now(),
+                    video_id: videoId
+                }],
             };
         }
         return {
@@ -121,7 +127,10 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
     const onReplyComment = async (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>, parent_id: number) => {
         event.preventDefault()
         if (editMode) {
-            handleEditNode(comments.id, inputRef.current?.innerText ?? "");
+            const commentToEdit = comments.find(comment => comment.id === editingCommentId);
+            if (commentToEdit) {
+                handleEditNode(commentToEdit.id, inputRef.current?.innerText ?? "", Math.floor(Date.now() / 1000));
+            }
             setEditMode(false);
             setInput("");
         } else {
@@ -158,7 +167,7 @@ const Comments: React.FC<CommentsProps> = ({ comments, handleInsertNode, handleE
                         timestamp: newTimestamp
                     };
 
-                    setCommentsData(prevComments => {
+                    setCommentsData((prevComments) => {
                         const updatedComments = insertReply(prevComments, parent_id, newReply);
                         console.log("Updated commentsData:", updatedComments);
                         return updatedComments;
