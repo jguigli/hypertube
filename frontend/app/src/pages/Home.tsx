@@ -8,49 +8,30 @@ import { useTranslation } from 'react-i18next';
 
 export default function Home() {
 
-    const { movies, isLoading, hasMore, page, fetchMovies, incrementPage, resetSearch, resetFilter, resetSort } = useMovies();
-    const loadingRef = useRef<HTMLDivElement | null>(null);
     const { t } = useTranslation();
-
-    const handleScroll = useCallback(() => {
-        if (
-            window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
-            hasMore &&
-            !isLoading
-        ) {
-            incrementPage();
-        }
-    }, [hasMore, isLoading, incrementPage]);
-
-    useEffect(() => {
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [handleScroll]);
-
-    useEffect(() => {
-        if (page > 1) {
-            fetchMovies(page);
-        }
-    }, [page, fetchMovies]);
-
-    useEffect(() => {
-        if (movies.length === 0 && page === 1 && !isLoading) {
-            fetchMovies(1);
-        }
-    }, [movies, page, isLoading, fetchMovies]);
-
-    // Reset search and filter when the component unmounts
-    useEffect(() => {
-        return () => {
-            resetSearch();
-            resetFilter();
-            resetSort();
-        };
-    }, []);
+    const { movies } = useMovies();
+    // const loadingRef = useRef<HTMLDivElement | null>(null);
 
     return (
         <>
-            {isLoading ? (
+            {/* <div className="flex flex-col justify-center items-center position-sticky top-0 left-0 right-0 z-10 opacity-80">
+                <h1>Debug panel</h1>
+                <div className="flex flex-col">
+                    <p>Page: {page}</p>
+                    <p>Has More: {hasMore ? "true" : "false"}</p>
+                    <p>Loading: {isLoading ? "true" : "false"}</p>
+                    <p>Movies Length: {movies.length}</p>
+                    {
+                        movies.map((movie, index) => (
+                            <div key={index}>
+                                <p>Title: {movie.title}</p>
+                                <hr />
+                            </div>
+                        ))
+                    }
+                </div>
+            </div> */}
+            {/* {(isLoading && movies.length === 0) ? (
                 <div className="flex flex-col justify-center items-center h-full">
                     <div ref={loadingRef} className="flex justify-center py-4">
                         <CircularProgress />
@@ -63,14 +44,13 @@ export default function Home() {
                 <div className="flex justify-center items-center">
                     <p className="text-3xl">{t("No movies found")}</p>
                 </div>
-            ) : (
+            ) : ( */}
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 w-full place-items-center p-4">
                     {movies.map((movie, id) => (
                         <MovieCard key={id} movie={movie} />
                     ))}
                 </div>
-            )}
-
+            {/* )} */}
             <FilterSortMenu />
         </>
     );

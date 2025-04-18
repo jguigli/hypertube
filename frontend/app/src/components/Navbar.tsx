@@ -9,21 +9,21 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
-import { useMovies } from "../contexts/MovieContext.tsx";
 import { useTranslation } from 'react-i18next';
+import { useSearch } from "../contexts/SearchContext.tsx";
 
 
 function Logo() {
 
     const { setActiveLink } = useActiveLink();
-    const { resetFilter, resetSearch, resetSort } = useMovies();
+    // const { resetFilter, resetSearch, resetSort } = useMovies();
 
     // Function to handle link click
     function navigateTo(link: string) {
         if (link === "/") {
-            resetFilter();
-            resetSearch();
-            resetSort();
+            // resetFilter();
+            // resetSearch();
+            // resetSort();
         }
         setActiveLink(link);
     }
@@ -43,7 +43,7 @@ function Logo() {
 function MovieSearchBar() {
 
     const { t } = useTranslation();
-    const { searchQuery, setSearchQuery } = useMovies();
+    const { searchQuery, setSearchQuery } = useSearch();
     const [search, setSearch] = useState("");
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {

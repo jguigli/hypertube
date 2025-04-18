@@ -1,35 +1,15 @@
-import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
+import { createContext, useState, useEffect, useContext, useCallback } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
-import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
+import { useSearch } from "./SearchContext";
+import { useFilterSort } from "./FilterSortContext";
+import { useInfiniteScroll } from "./InfiniteScrollContext";
 
-
-export interface MoviesInformation {
-    release_date_min: number;
-    release_date_max: number;
-    rating_min: number;
-    rating_max: number;
-    genres: string[];
-}
 
 interface MoviesContextType {
     movies: Movie[];
-    filterOptions: FilterOptions;
-    setFilterOptions: (options: FilterOptions) => void;
-    sortOptions: SortOptions;
-    setSortOptions: (options: SortOptions) => void;
-    searchQuery: string;
-    setSearchQuery: (query: string) => void;
-    hasMore: boolean;
-    moviesInformation: MoviesInformation;
-    isLoading: boolean;
-    page: number;
     fetchMovies: (newPage?: number) => void;
-    incrementPage: () => void;
-    resetSearch: () => void;
-    resetFilter: () => void;
-    resetSort: () => void;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -39,97 +19,14 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     const movieService = new MovieService();
 
     const { user, getToken } = useAuth();
-
-    // Movies information used for filter options
-    // This state holds the information about the movies for filtering purposes
-    // When the component mounts, the information is fetched from the API
-    // When the user changes it's language, the information is fetched again
-    const [moviesInformation, setMoviesInformation] = useState<MoviesInformation>({
-        release_date_min: 0,
-        release_date_max: 0,
-        rating_min: 0,
-        rating_max: 0,
-        genres: []
-    });
-
-    const fetchMoviesInformation = useCallback(async () => {
-        const token = getToken();
-        try {
-            const response = await movieService.getMoviesInformation(token, user.language);
-            if (response.success) {
-                setMoviesInformation({
-                    release_date_min: response.data.release_date.min,
-                    release_date_max: response.data.release_date.max,
-                    rating_min: response.data.vote_average.min,
-                    rating_max: response.data.vote_average.max,
-                    genres: response.data.genres
-                });
-                setFilterOptions({
-                    genre: "All",
-                    yearRange: [response.data.release_date.min, response.data.release_date.max],
-                    rating: [response.data.vote_average.min, response.data.vote_average.max]
-                });
-                setMovies([]);
-                setHasMore(true);
-            }
-        } catch (error) {
-            console.error("Failed to fetch movies information:", error);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        fetchMoviesInformation();
-    }, [fetchMoviesInformation]);
+    const { searchQuery } = useSearch();
+    const { filterOptions, sortOptions } = useFilterSort();
+    const { page, setPage, hasMore, setHasMore, isLoading, setIsLoading } = useInfiniteScroll();
 
     // Movies state
     // This state holds the movies fetched from the API
     const [movies, setMovies] = useState<Movie[]>([]);
 
-    // hasMore state used to avoid multiple call in infinite scrolling
-    const [hasMore, setHasMore] = useState(true);
-
-    // Search query state
-    const [searchQuery, setSearchQuery] = useState("");
-
-    // Filter and sort options states
-    const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-        genre: "All",
-        yearRange: [0, 0],
-        rating: [0, 0]
-    });
-
-    const [sortOptions, setSortOptions] = useState<SortOptions>({
-        type: "none",
-        ascending: false
-    });
-
-    // Reset filter and sort options when the user changes the language
-    useEffect(() => {
-        setFilterOptions({
-            genre: "All",
-            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
-            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
-        });
-        setSortOptions({
-            type: "none",
-            ascending: false
-        });
-    }, [user.language, moviesInformation]);
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const [page, setPage] = useState(1); // Ajout de l'état page
-
-    const isLoadingRef = useRef(false);
-    const hasMoreRef = useRef(true);
-
-    useEffect(() => {
-        isLoadingRef.current = isLoading;
-    }, [isLoading]);
-
-    useEffect(() => {
-        hasMoreRef.current = hasMore;
-    }, [hasMore]);
 
     // Fetch movies function
     // This function fetches movies from the API
@@ -137,9 +34,8 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // If no search query is provided, it fetches popular movies
     // The function is called when the component mounts and when the user changes the filter options,
     const fetchMovies = useCallback(async (newPage: number = 1) => {
-        if (isLoadingRef.current || !hasMoreRef.current) return;
 
-        isLoadingRef.current = true;
+        if (isLoading) return; // Prevent multiple simultaneous requests
         setIsLoading(true);
 
         try {
@@ -163,10 +59,9 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
             console.error("Failed to fetch movies:", error);
             setHasMore(false);
         } finally {
-            isLoadingRef.current = false;
             setIsLoading(false);
         }
-    }, [searchQuery, user.language, filterOptions, sortOptions, getToken]);
+    }, [searchQuery, filterOptions, sortOptions, user.language]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -180,59 +75,14 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         return () => clearTimeout(timeout);
     }, [searchQuery, filterOptions, sortOptions, user.language, fetchMovies]);
 
-    useEffect(() => {
-        setPage(1);
-        setMovies([]);
-        setHasMore(true);
-        fetchMovies(1);
-    }, [user, user.language, filterOptions, sortOptions, searchQuery]);
 
-    function resetSearch() {
-        setSearchQuery("");
-    }
-    function resetFilter() {
-        setFilterOptions({
-            genre: "All",
-            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
-            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
-        });
-    }
-    function resetSort() {
-        setSortOptions({
-            type: "none",
-            ascending: false
-        });
-    }
-
-    const incrementPage = useCallback(() => {
-        setPage((prevPage) => {
-            if (!hasMoreRef.current || isLoadingRef.current) {
-                return prevPage;
-            }
-            return prevPage + 1;
-        });
-    }, []);
 
 
     return (
         <MoviesContext.Provider
             value={{
                 movies,
-                filterOptions,
-                setFilterOptions,
-                sortOptions,
-                setSortOptions,
-                searchQuery,
-                setSearchQuery,
-                hasMore,
-                moviesInformation,
-                isLoading,
-                page,
-                incrementPage,
                 fetchMovies,
-                resetSearch,
-                resetFilter,
-                resetSort
             }}
         >
             {children}

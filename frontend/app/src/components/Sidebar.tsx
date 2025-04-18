@@ -62,14 +62,14 @@ export default function Sidebar() {
         } : null,
     ].filter(Boolean);
 
-    const { resetFilter, resetSearch, resetSort } = useMovies();
+    // const { resetFilter, resetSearch, resetSort } = useMovies();
 
     // Function to handle link click
     function navigateTo(link: string) {
         if (link === "/") {
-            resetFilter();
-            resetSearch();
-            resetSort();
+            // resetFilter();
+            // resetSearch();
+            // resetSort();
         }
         setActiveLink(link);
     }
