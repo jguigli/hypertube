@@ -4,7 +4,6 @@ import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
 import { useSearch } from "./SearchContext";
 import { useFilterSort } from "./FilterSortContext";
-import { useInfiniteScroll } from "./InfiniteScrollContext";
 
 
 interface MoviesContextType {
@@ -79,12 +78,6 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         setHasMore(true);
         fetchMovies(1);
     }, [searchQuery, filterOptions, sortOptions, user.language]);
-
-    // useEffect(() => {
-    //     if (page > 1 && hasMore) {
-    //         fetchMovies(page);
-    //     }
-    // }, [page, hasMore, fetchMovies]);
 
     return (
         <MoviesContext.Provider

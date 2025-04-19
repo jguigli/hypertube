@@ -46,13 +46,21 @@ export default function Home() {
                 ))}
             </div>
             <div ref={observerRef} style={{ height: 40 }} />
-            {(isLoading && movies.length === 0)  && (
-                <div className="flex flex-col justify-center items-center h-full">
-                    <CircularProgress />
-                    <Typography variant="body2" color="textSecondary" className="mt-2">
-                        {t("Loading more movies...")}
-                    </Typography>
-                </div>
+            {(movies.length === 0) && (
+                <>
+                    {isLoading ? (
+                        <div className="flex flex-col justify-center items-center h-full" >
+                            <CircularProgress />
+                            <Typography variant="body2" color="textSecondary" className="mt-2">
+                                {t("Loading movies...")}
+                            </Typography>
+                        </div >
+                    ) : (
+                        <Typography variant="h6" color="textSecondary" className="mt-4">
+                            {t("No movies found")}
+                        </Typography>
+                    )}
+                </>
             )}
             <FilterSortMenu />
         </>

@@ -17,6 +17,7 @@ interface FilterSortContextType {
     sortOptions: SortOptions;
     setSortOptions: (options: SortOptions) => void;
     moviesInformation: MoviesInformation;
+    resetFilterSort: () => void;
 }
 
 const FilterSortContext = createContext<FilterSortContextType | undefined>(undefined);
@@ -76,13 +77,26 @@ export function FilterSortProvider({ children }: { children: React.ReactNode }) 
         fetchMoviesInformation();
     }, [fetchMoviesInformation]);
 
+    function resetFilterSort() {
+        setFilterOptions({
+            genre: "All",
+            yearRange: [moviesInformation.release_date_min, moviesInformation.release_date_max],
+            rating: [moviesInformation.rating_min, moviesInformation.rating_max]
+        });
+        setSortOptions({
+            type: "none",
+            ascending: false
+        });
+    }
+
     return (
         <FilterSortContext.Provider value={{
             filterOptions,
             setFilterOptions,
             sortOptions,
             setSortOptions,
-            moviesInformation
+            moviesInformation,
+            resetFilterSort
         }}>
             {children}
         </FilterSortContext.Provider>

@@ -6,9 +6,9 @@ import { Button } from "@mui/material";
 import { AppRegistrationOutlined, LoginOutlined, LogoutOutlined, Settings } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useActiveLink } from '../contexts/ActiveLinkContext';
-import { useMovies } from '../contexts/MovieContext';
 import { useTranslation } from 'react-i18next';
-
+import { useSearch } from '../contexts/SearchContext';
+import { useFilterSort } from '../contexts/FilterSortContext';
 
 export default function Sidebar() {
 
@@ -17,6 +17,9 @@ export default function Sidebar() {
 
     const { activeLink, setActiveLink } = useActiveLink();
     const { t } = useTranslation();
+
+    const { resetSearch } = useSearch();
+    const { resetFilterSort } = useFilterSort();
 
     // UseEffect to set the active link when the page loads
     useEffect(() => {
@@ -62,14 +65,11 @@ export default function Sidebar() {
         } : null,
     ].filter(Boolean);
 
-    // const { resetFilter, resetSearch, resetSort } = useMovies();
-
     // Function to handle link click
     function navigateTo(link: string) {
         if (link === "/") {
-            // resetFilter();
-            // resetSearch();
-            // resetSort();
+            resetSearch();
+            resetFilterSort();
         }
         setActiveLink(link);
     }

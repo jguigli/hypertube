@@ -11,19 +11,21 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
 import { useTranslation } from 'react-i18next';
 import { useSearch } from "../contexts/SearchContext.tsx";
+import { useMovies } from "../contexts/MovieContext";
+import { useFilterSort } from "../contexts/FilterSortContext";
 
 
 function Logo() {
 
     const { setActiveLink } = useActiveLink();
-    // const { resetFilter, resetSearch, resetSort } = useMovies();
+    const { resetSearch } = useSearch();
+    const { resetFilterSort } = useFilterSort();
 
     // Function to handle link click
     function navigateTo(link: string) {
         if (link === "/") {
-            // resetFilter();
-            // resetSearch();
-            // resetSort();
+            resetSearch();
+            resetFilterSort();
         }
         setActiveLink(link);
     }
