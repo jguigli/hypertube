@@ -10,11 +10,8 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
-import { MoviesProvider } from './contexts/MovieContext.tsx'
 import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 import { setupAxiosInterceptors } from './services/axiosConfig.ts'
-import { InfiniteScrollProvider } from './contexts/InfiniteScrollContext.tsx';
-import { FilterSortProvider } from './contexts/FilterSortContext.tsx';
 import { SearchProvider } from './contexts/SearchContext.tsx';
 
 function Main() {
@@ -24,19 +21,12 @@ function Main() {
     setupAxiosInterceptors(logoutAndRedirect);
 
     return (
-
         <ThemeProvider theme={theme}>
-            <InfiniteScrollProvider>
-                <FilterSortProvider>
-                    <SearchProvider>
-                        <MoviesProvider>
-                            <ActiveLinkProvider>
-                                <AppRouter />
-                            </ActiveLinkProvider>
-                        </MoviesProvider>
-                    </SearchProvider>
-                </FilterSortProvider>
-            </InfiniteScrollProvider>
+            <SearchProvider>
+                <ActiveLinkProvider>
+                    <AppRouter />
+                </ActiveLinkProvider>
+            </SearchProvider>
         </ThemeProvider>
     );
 }

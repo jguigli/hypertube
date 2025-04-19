@@ -10,6 +10,12 @@ import { useInfiniteScroll } from "./InfiniteScrollContext";
 interface MoviesContextType {
     movies: Movie[];
     fetchMovies: (newPage?: number) => void;
+    isLoading: boolean;
+    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    page: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
+    hasMore: boolean;
+    setHasMore: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const MoviesContext = createContext<MoviesContextType | undefined>(undefined);
@@ -21,7 +27,11 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     const { user, getToken } = useAuth();
     const { searchQuery } = useSearch();
     const { filterOptions, sortOptions } = useFilterSort();
-    const { page, setPage, hasMore, setHasMore, isLoading, setIsLoading } = useInfiniteScroll();
+
+    // Infinite scroll state
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Movies state
     // This state holds the movies fetched from the API
@@ -64,30 +74,29 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
     useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (searchQuery || filterOptions || sortOptions || user.language) {
-                setPage(1);
-                setHasMore(true);
-                fetchMovies(1);
-            }
-        }, 300); // Ajout d'un délai pour éviter les appels redondants
-        return () => clearTimeout(timeout);
-    }, [searchQuery, filterOptions, sortOptions, user.language, fetchMovies]);
+        setPage(1);
+        setMovies([]);
+        setHasMore(true);
+        fetchMovies(1);
+    }, [searchQuery, filterOptions, sortOptions, user.language]);
 
-    useEffect(() => {
-        if (page > 1 && hasMore) {
-            fetchMovies(page);
-        }
-    }, [page, hasMore, fetchMovies]);
-
-
-
+    // useEffect(() => {
+    //     if (page > 1 && hasMore) {
+    //         fetchMovies(page);
+    //     }
+    // }, [page, hasMore, fetchMovies]);
 
     return (
         <MoviesContext.Provider
             value={{
                 movies,
                 fetchMovies,
+                isLoading,
+                setIsLoading,
+                page,
+                setPage,
+                hasMore,
+                setHasMore,
             }}
         >
             {children}

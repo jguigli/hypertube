@@ -13,6 +13,8 @@ import UserSettings from "../pages/UserSettings.tsx";
 import HomeRouter from "./HomeRouter.tsx";
 import Auth from "../utils/Auth.tsx";
 import Watch from "../pages/Watch.tsx";
+import { FilterSortProvider } from "../contexts/FilterSortContext.tsx";
+import { MoviesProvider } from "../contexts/MovieContext.tsx";
 
 const router = createBrowserRouter([
     {
@@ -23,7 +25,11 @@ const router = createBrowserRouter([
                 index: true,
                 element: (
                     <HomeRouter>
-                        <Home />
+                        <FilterSortProvider>
+                            <MoviesProvider>
+                                <Home />
+                            </MoviesProvider>
+                        </FilterSortProvider>
                     </HomeRouter>
                 )
             },
