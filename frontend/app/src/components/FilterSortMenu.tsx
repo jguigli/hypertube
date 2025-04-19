@@ -9,8 +9,8 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useEffect, useState } from "react";
 import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
-import { useMovies } from "../contexts/MovieContext";
 import { useTranslation } from "react-i18next";
+import { useFilterSort } from "../contexts/FilterSortContext";
 
 const sortOptionsLabels = [
     { label: "None", value: "none.desc" },
@@ -26,7 +26,8 @@ export function FilterSortMenu() {
     const [open, setOpen] = useState(false);
     const toggleDrawer = () => setOpen(!open);
     const { t } = useTranslation();
-    const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useMovies();
+    const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useFilterSort()
+
 
     // Nouveaux états locaux pour gérer les valeurs temporaires
     const [tempFilterOptions, setTempFilterOptions] = useState<FilterOptions>({

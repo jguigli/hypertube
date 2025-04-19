@@ -51,7 +51,6 @@ def map_to_movie_info(tmdb_movie, movie: Movie):
         "id": tmdb_movie["id"],
         "adult": tmdb_movie["adult"],
         "original_language": tmdb_movie["original_language"],
-        # "language": language,
         "original_title": tmdb_movie["original_title"],
         "overview": tmdb_movie["overview"],
         "popularity": tmdb_movie["popularity"],

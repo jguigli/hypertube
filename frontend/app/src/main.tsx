@@ -1,5 +1,4 @@
 import './utils/translations/i18n';
-// import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
 import AppRouter from './router/Router.tsx'
@@ -10,9 +9,10 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { ThemeProvider } from '@mui/material'
 import theme from './styles/MUIThemeProvider.tsx'
-import { MoviesProvider } from './contexts/MovieContext.tsx'
 import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 import { setupAxiosInterceptors } from './services/axiosConfig.ts'
+import { SearchProvider } from './contexts/SearchContext.tsx';
+import { FilterSortProvider } from './contexts/FilterSortContext.tsx';
 
 function Main() {
 
@@ -22,19 +22,19 @@ function Main() {
 
     return (
         <ThemeProvider theme={theme}>
-            <MoviesProvider>
-                <ActiveLinkProvider>
-                    <AppRouter />
-                </ActiveLinkProvider>
-            </MoviesProvider>
+            <SearchProvider>
+                <FilterSortProvider>
+                    <ActiveLinkProvider>
+                        <AppRouter />
+                    </ActiveLinkProvider>
+                </FilterSortProvider>
+            </SearchProvider>
         </ThemeProvider>
     );
 }
 
 createRoot(document.getElementById('root')!).render(
-    // <StrictMode>
     <AuthProvider>
         <Main />
     </AuthProvider>
-    // </StrictMode>
 )

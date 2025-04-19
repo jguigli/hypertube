@@ -7,4 +7,7 @@ export default interface CommentType {
     replies: CommentType[];
     timestamp: number;
     avatarUrl: string;
+    items?: CommentType[];
+    name?: string;
+    video_id?: number;
 }
