@@ -171,7 +171,7 @@ async def populate_movies():
 def start_scheduler():
     scheduler.add_job(
         delete_one_month_movie,
-        CronTrigger(second=10)
+        CronTrigger(hour=0, minute=0)
     )
     scheduler.start()
 
