@@ -4,6 +4,7 @@ import MovieService from "../services/MovieService";
 import { useAuth } from "../contexts/AuthContext";
 import Movie from "../types/Movie";
 import { useTranslation  } from "react-i18next";
+import { useMovieInfo } from "../contexts/MovieInfoContext";
 
 export interface OverlayProps {
     movieID: number;
@@ -12,23 +13,24 @@ export interface OverlayProps {
 
 const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
     const movieService = new MovieService();
-    const { getToken, user } = useAuth();
-    
-    const [movieDetail, setMovieDetail] = useState<Movie | null>(null);
+    // const { getToken, user } = useAuth();
+
+    // const [movie, setmovie] = useState<Movie | null>(null);
     const [movieDuration, setMovieDuration] = useState<number | undefined>(undefined);
     const rootRef = useRef<any>(null);
     const { t } = useTranslation();
+    const { movie } = useMovieInfo();
 
-    // Récupérer les infos du film
-    useEffect(() => {
-        async function fetchMovieInfo() {
-            const response = await movieService.getMovieInfo(movieID, getToken(), user.language);
-            if (response.success) {
-                setMovieDetail(response.data);
-            }
-        }
-        fetchMovieInfo();
-    }, [movieID, getToken]);
+    // // Récupérer les infos du film
+    // useEffect(() => {
+    //     async function fetchMovieInfo() {
+    //         const response = await movieService.getMovieInfo(movieID, getToken(), user.language);
+    //         if (response.success) {
+    //             setmovie(response.data);
+    //         }
+    //     }
+    //     fetchMovieInfo();
+    // }, [movieID, getToken]);
 
     // Formater la durée de la vidéo
     const formatDuration = (seconds: number): string => {
@@ -57,20 +59,20 @@ const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
 
     // Créer l'overlay et l'injecter dans le DOM du player
     useEffect(() => {
-        if (!movieDetail || !player) return;
+        if (!movie || !player) return;
 
         const overlayContent = (
             <div className="overlay-content">
                 <div className="watching-label">{t("Vous regardez")}</div>
-                <h2 className="movie-title">{movieDetail.title}</h2>
+                <h2 className="movie-title">{movie.title}</h2>
                 <div className="movie-info">
-                    <span>{new Date(movieDetail.release_date || "").getFullYear() || "N/A"}</span>
+                    <span>{new Date(movie.release_date || "").getFullYear() || "N/A"}</span>
                     <span>• {formatDuration(movieDuration || 0)}</span>
                 </div>
                 <div className="casting">
-                    Réalisé par {getDirector(movieDetail.crew)}, {t("Avec")} {getTopActors(movieDetail.casting)}
+                    Réalisé par {getDirector(movie.crew)}, {t("Avec")} {getTopActors(movie.casting)}
                 </div>
-                <div className="synopsis">{movieDetail.overview}</div>
+                <div className="synopsis">{movie.overview}</div>
             </div>
         );
 
@@ -85,7 +87,7 @@ const Overlay: React.FC<OverlayProps> = ({ movieID, player }) => {
             rootRef.current = ReactDOM.createRoot(overlayElement);
         }
         rootRef.current.render(overlayContent);
-    }, [movieDetail, movieDuration, player]);
+    }, [movie, movieDuration, player]);
 
     // Gérer l'affichage automatique de l'overlay
     useEffect(() => {

@@ -14,6 +14,7 @@ import HomeRouter from "./HomeRouter.tsx";
 import Auth from "../utils/Auth.tsx";
 import Watch from "../pages/Watch.tsx";
 import { MoviesProvider } from "../contexts/MovieContext.tsx";
+import { MovieInfoProvider } from "../contexts/MovieInfoContext.tsx";
 
 const router = createBrowserRouter([
     {
@@ -90,7 +91,9 @@ const router = createBrowserRouter([
                 path: "watch/:id",
                 element: (
                     <PrivateRoute>
-                        <Watch />
+                        <MovieInfoProvider>
+                            <Watch />
+                        </MovieInfoProvider>
                     </PrivateRoute>
                 )
             },

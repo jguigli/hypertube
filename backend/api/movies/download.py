@@ -10,7 +10,7 @@ from .crud import (
 from ..database import SessionLocal
 
 DOWNLOAD_MOVIES_FOLDER = "./downloads"
-CHUNK_SIZE = 1024
+CHUNK_SIZE = 65536  # 6.5 MB
 
 
 async def convert_stream(file_path):

@@ -6,9 +6,10 @@ import MovieService from "../services/MovieService";
 import StructureComments from "../components/StructureComments";
 import { Stack, Typography } from "@mui/material";
 import MoviePresentation from "../components/MoviePresentation";
-import Movie from "../types/Movie";
 import { useTranslation } from 'react-i18next';
 import CustomCard from "../components/Card";
+import CommentType from "../types/Comments";
+import { useMovieInfo } from "../contexts/MovieInfoContext";
 
 export default function Watch() {
 
@@ -17,15 +18,17 @@ export default function Watch() {
     const { id } = useParams<{ id: string }>();
     const video_ID = id || '42';
 
-    const [movie, setMovie] = useState<Movie | null>(null);
     const [ismovieReady, setMovieReady] = useState<boolean>(false);
     const [hlsReady, setHlsReady] = useState<boolean>(false);
     const [isInvalidMovieID, setIsInvalidMovieID] = useState<boolean>(false);
     const [isTorrentNotFound, setIsTorrentNotFound] = useState<boolean>(false);
+    const [comments, setComments] = useState<CommentType[]>([]);
+    const { movie, setMovie } = useMovieInfo();
 
     const { t } = useTranslation();
 
     const navigate = useNavigate();
+
 
     useEffect(() => {
         const WS_URL = `ws://localhost:3000/api/ws/${user.id}`;
@@ -57,12 +60,18 @@ export default function Watch() {
 
         // Cleanup on component unmount
         return () => {
-            // socket.close();
             if (socket.readyState === 1) {
                 socket.close();
             }
         };
     }, [user]);
+
+
+    useEffect(() => {
+        console.log("Movie ID:", video_ID);
+        console.log("User language:", user.language);
+        console.log("GetTokenChanged:", getToken());
+    }, [video_ID, user.language, getToken]);
 
     useEffect(() => {
         async function fetchMovieInfo() {
@@ -70,6 +79,7 @@ export default function Watch() {
                 const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
                 if (response.status === 200) {
                     setMovie(response.data);
+                    setComments(response.data.comments);
                 } else if (response.status === 400) {
                     setIsInvalidMovieID(true);
                 }
@@ -83,30 +93,7 @@ export default function Watch() {
             }
         }
         fetchMovieInfo();
-    }, [video_ID, getToken, user.language]);
-
-
-    // POST /api/download
-    // useEffect(() => {
-    //     async function getDownloadMovie() {
-    //         const response = await movieService.checkMovieDownloadStatus(video_ID, getToken());
-    //         if (response.status === 202) {
-    //             setMovieReady(false);
-    //         } else if (response.status === 200) {
-    //             setMovieReady(true);
-    //         } else if (response.status === 400 || response.status === 422) {
-    //             setIsInvalidMovieID(true);
-    //         } else if (response.status === 404) {
-    //             console.error("No torrent file found for this movie");
-    //             setIsTorrentNotFound(true);
-    //             return;
-    //         } else {
-    //             console.error("Unexpected error");
-    //             return;
-    //         }
-    //     }
-    //     getDownloadMovie();
-    // }, [getToken, movieService])
+    }, []);
 
     if (isInvalidMovieID) {
         return navigate("/404", { replace: true });
@@ -134,7 +121,7 @@ export default function Watch() {
                 ) : (
                     <>{movie && (<MoviePresentation movie={movie} />)}</>
                 )}
-                <StructureComments videoID={video_ID} />
+                <StructureComments videoID={video_ID} comments={comments}/>
             </Stack>
         );
     }

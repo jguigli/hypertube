@@ -445,10 +445,8 @@ async def download_and_convert(movie_id: int, user_id: int):
             movie.is_convert = True
             db.commit()
     finally:
+        redis_client.delete(f"download_and_convert:{movie.id}")
         db.close()
-
-    redis_client.delete(f"download_and_convert:{movie.id}")
-
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
 async def stream_movie_hls(
