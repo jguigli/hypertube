@@ -446,6 +446,7 @@ async def download_and_convert(movie_id: int, user_id: int):
             db.commit()
     finally:
         db.close()
+        redis_client.delete(f"download_and_convert:{movie.id}")
 
     redis_client.delete(f"download_and_convert:{movie.id}")
 
