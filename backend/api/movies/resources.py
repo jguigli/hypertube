@@ -271,7 +271,6 @@ async def get_popular_movies(
             Movie.vote_average,
             Movie.poster_path
         ).filter(
-            Movie.language == language,
             Movie.category.op("&&")(cast([filter_options.categories], ARRAY(Text))) if filter_options.categories != "All" else True,
             Movie.vote_average >= filter_options.imdb_rating_low,
             Movie.vote_average <= filter_options.imdb_rating_high,
@@ -435,15 +434,13 @@ async def download_and_convert(movie_id: int, user_id: int):
     db = SessionLocal()
     try:
         movie = get_movie_by_id(db, movie_id)
-        if movie.is_download is False:
-            await download_torrent(movie.magnet_link, movie.id, user_id)
-            movie.is_download = True
-            db.commit()
-        if movie.is_convert is False:
-            await convert_to_hls(movie.file_path, movie.id)
-            print("Conversion status : OK")
-            movie.is_convert = True
-            db.commit()
+        # if movie.is_download is False:
+        #     await download_torrent(movie.magnet_link, movie.id, user_id)
+        #     db.commit()
+        # if movie.is_convert is False:
+        #     await convert_to_hls(movie.file_path, movie.id)
+        #     movie.is_convert = True
+        #     db.commit()
     finally:
         redis_client.delete(f"download_and_convert:{movie.id}")
         db.close()

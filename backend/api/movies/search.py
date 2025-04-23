@@ -67,7 +67,6 @@ def search_in_db(
         Movie.poster_path
     ).filter(
         Movie.title.ilike(f"%{search}%"),
-        Movie.language == language,
         Movie.category.op("&&")(
             cast([filter_options.categories], ARRAY(Text))
         ) if filter_options.categories != "All" else True,

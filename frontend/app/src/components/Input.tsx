@@ -30,7 +30,7 @@ export default function Input(
             variant='outlined'
             autoComplete={props.autocomplete ? (props.autocomplete) : 'off'}
             disabled={props.disabled ? props.disabled : false}
-            className='overflow-scroll'
+            className='overflow-hidden'
         />
     );
 }

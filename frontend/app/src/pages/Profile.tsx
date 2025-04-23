@@ -106,15 +106,15 @@ export default function PublicProfile() {
                             />
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="username_profile">{t("Username")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.username}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-hidden text-sm sm:text-base">{profileUser.username}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="first_name_profile">{t("First Name")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.firstName}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-hidden text-sm sm:text-base">{profileUser.firstName}</Typography>
                             </div>
                             <div className="flex flex-col gap-2 w-full">
                                 <InputLabel htmlFor="last_name_profile">{t("Last Name")}:</InputLabel>
-                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-scroll text-sm sm:text-base">{profileUser.lastName}</Typography>
+                                <Typography variant="body1" color="secondary" className="font-bold border border-gray-600 p-2 rounded-md overflow-hidden text-sm sm:text-base">{profileUser.lastName}</Typography>
                             </div>
                         </div>
                     </>
