@@ -434,9 +434,9 @@ async def download_and_convert(movie_id: int, user_id: int):
     db = SessionLocal()
     try:
         movie = get_movie_by_id(db, movie_id)
-        # if movie.is_download is False:
-        #     await download_torrent(movie.magnet_link, movie.id, user_id)
-        #     db.commit()
+        if movie.is_download is False:
+            await download_torrent(movie.magnet_link, movie.id, user_id)
+            db.commit()
         # if movie.is_convert is False:
         #     await convert_to_hls(movie.file_path, movie.id)
         #     movie.is_convert = True
@@ -533,12 +533,20 @@ async def standard_stream_movie(
         return StreamingResponse(await convert_stream(movie.file_path), media_type="video/mp4")
 
 
-@router.get('/movies/{movie_id}/subtitles')
+@router.get('/movies/{movie_id}/{token}/subtitles')
 async def get_subtitles(
     movie_id: int,
-    current_user: Annotated[User, Depends(security.get_current_user)],
+    token: str,
     db: Session = Depends(get_db)
 ):
+
+    current_user = security.get_current_user_streaming(token, db)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(
@@ -559,23 +567,39 @@ async def get_subtitles(
             detail="Subtitles not available"
         )
 
+    # TODO: telecharger les sous titres
+    # call api fr -> fr.srt
+    # call api en -> en.srt
+
     subtitles = [filename for filename in Path(dir_path).rglob('*.srt')]
     if not subtitles:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Subtitles not available"
         )
+    print(f"Subtitles found: {subtitles}")
 
-    zip_buffer = io.BytesIO()
+    return [
+        {
+            "lang": "fr`"
+        }
+    ]
 
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        for file_path in subtitles:
-            zip_file.write(file_path, arcname=file_path.name)
+    # zip_buffer = io.BytesIO()
 
-    zip_buffer.seek(0)
+    # with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+    #     for file_path in subtitles:
+    #         zip_file.write(file_path, arcname=file_path.name)
 
-    return Response(
-        zip_buffer.getvalue(),
-        media_type="application/zip",
-        headers={"Content-Disposition": "attachment; filename=files.zip"}
-    )
+    # zip_buffer.seek(0)
+
+    # return Response(
+    #     zip_buffer.getvalue(),
+    #     media_type="application/zip",
+    #     headers={"Content-Disposition": "attachment; filename=files.zip"}
+    # )
+
+
+
+# TODO: Route qui permet de gerer le 'stream des sous titres'
+
