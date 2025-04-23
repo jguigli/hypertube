@@ -50,7 +50,7 @@ from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
 import requests
-from api.config import JACKETT_API_KEY
+from api.config import JACKETT_API_KEY, OPENSUBTITLES_API_KEY
 
 
 router = APIRouter(tags=["Movies"])
@@ -570,18 +570,65 @@ async def get_subtitles(
     # TODO: telecharger les sous titres
     # call api fr -> fr.srt
     # call api en -> en.srt
+    BASE_URL = "https://api.opensubtitles.com/api/v1"
 
-    subtitles = [filename for filename in Path(dir_path).rglob('*.srt')]
-    if not subtitles:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Subtitles not available"
+    headers = {
+        "Api-Key": OPENSUBTITLES_API_KEY,
+        "Content-Type": "application/json",
+    }
+
+    def search_subtitles(query, lang="fr"):
+        response = requests.get(
+            f"{BASE_URL}/subtitles",
+            headers=headers,
+            params={
+                "query": query,
+                "languages": lang,
+                "order_by": "downloads",
+                "order_direction": "desc"},
         )
-    print(f"Subtitles found: {subtitles}")
+        if response.status_code == 200:
+            return response.json()["data"]
+        else:
+            print("Erreur lors de la recherche :", response.text)
+            return []
+
+    def download_subtitle(file_id, filename="subtitle.srt"):
+        response = requests.get(
+            f"{BASE_URL}/download",
+            headers=headers,
+            params={"file_id": file_id},
+        )
+        if response.status_code == 200:
+            download_link = response.json()["link"]
+            srt = requests.get(download_link)
+            with open(filename, "wb") as f:
+                f.write(srt.content)
+            print(f"Sous-titre téléchargé sous le nom : {filename}")
+        else:
+            print("Erreur lors du téléchargement :", response.text)
+
+    languages = ["fr", "en"]
+    subtitles = []
+    for lang in languages:
+
+        subtitles = search_subtitles(movie.title, lang)
+        if not subtitles:
+            print(f"Aucun sous-titre trouvé pour la langue {lang}.")
+            continue
+
+        print("\nSous-titres trouvés :")
+        for i, sub in enumerate(subtitles[:5], 1):  # afficher les 5 premiers
+            print(f"{i}. {sub['attributes']['language']} - {sub['attributes']['release']}")
+
+        # file_id = subtitles[choice]["attributes"]["files"][0]["file_id"]
+        file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
+        filename = f"{movie.title}_{lang}.srt"
+        # download_subtitle(file_id, filename)
 
     return [
         {
-            "lang": "fr`"
+            "lang": "fr"
         }
     ]
 
