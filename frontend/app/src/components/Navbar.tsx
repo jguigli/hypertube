@@ -101,11 +101,6 @@ export function LanguageSelection() {
         }
     };
 
-    if (activeLink.includes('watch') && user.is_logged_in) {
-        // Don't show language selection on watch page
-        return <span className="min-w-[120px]"></span>;
-    }
-
     return (
         <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
             <InputLabel id="language-label" sx={{ paddingTop: 0.5 }}>

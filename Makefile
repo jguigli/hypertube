@@ -57,5 +57,7 @@ fclean:
 	rm -rf ./backend/profile_pictures/*
 	mv ./backend/default.jpg.tmp ./backend/profile_pictures/default.jpg
 	rm -rf ./backend/downloads/*
+	rm -rf ./backend/hls_movies/*
+
 
 re: fclean build_up
