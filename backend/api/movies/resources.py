@@ -437,18 +437,15 @@ async def download_and_convert(movie_id: int, user_id: int):
         movie = get_movie_by_id(db, movie_id)
         if movie.is_download is False:
             await download_torrent(movie.magnet_link, movie.id, user_id)
-            movie.is_download = True
             db.commit()
         if movie.is_convert is False:
             await convert_to_hls(movie.file_path, movie.id)
-            print("Conversion status : OK")
             movie.is_convert = True
             db.commit()
     finally:
-        db.close()
         redis_client.delete(f"download_and_convert:{movie.id}")
+        db.close()
 
-    redis_client.delete(f"download_and_convert:{movie.id}")
 
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')

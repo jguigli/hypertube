@@ -150,6 +150,7 @@ async def download_torrent(magnet_link: str, movie_id: int, user_id: int):
             try:
                 movie = get_movie_by_id(db, movie_id)
                 movie.file_path = file_path
+                movie.is_download = True
                 db.commit()
             finally:
                 db.close()
