@@ -590,9 +590,7 @@ async def get_subtitles(
                 "query": query,
                 "languages": lang,
                 "order_by": "ratings"
-                # "order_by": "downloads",
-                # "order_direction": "desc"
-            },
+            }
         )
         if response.status_code == 200:
             return response.json()["data"]
@@ -600,7 +598,14 @@ async def get_subtitles(
             print("Erreur lors de la recherche :", response.text)
             return []
 
-    def download_subtitle(file_id, filename="subtitle.srt"):
+    def download_subtitle(
+        file_id: str,
+        filename: str,
+        file_path: str
+    ):
+
+        file_full_path = os.path.join(os.path.dirname(file_path), filename)
+
         response = requests.post(
             f"{BASE_URL}/download",
             headers=headers,
@@ -609,15 +614,19 @@ async def get_subtitles(
         if response.status_code == 200:
             download_link = response.json()["link"]
             srt = requests.get(download_link)
-            with open(filename, "wb") as f:
+            with open(file_full_path, "wb") as f:
                 f.write(srt.content)
-            print(f"Sous-titre téléchargé sous le nom : {filename}")
+            print(f"Sous-titre téléchargé sous le nom : {file_full_path}")
         else:
             print("Erreur lors du téléchargement :", response.text)
 
     languages = ["fr", "en"]
     subtitles = []
     for lang in languages:
+
+        file_full_path = os.path.join(os.path.dirname(movie.file_path), f"{lang}.srt")
+        if os.path.exists(file_full_path):
+            continue
 
         subtitles = search_subtitles("tt0110357", movie.title, lang)
         # subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
@@ -631,8 +640,8 @@ async def get_subtitles(
 
         # file_id = subtitles[choice]["attributes"]["files"][0]["file_id"]
         file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
-        filename = f"{movie.title}_{lang}.srt"
-        download_subtitle(file_id, filename)
+        filename = f"{lang}.srt"
+        download_subtitle(file_id, filename, movie.file_path)
 
     return [
         {
