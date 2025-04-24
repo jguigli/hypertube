@@ -55,6 +55,7 @@ def map_to_movie_info(tmdb_movie, movie: Movie):
 
     data = {
         "id": tmdb_movie["id"],
+        "imdb_id": tmdb_movie["imdb_id"],
         "adult": tmdb_movie["adult"],
         "original_language": tmdb_movie["original_language"],
         "original_title": tmdb_movie["original_title"],
@@ -65,6 +66,7 @@ def map_to_movie_info(tmdb_movie, movie: Movie):
         "release_date": tmdb_movie["release_date"],
         "category": genres,
         "title": tmdb_movie["title"],
+        "runtime": tmdb_movie["runtime"],
         "vote_average": tmdb_movie["vote_average"],
         "vote_count": tmdb_movie["vote_count"],
         "casting": casts,
@@ -100,31 +102,6 @@ def create_movie(db: Session, movie: Movie):
     db.commit()
     db.refresh(db_movie)
     return db_movie
-
-
-# def create_movie(db: Session, movie_id: int, original_title: str, release_date: str):
-#     db_movie = Movie(
-#         # id=movie.id,
-#         # original_language=movie.original_language,
-#         # language=movie.language,
-#         # original_title=movie.original_title,
-#         # overview=movie.overview,
-#         # popularity=movie.popularity,
-#         # poster_path=movie.poster_path,
-#         # backdrop_path=movie.backdrop_path,
-#         # release_date=movie.release_date,
-#         # category=movie.category,
-#         # title=movie.title,
-#         # vote_average=movie.vote_average,
-#         # vote_count=movie.vote_count
-#         id=movie_id,
-#         original_title=original_title,
-#         release_date=release_date
-#     )
-#     db.add(db_movie)
-#     db.commit()
-#     db.refresh(db_movie)
-#     return db_movie
 
 
 # #################### Watched Movies #####################

@@ -397,8 +397,19 @@ async def get_movie_informations(
         db_movie = create_movie(
             db,
             detailed_movie['id'],
+            detailed_movie['original_language'],
+            detailed_movie['language'],
             detailed_movie['original_title'],
-            detailed_movie['release_date']
+            detailed_movie['overview'],
+            detailed_movie['popularity'],
+            detailed_movie['poster_path'],
+            detailed_movie['backdrop_path'],
+            detailed_movie['release_date'],
+            detailed_movie['category'],
+            detailed_movie['title'],
+            detailed_movie['runtime'],
+            detailed_movie['vote_average'],
+            detailed_movie['vote_count'],
         )
 
     if db_movie.is_download and not db_movie.is_convert:

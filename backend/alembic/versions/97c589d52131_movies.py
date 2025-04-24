@@ -23,6 +23,7 @@ def upgrade() -> None:
             """
                 CREATE TABLE IF NOT EXISTS movies (
                     id INTEGER PRIMARY KEY,
+                    imdb_id VARCHAR(50),
                     original_language VARCHAR(3),
                     language VARCHAR(3),
                     original_title VARCHAR(512),
@@ -33,6 +34,7 @@ def upgrade() -> None:
                     release_date VARCHAR(10),
                     category TEXT ARRAY,
                     title VARCHAR(512),
+                    runtime INTEGER,
                     vote_average INTEGER,
                     vote_count INTEGER,
                     magnet_link VARCHAR(300),
