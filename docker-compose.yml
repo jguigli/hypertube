@@ -40,7 +40,7 @@ services:
       retries: 10
       timeout: 5s
     volumes:
-      - "${PWD}/database/dumps/:/docker-entrypoint-initdb.d/"
+      - "${PWD}/database/dumps/movies_dump.sql:/docker-entrypoint-initdb.d/movies_dump.sql"
     restart: unless-stopped
     networks:
       - app-network

@@ -8,6 +8,7 @@ export default interface Movie {
     title: string;
     duration?: number;
     overview?: string;
+    imdb_id?: string;
     release_date: string;
     vote_average: number;
     poster_path: string;

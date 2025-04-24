@@ -68,12 +68,6 @@ export default function Watch() {
 
 
     useEffect(() => {
-        console.log("Movie ID:", video_ID);
-        console.log("User language:", user.language);
-        console.log("GetTokenChanged:", getToken());
-    }, [video_ID, user.language, getToken]);
-
-    useEffect(() => {
         async function fetchMovieInfo() {
             try {
                 const response = await movieService.getMovieInfo(+video_ID, getToken(), user.language);
@@ -96,7 +90,8 @@ export default function Watch() {
     }, []);
 
     if (isInvalidMovieID) {
-        return navigate("/404", { replace: true });
+        navigate("/404", { replace: true });
+        return null;
     } else if (isTorrentNotFound) {
         return (
             <div className="flex justify-center items-center">

@@ -575,17 +575,24 @@ async def get_subtitles(
     headers = {
         "Api-Key": OPENSUBTITLES_API_KEY,
         "Content-Type": "application/json",
+        "User-Agent": "Hypertube",
     }
 
-    def search_subtitles(query, lang="fr"):
+    def search_subtitles(imdb_id: str, query: str, lang="fr"):
+
+        print(f"Recherche de sous-titres pour {query} ({lang} with {imdb_id})")
+
         response = requests.get(
             f"{BASE_URL}/subtitles",
             headers=headers,
             params={
+                "imdb_id": imdb_id,
                 "query": query,
                 "languages": lang,
-                "order_by": "downloads",
-                "order_direction": "desc"},
+                "order_by": "ratings"
+                # "order_by": "downloads",
+                # "order_direction": "desc"
+            },
         )
         if response.status_code == 200:
             return response.json()["data"]
@@ -594,7 +601,7 @@ async def get_subtitles(
             return []
 
     def download_subtitle(file_id, filename="subtitle.srt"):
-        response = requests.get(
+        response = requests.post(
             f"{BASE_URL}/download",
             headers=headers,
             params={"file_id": file_id},
@@ -612,7 +619,8 @@ async def get_subtitles(
     subtitles = []
     for lang in languages:
 
-        subtitles = search_subtitles(movie.title, lang)
+        subtitles = search_subtitles("tt0110357", movie.title, lang)
+        # subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
         if not subtitles:
             print(f"Aucun sous-titre trouvé pour la langue {lang}.")
             continue
@@ -624,7 +632,7 @@ async def get_subtitles(
         # file_id = subtitles[choice]["attributes"]["files"][0]["file_id"]
         file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
         filename = f"{movie.title}_{lang}.srt"
-        # download_subtitle(file_id, filename)
+        download_subtitle(file_id, filename)
 
     return [
         {

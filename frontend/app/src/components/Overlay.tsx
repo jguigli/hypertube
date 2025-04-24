@@ -45,8 +45,6 @@ const Overlay: React.FC<OverlayProps> = ({ player }) => {
             return;
         }
 
-        movie.duration = 0; // Exemple de durée, à remplacer par la durée réelle du film (test pour voir si on peut le modifier ici)
-
         const overlayContent = (
             <div className="overlay-content">
                 <div className="watching-label">{t("Vous regardez")}</div>

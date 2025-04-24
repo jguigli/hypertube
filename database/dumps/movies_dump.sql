@@ -24,7 +24,7 @@ SET default_table_access_method = heap;
 -- Name: movies; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public.movies (
+CREATE TABLE IF NOT EXISTS public.movies (
     id integer NOT NULL,
     original_language character varying(3),
     language character varying(3),
