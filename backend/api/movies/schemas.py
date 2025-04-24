@@ -23,6 +23,7 @@ class Cast(BaseModel):
 
 class MovieInfo(BaseModel):
     id: int
+    imdb_id: str
     adult: bool
     original_language: str
     original_title: str
@@ -32,6 +33,7 @@ class MovieInfo(BaseModel):
     backdrop_path: str | None
     release_date: str
     title: str
+    runtime: int
     vote_average: float
     vote_count: int
     category: list[str] | None

@@ -10,6 +10,7 @@ class Movie(Base):
     __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True, index=True)
+    imdb_id = Column(String(50))
     original_language = Column(String(3))
     language = Column(String(3))
     original_title = Column(String(512))
@@ -20,6 +21,7 @@ class Movie(Base):
     release_date = Column(String(10))
     category = Column(ARRAY(Text))
     title = Column(String(512))
+    runtime = Column(Integer)
     vote_average = Column(Integer)
     vote_count = Column(Integer)
 
