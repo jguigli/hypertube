@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from 'react';
-// import videojs from "video.js";
+import React, { useEffect, useState, useMemo } from 'react';
 import VideoJS from './PlayerVideo';
 import { useAuth } from '../contexts/AuthContext';
 import MovieService from '../services/MovieService';
-
-
 
 export default function Video(
     props: {
@@ -16,8 +13,7 @@ export default function Video(
     const { getToken } = useAuth();
     const token = getToken();
     const movieService = new MovieService();
-    const [subtitles, setSubtitles] = useState([]);
-
+    const [subtitles, setSubtitles] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchSubtitles = async () => {
@@ -26,36 +22,36 @@ export default function Video(
                 console.log("Error fetching subtitles");
                 return [];
             }
-            console.log(response.data);
-            const subtitles = response.data.map((subtitle: any) => ({
-                src: `http://localhost:3000/api/movies/${props.video_ID}/subtitles?lang=${subtitle.lang}`,
-                srclang: subtitle.lang,
-                label: subtitle.lang
+            return response.data.map((subtitle: any) => ({
+                kind: 'subtitles',
+                src: subtitle.src,
+                srclang: subtitle.srcLang,
+                label: subtitle.label,
             }));
-            return subtitles;
         };
 
         const loadSubtitles = async () => {
-            // 1 - Fetch des sous titres dans le backend -> Nous retrourne la liste des sous titres disponnibles
             const fetchedSubtitles = await fetchSubtitles();
-            // 2- Mise a jour de la liste des sous titres
             setSubtitles(fetchedSubtitles);
         };
 
         loadSubtitles();
     }, [props.video_ID]);
 
-    const videoJsOptions = {
+    const videoJsOptions = useMemo(() => ({
         autoplay: false,
         controls: true,
         responsive: true,
         fluid: true,
         sources: [{
-            src: props.hlsReady ? `http://localhost:3000/api/movies/${props.video_ID}/stream/${token}/master.m3u8` : `http://localhost:3000/api/movies/${props.video_ID}/stream/${token}`,
+            src: props.hlsReady
+                ? `http://localhost:3000/api/movies/${props.video_ID}/stream/${token}/master.m3u8`
+                : `http://localhost:3000/api/movies/${props.video_ID}/stream/${token}`,
             type: props.hlsReady ? 'application/x-mpegURL' : 'video/mp4'
         }],
-        tracks: subtitles,
-    };
+        tracks: subtitles // Ajoute cette ligne pour passer les sous-titres à VideoJS
+    }), [props.hlsReady, props.video_ID, token, subtitles]);
+
 
     const handlePlayerReady = (player: any) => {
         playerRef.current = player;
@@ -63,7 +59,9 @@ export default function Video(
 
     return (
         <div className="video-container w-full h-full">
-            <VideoJS options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID} />
+            <VideoJS
+                key={subtitles.map(s => s.src).join(',')}
+                options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID} />
         </div>
     );
 

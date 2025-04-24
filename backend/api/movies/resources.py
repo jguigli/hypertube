@@ -631,34 +631,33 @@ async def get_subtitles(
         else:
             print("Erreur lors du téléchargement :", response.text)
 
-    languages = ["fr", "en"]
+    language_dict = {
+        "fr": "Français",
+        "en": "English"
+    }
     subtitles = []
-    for lang in languages:
+    for lang in ["fr", "en"]:
 
         file_full_path = os.path.join(os.path.dirname(movie.file_path), f"{lang}.srt")
-        if os.path.exists(file_full_path):
-            continue
+        if not os.path.exists(file_full_path):
 
-        subtitles = search_subtitles("tt0110357", movie.title, lang)
-        # subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
-        if not subtitles:
-            print(f"Aucun sous-titre trouvé pour la langue {lang}.")
-            continue
+            subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
+            if not subtitles:
+                print(f"Aucun sous-titre trouvé pour la langue {lang}.")
+                continue
 
-        print("\nSous-titres trouvés :")
-        for i, sub in enumerate(subtitles[:5], 1):  # afficher les 5 premiers
-            print(f"{i}. {sub['attributes']['language']} - {sub['attributes']['release']}")
+            file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
+            filename = f"{lang}.srt"
+            download_subtitle(file_id, filename, movie.file_path)
 
-        # file_id = subtitles[choice]["attributes"]["files"][0]["file_id"]
-        file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
-        filename = f"{lang}.srt"
-        download_subtitle(file_id, filename, movie.file_path)
+        subtitles.append({
+            "kind": "subtitles",
+            "src": "",
+            "srcLang": lang,
+            "label": language_dict[lang],
+        })
 
-    return [
-        {
-            "lang": "fr"
-        }
-    ]
+    return subtitles
 
     # zip_buffer = io.BytesIO()
 
