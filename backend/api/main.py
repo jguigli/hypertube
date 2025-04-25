@@ -22,7 +22,7 @@ from api.movies.fetch import (
 from api.movies.crud import get_movie_by_id
 import os
 import asyncio
-import requests
+import aiohttp
 from .config import JACKETT_API_KEY
 from api.movies.search import (
     parse_jackett_results, find_movie_categories, add_movie_to_database
@@ -81,6 +81,8 @@ scheduler = BackgroundScheduler()
 
 async def populate_movies():
 
+    return
+
     db = SessionLocal()
 
     # Return if there are already movies in the database
@@ -97,20 +99,25 @@ async def populate_movies():
             movies_data = await fetch_popular_movies_tmdb(language, page)
             if not movies_data:
                 break
+
             for movie in movies_data:
                 try:
                     params = {
                         "apikey": JACKETT_API_KEY,
                         "Query": movie["original_title"],
                     }
-                    response = requests.get(
-                        JACKETT_URL, params=params, timeout=100
-                    )
-                    response.raise_for_status()
-                    data = response.json()
+
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(JACKETT_URL, params=params) as response:
+                            if response.status != 200:
+                                continue
+                            data = await response.json()
+                            print("Jackett results: ", data)
+
                     results = parse_jackett_results(data)
                     unique_imdb_ids = set(
-                        result['imdb_id'] for result in results if result["imdb_id"]
+                        result['imdb_id']
+                        for result in results if result["imdb_id"]
                     )
 
                     if not unique_imdb_ids:
@@ -124,46 +131,21 @@ async def populate_movies():
                             genres=genres,
                             tmdb_data=movie
                         )
+                        print(
+                            f"Adding movie {movie['id']} to database :" + ""
+                            f"{movie['original_title']}"
+                        )
                         add_movie_to_database(
                             db=db,
                             language=language,
                             tmdb_data=movie,
                             categories=categories
                         )
+                        break
 
-
-                    # END
-                    # movie_db = get_movie_by_id(db, movie["id"])
-                    # if not movie_db:
-                    #     categories = []
-                    #     genre_ids = movie.get("genre_ids", None)
-                    #     if genre_ids:
-                    #         for genre in genres:
-                    #             if genre['id'] in genre_ids:
-                    #                 categories.append(genre['name'])
-                    #     movie_db = create_movie(
-                    #         db, Movie(
-                    #             id=movie["id"],
-                    #             original_language=movie["original_language"],
-                    #             language=language,
-                    #             original_title=movie["original_title"],
-                    #             overview=movie["overview"],
-                    #             popularity=movie["popularity"],
-                    #             poster_path=movie["poster_path"],
-                    #             backdrop_path=movie["backdrop_path"],
-                    #             release_date=movie["release_date"],
-                    #             category=categories,
-                    #             title=movie["title"],
-                    #             vote_average=movie["vote_average"],
-                    #             vote_count=movie["vote_count"]
-                    #         )
-                    #     )
                 except Exception as e:
                     print(f"Error processing movie {movie['id']}: {e}")
             page += 1
-            if page > 5:
-                break
-
 
 @app.on_event("startup")
 def start_scheduler():

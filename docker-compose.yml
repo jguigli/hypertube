@@ -24,8 +24,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-      # jackett:
-      #   condition: service_healthy
     env_file:
       .env
     restart: unless-stopped
@@ -41,6 +39,8 @@ services:
       interval: 10s
       retries: 10
       timeout: 5s
+    # volumes:
+    #   - "${PWD}/database/dumps/movies_dump.sql:/docker-entrypoint-initdb.d/movies_dump.sql"
     restart: unless-stopped
     networks:
       - app-network
@@ -86,11 +86,6 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/jackett/"]
-      interval: 10s
-      timeout: 10s
-      retries: 6
     volumes:
       - "${PWD}/jackett/config:/config/Jackett"
     networks:

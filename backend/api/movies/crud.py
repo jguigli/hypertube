@@ -34,14 +34,20 @@ def map_to_movie_info(tmdb_movie, movie: Movie):
 
     casts = []
     credit = tmdb_movie.get("credits", None)
-    casts_list = credit['cast']
+    if credit:
+        casts_list = credit['cast']
+    else:
+        casts_list = None
     if casts_list:
         casts = [{'name': cast['name'], 'role': cast['known_for_department']} for cast in casts_list]
     else:
         casts = None
 
     crew = []
-    crew_list = credit['crew']
+    if credit:
+        crew_list = credit['crew']
+    else:
+        crew_list = None
     if crew_list:
         crew = [{'name': cast['name'], 'role': cast['known_for_department']} for cast in crew_list]
     else:

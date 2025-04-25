@@ -158,7 +158,7 @@ export default class MovieService {
                 }
                 else if (response.status === 404) {
                     return { status: 404, data: null }
-                } 
+                }
             }
             return {
                 status: 401,
@@ -278,5 +278,38 @@ export default class MovieService {
     //         return { status: error.response?.status || 0, message: "Unexpected error" }
     //     }
     // }
+
+
+    // Get subtitles for a movie
+    async getSubtitles(video_id: number, token: string | null) {
+        try {
+            if (token) {
+                const response = await axios.get(
+                    `/movies/${video_id}/${token}/subtitles`,
+                    {
+                        headers: {
+                            Authorization: `${token}`
+                        }
+                    }
+                );
+                if (response.status === 200) {
+                    return {
+                        success: true,
+                        data: response.data
+                    }
+                }
+            }
+            return {
+                success: false,
+                data: null
+            }
+        } catch (error) {
+            return {
+                success: false,
+                data: null
+            }
+        }
+
+    }
 
 }

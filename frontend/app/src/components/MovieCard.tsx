@@ -5,11 +5,21 @@ import CustomCard from "./Card.tsx";
 import { Star } from "@mui/icons-material";
 import LazyLoad from "react-lazyload";
 import { useActiveLink } from "../contexts/ActiveLinkContext.tsx";
+import { useSearch } from "../contexts/SearchContext.tsx";
+import { useFilterSort } from "../contexts/FilterSortContext.tsx";
 
 
 export default function MovieCard({ movie, lazy_load = true }: { movie: Movie; lazy_load?: boolean }) {
 
     const { setActiveLink } = useActiveLink();
+    const { resetSearch } = useSearch();
+    const { resetFilterSort } = useFilterSort();
+
+    const handleClick = () => {
+        setActiveLink(`/watch/${movie.id}`);
+        resetSearch();
+        resetFilterSort();
+    };
 
     return (
         <div className="flex justify-center items-center h-full w-full">
@@ -17,7 +27,7 @@ export default function MovieCard({ movie, lazy_load = true }: { movie: Movie; l
                 additionalClasses={`h-full w-full max-w-[350px] ${movie.is_watched ? "watched" : ""}`}
             >
                 <CardActionArea className={`h-full w-full ${movie.is_watched && "Mui-focusVisible"}`}>
-                    <Link to={`/watch/${movie.id}`} onClick={() => setActiveLink(`/watch/${movie.id}`)}>
+                    <Link to={`/watch/${movie.id}`} onClick={handleClick}>
                         <div className="h-[auto] w-full flex items-center justify-center bg-gray-950 border-b border-b-neutral-800">
                             {lazy_load ?
                             <LazyLoad height={'100%'} offset={100} resize={true} once>

@@ -50,7 +50,7 @@ from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
 import requests
-from api.config import JACKETT_API_KEY
+from api.config import JACKETT_API_KEY, OPENSUBTITLES_API_KEY
 
 
 router = APIRouter(tags=["Movies"])
@@ -445,9 +445,9 @@ async def download_and_convert(movie_id: int, user_id: int):
     db = SessionLocal()
     try:
         movie = get_movie_by_id(db, movie_id)
-        # if movie.is_download is False:
-        #     await download_torrent(movie.magnet_link, movie.id, user_id)
-        #     db.commit()
+        if movie.is_download is False:
+            await download_torrent(movie.magnet_link, movie.id, user_id)
+            db.commit()
         # if movie.is_convert is False:
         #     await convert_to_hls(movie.file_path, movie.id)
         #     movie.is_convert = True
@@ -455,8 +455,6 @@ async def download_and_convert(movie_id: int, user_id: int):
     finally:
         redis_client.delete(f"download_and_convert:{movie.id}")
         db.close()
-
-
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
 async def stream_movie_hls(
@@ -546,12 +544,20 @@ async def standard_stream_movie(
         return StreamingResponse(await convert_stream(movie.file_path), media_type="video/mp4")
 
 
-@router.get('/movies/{movie_id}/subtitles')
+@router.get('/movies/{movie_id}/{token}/subtitles')
 async def get_subtitles(
     movie_id: int,
-    current_user: Annotated[User, Depends(security.get_current_user)],
+    token: str,
     db: Session = Depends(get_db)
 ):
+
+    current_user = security.get_current_user_streaming(token, db)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
     movie = get_movie_by_id(db, movie_id)
     if not movie:
         raise HTTPException(
@@ -572,23 +578,148 @@ async def get_subtitles(
             detail="Subtitles not available"
         )
 
-    subtitles = [filename for filename in Path(dir_path).rglob('*.srt')]
-    if not subtitles:
+    # TODO: telecharger les sous titres
+    # call api fr -> fr.srt
+    # call api en -> en.srt
+    BASE_URL = "https://api.opensubtitles.com/api/v1"
+
+    headers = {
+        "Api-Key": OPENSUBTITLES_API_KEY,
+        "Content-Type": "application/json",
+        "User-Agent": "Hypertube",
+    }
+
+    def search_subtitles(imdb_id: str, query: str, lang="fr"):
+
+        print(f"Recherche de sous-titres pour {query} ({lang} with {imdb_id})")
+
+        response = requests.get(
+            f"{BASE_URL}/subtitles",
+            headers=headers,
+            params={
+                "imdb_id": imdb_id,
+                "query": query,
+                "languages": lang,
+                "order_by": "ratings"
+            }
+        )
+        if response.status_code == 200:
+            return response.json()["data"]
+        else:
+            print("Erreur lors de la recherche :", response.text)
+            return []
+
+    def download_subtitle(
+        file_id: str,
+        filename: str,
+        file_path: str
+    ):
+
+        file_full_path = os.path.join(os.path.dirname(file_path), filename)
+
+        response = requests.post(
+            f"{BASE_URL}/download",
+            headers=headers,
+            params={"file_id": file_id},
+        )
+        if response.status_code == 200:
+            download_link = response.json()["link"]
+            srt = requests.get(download_link)
+            with open(file_full_path, "wb") as f:
+                f.write(srt.content)
+            print(f"Sous-titre téléchargé sous le nom : {file_full_path}")
+        else:
+            print("Erreur lors du téléchargement :", response.text)
+
+    language_dict = {
+        "fr": "Français",
+        "en": "English"
+    }
+    subtitles = []
+    for lang in ["fr", "en"]:
+
+        file_full_path = os.path.join(os.path.dirname(movie.file_path), f"{lang}.srt")
+        if not os.path.exists(file_full_path):
+
+            subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
+            if not subtitles:
+                print(f"Aucun sous-titre trouvé pour la langue {lang}.")
+                continue
+
+            file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
+            filename = f"{lang}.srt"
+            download_subtitle(file_id, filename, movie.file_path)
+
+        subtitles.append({
+            "kind": "subtitles",
+            "src": "",
+            "srcLang": lang,
+            "label": language_dict[lang],
+        })
+
+    return subtitles
+
+    # zip_buffer = io.BytesIO()
+
+    # with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+    #     for file_path in subtitles:
+    #         zip_file.write(file_path, arcname=file_path.name)
+
+    # zip_buffer.seek(0)
+
+    # return Response(
+    #     zip_buffer.getvalue(),
+    #     media_type="application/zip",
+    #     headers={"Content-Disposition": "attachment; filename=files.zip"}
+    # )
+
+
+@router.get('/movies/stream/{movie_id}/{token}/subtitles/{lang}')
+async def stream_subtitles(
+    movie_id: int,
+    token: str,
+    lang: str,
+    db: Session = Depends(get_db)
+):
+    current_user = security.get_current_user_streaming(token, db)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid movie"
+        )
+
+    if movie.is_download is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie not downloaded"
+        )
+
+    dir_path = os.path.dirname(movie.file_path)
+    if not dir_path:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Subtitles not available"
         )
 
-    zip_buffer = io.BytesIO()
+    subtitles = os.path.join(dir_path, f"{lang}.srt")
+    if not os.path.exists(subtitles):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subtitles not available"
+        )
 
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        for file_path in subtitles:
-            zip_file.write(file_path, arcname=file_path.name)
+    def srt_to_vtt(srt_path):
+        with open(srt_path, "r", encoding="utf-8") as srt_file:
+            yield "WEBVTT\n\n"
+            for line in srt_file:
+                # Remplacer la virgule par un point dans les timecodes
+                yield line.replace(",", ".")
 
-    zip_buffer.seek(0)
-
-    return Response(
-        zip_buffer.getvalue(),
-        media_type="application/zip",
-        headers={"Content-Disposition": "attachment; filename=files.zip"}
-    )
+    return StreamingResponse(srt_to_vtt(subtitles), media_type="text/vtt")

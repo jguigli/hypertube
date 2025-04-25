@@ -47,6 +47,8 @@ function MovieSearchBar() {
     const { t } = useTranslation();
     const { searchQuery, setSearchQuery } = useSearch();
     const [search, setSearch] = useState("");
+    const { activeLink } = useActiveLink();
+    const navigate = useNavigate();
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
         setSearch(event.target.value);
@@ -59,7 +61,11 @@ function MovieSearchBar() {
 
     function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (activeLink !== "/") {
+            navigate("/");
+        }
         setSearchQuery(search);
+        setSearch("");
     }
 
     return (
@@ -90,8 +96,6 @@ function MovieSearchBar() {
 export function LanguageSelection() {
     const { i18n, t } = useTranslation();
     const { changeUserLanguage } = useAuth();
-    const { activeLink } = useActiveLink();
-    const { user } = useAuth();
 
     const handleChange = (event: SelectChangeEvent) => {
         const lang = event.target.value;

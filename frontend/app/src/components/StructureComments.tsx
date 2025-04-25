@@ -10,7 +10,7 @@ import CommentType from "../types/Comments";
 import UserService from "../services/UserService";
 import { useTranslation } from 'react-i18next';
 
-export default function StructureComments({ videoID }: { videoID: string }) {
+export default function StructureComments({ videoID, comments }: { videoID: string, comments: CommentType[] }) {
     const [commentsData, setCommentsData] = useState<CommentType[]>([]);
     const { getToken, user } = useAuth();
     const { insertNode, editNode, deleteNode } = useNode();
@@ -79,36 +79,27 @@ export default function StructureComments({ videoID }: { videoID: string }) {
 
         const userService = new UserService();
         async function getMovieInfo() {
-            const movieService = new MovieService();
 
-            const response = await movieService.getMovieInfo(+videoID, getToken(), user.language);
-            if (response.status !== 200) {
-                console.error("Failed to fetch comments", response);
-                return;
-            }
-            console.log("Fetched comments:", response.data.comments);
-
-            for (let i = 0; i < response.data.comments.length; i++) {
-
-                console.log(response.data.comments[i]);
-                const fetchedProfileUserPicture = await userService.getPictureById(response.data.comments[i].user_id, token);
-                if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
-                    response.data.comments[i].avatarUrl = fetchedProfileUserPicture.avatar;
-                }
-                for (let j = 0; j < response.data.comments[i].replies.length; j++) {
-                    const fetchedProfileUserPicture = await userService.getPictureById(response.data.comments[i].replies[j].user_id, token);
+            const fetchAvatarsRecursively = async (comments: CommentType[]): Promise<void> => {
+                for (const comment of comments) {
+                    const fetchedProfileUserPicture = await userService.getPictureById(comment.user_id, token);
                     if (fetchedProfileUserPicture.success && fetchedProfileUserPicture.avatar) {
-                        response.data.comments[i].replies[j].avatarUrl = fetchedProfileUserPicture.avatar;
+                        comment.avatarUrl = fetchedProfileUserPicture.avatar;
+                    }
+                    if (comment.replies?.length) {
+                        await fetchAvatarsRecursively(comment.replies);
                     }
                 }
-            }
+            };
 
-            setCommentsData(response.data.comments);
+            await fetchAvatarsRecursively(comments);
+
+            setCommentsData(comments);
         }
 
         getMovieInfo();
 
-    }, [getToken, videoID, user.language, token]);
+    }, [comments, token]);
 
     const commentService = new CommentService();
     const [input, setInput] = useState<string>("");

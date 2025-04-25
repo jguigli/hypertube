@@ -21,7 +21,7 @@ def upgrade() -> None:
     conn.execute(
         text(
             """
-                CREATE TABLE movies (
+                CREATE TABLE IF NOT EXISTS movies (
                     id INTEGER PRIMARY KEY,
                     imdb_id VARCHAR(50),
                     original_language VARCHAR(3),

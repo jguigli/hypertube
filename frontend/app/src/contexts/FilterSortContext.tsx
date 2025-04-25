@@ -75,7 +75,7 @@ export function FilterSortProvider({ children }: { children: React.ReactNode }) 
 
     useEffect(() => {
         fetchMoviesInformation();
-    }, [fetchMoviesInformation]);
+    }, [fetchMoviesInformation, user.language, user.is_logged_in]);
 
     function resetFilterSort() {
         setFilterOptions({
