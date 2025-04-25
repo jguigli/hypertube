@@ -24,9 +24,10 @@ export default function Video(
             }
             return response.data.map((subtitle: any) => ({
                 kind: 'subtitles',
-                src: subtitle.src,
+                src: `http://localhost:3000/api/movies/stream/${props.video_ID}/${token}/subtitles/${subtitle.srcLang}`,
                 srclang: subtitle.srcLang,
                 label: subtitle.label,
+                type: 'text/vtt', // <-- Ajoute ceci
             }));
         };
 

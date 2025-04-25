@@ -674,6 +674,52 @@ async def get_subtitles(
     # )
 
 
+@router.get('/movies/stream/{movie_id}/{token}/subtitles/{lang}')
+async def stream_subtitles(
+    movie_id: int,
+    token: str,
+    lang: str,
+    db: Session = Depends(get_db)
+):
+    current_user = security.get_current_user_streaming(token, db)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
-# TODO: Route qui permet de gerer le 'stream des sous titres'
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid movie"
+        )
 
+    if movie.is_download is False:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie not downloaded"
+        )
+
+    dir_path = os.path.dirname(movie.file_path)
+    if not dir_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subtitles not available"
+        )
+
+    subtitles = os.path.join(dir_path, f"{lang}.srt")
+    if not os.path.exists(subtitles):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Subtitles not available"
+        )
+
+    def srt_to_vtt(srt_path):
+        with open(srt_path, "r", encoding="utf-8") as srt_file:
+            yield "WEBVTT\n\n"
+            for line in srt_file:
+                # Remplacer la virgule par un point dans les timecodes
+                yield line.replace(",", ".")
+
+    return StreamingResponse(srt_to_vtt(subtitles), media_type="text/vtt")
