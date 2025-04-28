@@ -51,6 +51,7 @@ from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
 import requests
 from api.config import JACKETT_API_KEY, OPENSUBTITLES_API_KEY
+from api.comments.schemas import Comment
 
 
 router = APIRouter(tags=["Movies"])
@@ -723,3 +724,18 @@ async def stream_subtitles(
                 yield line.replace(",", ".")
 
     return StreamingResponse(srt_to_vtt(subtitles), media_type="text/vtt")
+
+
+@router.get('/movies/{movie_id}/comments', response_model=List[Comment])
+async def get_movie_comments(
+    movie_id: int,
+    current_user: Annotated[User, Depends(security.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    movie = get_movie_by_id(db, movie_id)
+    if not movie:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid movie"
+        )
+    return movie.comments
