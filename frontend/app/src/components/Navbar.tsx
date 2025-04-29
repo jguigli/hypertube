@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearch } from "../contexts/SearchContext.tsx";
 import { useMovies } from "../contexts/MovieContext";
 import { useFilterSort } from "../contexts/FilterSortContext";
+import { useLoading } from "../contexts/LoadingContext.tsx";
 
 
 function Logo() {
@@ -43,29 +44,40 @@ function Logo() {
 }
 
 function MovieSearchBar() {
-
     const { t } = useTranslation();
-    const { searchQuery, setSearchQuery } = useSearch();
-    const [search, setSearch] = useState("");
+    const { isLoading } = useLoading();
+    const { setSearchQuery } = useSearch();
+    const [search, setSearch] = useState(""); // State local uniquement
     const { activeLink } = useActiveLink();
     const navigate = useNavigate();
 
     function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+        if (isLoading) {
+            alert("Loading in progress, please wait.");
+            return; // Ne pas changer si en cours de chargement
+        }
         setSearch(event.target.value);
     }
 
     function handleClearSearch() {
+        if (isLoading) {
+            alert("Loading in progress, please wait.");
+            return; // Ne pas effacer si en cours de chargement
+        }
         setSearch("");
-        setSearchQuery("");
+        setSearchQuery(""); // Reset aussi le contexte pour vider les résultats
     }
 
     function handleSearchSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (isLoading) {
+            alert("Loading in progress, please wait."); // Added alert for loading state
+            return; // Ne pas soumettre si en cours de chargement
+        }
         if (activeLink !== "/") {
             navigate("/");
         }
-        setSearchQuery(search);
-        setSearch("");
+        setSearchQuery(search); // Déclenche le fetch dans MovieContext
     }
 
     return (
@@ -79,7 +91,7 @@ function MovieSearchBar() {
                         onChange={handleSearchChange}
                         inputProps={{ 'aria-label': t('Search movies') }}
                     />
-                    {searchQuery.length > 0 && (
+                    {search.length > 0 && (
                         <IconButton onClick={handleClearSearch} sx={{ p: '5px' }} aria-label="clear search">
                             <Clear />
                         </IconButton>
@@ -96,9 +108,14 @@ function MovieSearchBar() {
 export function LanguageSelection() {
     const { i18n, t } = useTranslation();
     const { changeUserLanguage } = useAuth();
+    const { isLoading } = useLoading();
 
     const handleChange = (event: SelectChangeEvent) => {
         const lang = event.target.value;
+        if (isLoading) {
+            alert("Loading in progress, please wait.");
+            return;
+        }
         if (lang === 'en' || lang === 'fr') {
             i18n.changeLanguage(lang);
             changeUserLanguage(lang);

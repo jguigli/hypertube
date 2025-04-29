@@ -4,12 +4,14 @@ import MovieCard from "../components/MovieCard";
 import { FilterSortMenu } from "../components/FilterSortMenu";
 import { CircularProgress, Typography } from "@mui/material";
 import { useTranslation } from 'react-i18next';
+import { useLoading } from "../contexts/LoadingContext";
 
 
 export default function Home() {
 
     const { t } = useTranslation();
-    const { movies, isLoading, fetchMovies, setPage, hasMore } = useMovies();
+    const { movies, fetchMovies, setPage, hasMore } = useMovies();
+    const { isLoading } = useLoading();
     const observerRef = useRef<HTMLDivElement | null>(null);
 
     // Infinite scroll observer

@@ -4,13 +4,12 @@ import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
 import { useSearch } from "./SearchContext";
 import { useFilterSort } from "./FilterSortContext";
+import { useLoading } from "./LoadingContext";
 
 
 interface MoviesContextType {
     movies: Movie[];
     fetchMovies: (newPage?: number) => void;
-    isLoading: boolean;
-    setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
     page: number;
     setPage: React.Dispatch<React.SetStateAction<number>>;
     hasMore: boolean;
@@ -24,13 +23,13 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     const movieService = new MovieService();
 
     const { user, getToken } = useAuth();
+    const { isLoading, setIsLoading } = useLoading();
     const { searchQuery } = useSearch();
     const { filterOptions, sortOptions } = useFilterSort();
 
     // Infinite scroll state
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
 
     // Movies state
     // This state holds the movies fetched from the API
@@ -84,8 +83,6 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
             value={{
                 movies,
                 fetchMovies,
-                isLoading,
-                setIsLoading,
                 page,
                 setPage,
                 hasMore,

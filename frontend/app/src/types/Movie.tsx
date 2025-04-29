@@ -6,7 +6,7 @@ export default interface Cast {
 export default interface Movie {
     id: number;
     title: string;
-    duration?: number;
+    runtime?: number;
     overview?: string;
     imdb_id?: string;
     release_date: string;

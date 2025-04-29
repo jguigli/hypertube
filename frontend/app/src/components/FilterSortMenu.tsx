@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { FilterOptions, SortOptions } from "../types/FilterSortOptions";
 import { useTranslation } from "react-i18next";
 import { useFilterSort } from "../contexts/FilterSortContext";
+import { useLoading } from "../contexts/LoadingContext";
 
 const sortOptionsLabels = [
     { label: "None", value: "none.desc" },
@@ -27,6 +28,7 @@ export function FilterSortMenu() {
     const toggleDrawer = () => setOpen(!open);
     const { t } = useTranslation();
     const { filterOptions, setFilterOptions, sortOptions, setSortOptions, moviesInformation } = useFilterSort()
+    const { isLoading } = useLoading();
 
 
     // Nouveaux états locaux pour gérer les valeurs temporaires
@@ -52,6 +54,11 @@ export function FilterSortMenu() {
     }, [moviesInformation]);
 
     const handleApply = () => {
+        // Vérifier si le chargement est en cours
+        if (isLoading) {
+            alert("Loading in progress, please wait.");
+            return; // Ne pas appliquer si en cours de chargement
+        }
         // Appliquer les valeurs temporaires aux états globaux
         setFilterOptions(tempFilterOptions);
         setSortOptions(tempSortOptions);
@@ -59,6 +66,10 @@ export function FilterSortMenu() {
     };
 
     const handleReset = () => {
+        if (isLoading) {
+            alert("Loading in progress, please wait.");
+            return; // Ne pas réinitialiser si en cours de chargement
+        }
         // Réinitialiser les valeurs temporaires aux valeurs par défaut
         setTempFilterOptions(
             {

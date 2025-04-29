@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
-import Video from "../components/VideoJS";
+import VideoJS from "../components/VideoJS";
 import MovieService from "../services/MovieService";
 import StructureComments from "../components/StructureComments";
 import { Stack, Typography } from "@mui/material";
@@ -108,7 +108,7 @@ export default function Watch() {
                         </Typography>
                         <CustomCard additionalClasses="w-full h-full">
                             <div className="w-full h-full flex justify-center items-center max-h-[80vh]">
-                                <Video video_ID={+video_ID} hlsReady={hlsReady}/>
+                                <VideoJS video_ID={+video_ID} hlsReady={hlsReady}/>
                             </div>
                         </CustomCard>
 
