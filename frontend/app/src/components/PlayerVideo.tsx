@@ -22,6 +22,7 @@ export const PlayerVideo = (props: {
         if (!playerRef.current) {
             // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
             const videoElement = document.createElement("video-js");
+            videoElement.setAttribute('preload', 'auto'); // Ajout du preload auto
             if (!videoRef.current) {
                 return;
             }
@@ -41,7 +42,7 @@ export const PlayerVideo = (props: {
         }
     }, [options, videoRef]);
 
-// Dispose the Video.js player when the functional component unmounts
+    // Dispose the Video.js player when the functional component unmounts
     useEffect(() => {
         const player = playerRef.current;
 
