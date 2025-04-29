@@ -545,6 +545,66 @@ async def standard_stream_movie(
         return StreamingResponse(await convert_stream(movie.file_path), media_type="video/mp4")
 
 
+def search_subtitles(imdb_id: str, query: str, lang="fr"):
+
+    print(f"Recherche de sous-titres pour {query} ({lang} with {imdb_id})")
+
+    BASE_URL = "https://api.opensubtitles.com/api/v1"
+
+    headers = {
+        "Api-Key": OPENSUBTITLES_API_KEY,
+        "Content-Type": "application/json",
+        "User-Agent": "Hypertube",
+    }
+
+    response = requests.get(
+        f"{BASE_URL}/subtitles",
+        headers=headers,
+        params={
+            "imdb_id": imdb_id,
+            "query": query,
+            "languages": lang,
+            "order_by": "ratings"
+        }
+    )
+    if response.status_code == 200:
+        return response.json()["data"]
+    else:
+        print("Erreur lors de la recherche :", response.text)
+        return []
+
+
+def download_subtitle(
+    file_id: str,
+    filename: str,
+    file_path: str
+):
+
+    BASE_URL = "https://api.opensubtitles.com/api/v1"
+
+    headers = {
+        "Api-Key": OPENSUBTITLES_API_KEY,
+        "Content-Type": "application/json",
+        "User-Agent": "Hypertube",
+    }
+
+    file_full_path = os.path.join(os.path.dirname(file_path), filename)
+
+    response = requests.post(
+        f"{BASE_URL}/download",
+        headers=headers,
+        params={"file_id": file_id},
+    )
+    if response.status_code == 200:
+        download_link = response.json()["link"]
+        srt = requests.get(download_link)
+        with open(file_full_path, "wb") as f:
+            f.write(srt.content)
+        print(f"Sous-titre téléchargé sous le nom : {file_full_path}")
+    else:
+        print("Erreur lors du téléchargement :", response.text)
+
+
 @router.get('/movies/{movie_id}/{token}/subtitles')
 async def get_subtitles(
     movie_id: int,
@@ -579,75 +639,22 @@ async def get_subtitles(
             detail="Subtitles not available"
         )
 
-    # TODO: telecharger les sous titres
-    # call api fr -> fr.srt
-    # call api en -> en.srt
-    BASE_URL = "https://api.opensubtitles.com/api/v1"
-
-    headers = {
-        "Api-Key": OPENSUBTITLES_API_KEY,
-        "Content-Type": "application/json",
-        "User-Agent": "Hypertube",
-    }
-
-    def search_subtitles(imdb_id: str, query: str, lang="fr"):
-
-        print(f"Recherche de sous-titres pour {query} ({lang} with {imdb_id})")
-
-        response = requests.get(
-            f"{BASE_URL}/subtitles",
-            headers=headers,
-            params={
-                "imdb_id": imdb_id,
-                "query": query,
-                "languages": lang,
-                "order_by": "ratings"
-            }
-        )
-        if response.status_code == 200:
-            return response.json()["data"]
-        else:
-            print("Erreur lors de la recherche :", response.text)
-            return []
-
-    def download_subtitle(
-        file_id: str,
-        filename: str,
-        file_path: str
-    ):
-
-        file_full_path = os.path.join(os.path.dirname(file_path), filename)
-
-        response = requests.post(
-            f"{BASE_URL}/download",
-            headers=headers,
-            params={"file_id": file_id},
-        )
-        if response.status_code == 200:
-            download_link = response.json()["link"]
-            srt = requests.get(download_link)
-            with open(file_full_path, "wb") as f:
-                f.write(srt.content)
-            print(f"Sous-titre téléchargé sous le nom : {file_full_path}")
-        else:
-            print("Erreur lors du téléchargement :", response.text)
-
     language_dict = {
         "fr": "Français",
         "en": "English"
     }
     subtitles = []
-    for lang in ["fr", "en"]:
+    for lang in ("fr", "en"):
 
         file_full_path = os.path.join(os.path.dirname(movie.file_path), f"{lang}.srt")
         if not os.path.exists(file_full_path):
 
-            subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
-            if not subtitles:
+            found_subtitles = search_subtitles(movie.imdb_id, movie.title, lang)
+            if not found_subtitles:
                 print(f"Aucun sous-titre trouvé pour la langue {lang}.")
                 continue
 
-            file_id = subtitles[0]["attributes"]["files"][0]["file_id"]
+            file_id = found_subtitles[0]["attributes"]["files"][0]["file_id"]
             filename = f"{lang}.srt"
             download_subtitle(file_id, filename, movie.file_path)
 
@@ -659,20 +666,6 @@ async def get_subtitles(
         })
 
     return subtitles
-
-    # zip_buffer = io.BytesIO()
-
-    # with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-    #     for file_path in subtitles:
-    #         zip_file.write(file_path, arcname=file_path.name)
-
-    # zip_buffer.seek(0)
-
-    # return Response(
-    #     zip_buffer.getvalue(),
-    #     media_type="application/zip",
-    #     headers={"Content-Disposition": "attachment; filename=files.zip"}
-    # )
 
 
 @router.get('/movies/stream/{movie_id}/{token}/subtitles/{lang}')

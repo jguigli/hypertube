@@ -1,19 +1,21 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import '../styles/video.css'
 import Overlay from "./Overlay"
 
 
-export const VideoJS = (props: {
+export const PlayerVideo = (props: {
     options: any;
-    movieID: number;
     onReady?: (player: any) => void;
 }) => {
 
     const videoRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<any>(null);
     const { options, onReady } = props;
+    const [player, setPlayer] = useState(null);
+
+    const handlePlayerReady = (playerInstance: any): void => setPlayer(playerInstance);
 
     useEffect(() => {
         // Make sure Video.js player is only initialized once
@@ -27,6 +29,7 @@ export const VideoJS = (props: {
             videoRef.current.appendChild(videoElement);
             const player = playerRef.current = videojs(videoElement, options, () => {
                 onReady && onReady(player);
+                handlePlayerReady(player);
             });
 
             // You could update an existing player in the `else` block here
@@ -53,9 +56,9 @@ export const VideoJS = (props: {
     return (
         <div data-vjs-player className="data-vjs-player">
             <div ref={videoRef} />
-            <Overlay movieID={props.movieID} player={playerRef.current} />
+            {player && <Overlay player={player} />}
         </div>
     );
 }
 
-export default VideoJS;
+export default PlayerVideo;

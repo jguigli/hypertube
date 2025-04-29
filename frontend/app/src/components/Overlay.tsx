@@ -14,10 +14,10 @@ const Overlay: React.FC<OverlayProps> = ({ player }) => {
     const { movie } = useMovieInfo();
 
     // Formater la durée de la vidéo
-    const formatDuration = (seconds: number): string => {
-        if (!seconds) return "N/A";
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
+    const formatDuration = (minutes: number): string => {
+        if (!minutes) return "N/A";
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
         return `${hrs}h ${mins}min`;
     };
 
@@ -51,7 +51,7 @@ const Overlay: React.FC<OverlayProps> = ({ player }) => {
                 <h2 className="movie-title">{movie.title}</h2>
                 <div className="movie-info">
                     <span>{new Date(movie.release_date || "").getFullYear() || "N/A"}</span>
-                    <span>• {formatDuration(movie.duration || 0)}</span>
+                    <span>• {formatDuration(movie.runtime || 0)}</span>
                 </div>
                 <div className="casting">
                     Réalisé par {getDirector(movie.crew)}, {t("Avec")} {getTopActors(movie.casting)}

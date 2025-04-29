@@ -13,6 +13,7 @@ import { ActiveLinkProvider } from './contexts/ActiveLinkContext.tsx'
 import { setupAxiosInterceptors } from './services/axiosConfig.ts'
 import { SearchProvider } from './contexts/SearchContext.tsx';
 import { FilterSortProvider } from './contexts/FilterSortContext.tsx';
+import { LoadingProvider } from './contexts/LoadingContext.tsx';
 
 function Main() {
 
@@ -22,13 +23,15 @@ function Main() {
 
     return (
         <ThemeProvider theme={theme}>
-            <SearchProvider>
-                <FilterSortProvider>
-                    <ActiveLinkProvider>
-                        <AppRouter />
-                    </ActiveLinkProvider>
-                </FilterSortProvider>
-            </SearchProvider>
+            <LoadingProvider>
+                <SearchProvider>
+                    <FilterSortProvider>
+                        <ActiveLinkProvider>
+                            <AppRouter />
+                        </ActiveLinkProvider>
+                    </FilterSortProvider>
+                </SearchProvider>
+            </LoadingProvider>
         </ThemeProvider>
     );
 }

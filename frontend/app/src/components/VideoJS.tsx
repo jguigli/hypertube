@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import VideoJS from './PlayerVideo';
+import PlayerVideo from './PlayerVideo';
 import { useAuth } from '../contexts/AuthContext';
 import MovieService from '../services/MovieService';
 
-export default function Video(
+export default function VideoJS(
     props: {
         video_ID: number;
         hlsReady: boolean
@@ -17,18 +17,32 @@ export default function Video(
 
     useEffect(() => {
         const fetchSubtitles = async () => {
+
+            if (!token) {
+                console.log("Token is not available");
+                return [];
+            } else if (!props.video_ID) {
+                console.log("Video ID is not available");
+                return [];
+            }
+
             const response = await movieService.getSubtitles(props.video_ID, token);
             if (!response.success) {
                 console.log("Error fetching subtitles");
                 return [];
             }
-            return response.data.map((subtitle: any) => ({
-                kind: 'subtitles',
-                src: `http://localhost:3000/api/movies/stream/${props.video_ID}/${token}/subtitles/${subtitle.srcLang}`,
-                srclang: subtitle.srcLang,
-                label: subtitle.label,
-                type: 'text/vtt', // <-- Ajoute ceci
-            }));
+            console.log(response.data);
+            return response.data
+                .filter((subtitle: any) => subtitle.srcLang && subtitle.label) // Filtrer les éléments avec des valeurs undefined
+                .map((subtitle: any) => (
+                    {
+                        kind: 'subtitles',
+                        src: `http://localhost:3000/api/movies/stream/${props.video_ID}/${token}/subtitles/${subtitle.srcLang}`,
+                        srclang: subtitle.srcLang,
+                        label: subtitle.label,
+                        type: 'text/vtt', // <-- Ajoute ceci
+                    }
+                ));
         };
 
         const loadSubtitles = async () => {
@@ -60,9 +74,9 @@ export default function Video(
 
     return (
         <div className="video-container w-full h-full">
-            <VideoJS
+            <PlayerVideo
                 key={subtitles.map(s => s.src).join(',')}
-                options={videoJsOptions} onReady={handlePlayerReady} movieID={props.video_ID} />
+                options={videoJsOptions} onReady={handlePlayerReady} />
         </div>
     );
 

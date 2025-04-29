@@ -136,7 +136,7 @@ async def download_torrent(magnet_link: str, movie_id: int, user_id: int):
     torrent_info = handle.get_torrent_info()
 
 
-    while handle.status().progress < 0.05:
+    while handle.status().progress < 0.30:
         print(f"Progression : {handle.status().progress * 100:.2f}%", flush=True)
         await asyncio.sleep(5)
 
