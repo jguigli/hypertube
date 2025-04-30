@@ -3,6 +3,9 @@ import asyncio
 import os
 import ffmpeg
 import aiofiles
+import concurrent.futures
+
+from api.redis_client import redis_client
 from ..websocket.websocket_manager import manager_websocket
 from .crud import (
     get_movie_by_id,
@@ -12,6 +15,9 @@ from ..database import SessionLocal
 
 DOWNLOAD_MOVIES_FOLDER = "./downloads"
 CHUNK_SIZE = 4 * 1024 * 1024  # 4 Mo
+MAX_SIMULTANEOUS_DOWNLOADS = 1  # Ajuste selon ta machine
+download_executor = concurrent.futures.ThreadPoolExecutor(max_workers=MAX_SIMULTANEOUS_DOWNLOADS)
+
 
 async def convert_stream(file_path):
     pass_through = asyncio.Queue()
@@ -175,15 +181,17 @@ async def download_torrent(magnet_link: str, movie_id: int, user_id: int):
                                 loop
                             )
                             notified_streamable = True
+                            # Set a redis flag to indicate that the movie is streamable
+                            redis_client.set(f"streamable:{movie_id}", "true")
                 except Exception as e:
                     print(f"[STREAMABLE NOTIFY ERROR] {e}", flush=True)
-            time.sleep(0.5)  # check more frequently for faster notification
+            asyncio.sleep(0.5)  # check more frequently for faster notification
 
         while not handle.is_seed():
             print(
                 f"Downloading : {handle.status().progress * 100:.2f}%", flush=True
             )
-            time.sleep(1)
+            asyncio.sleep(10)
 
     import time
-    await asyncio.to_thread(blocking_download, loop)
+    await loop.run_in_executor(download_executor, blocking_download, loop)

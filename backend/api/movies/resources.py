@@ -413,7 +413,10 @@ async def get_movie_informations(
             detailed_movie['vote_count'],
         )
 
-    if db_movie.is_download and not db_movie.is_convert:
+    if (
+        (db_movie.is_download and not db_movie.is_convert) or
+        (redis_client.exists(f"streamable:{movie_id}", 1))
+    ):
         await manager_websocket.send_message(
             current_user.id,
             "Movie is ready to standard streaming."

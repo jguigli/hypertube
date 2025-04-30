@@ -111,7 +111,7 @@ export default function Watch() {
                                 <VideoJS video_ID={+video_ID} hlsReady={hlsReady}/>
                             </div>
                         </CustomCard>
-
+                        <>{movie && (<MoviePresentation movie={movie} />)}</>
                     </>
                 ) : (
                     <>{movie && (<MoviePresentation movie={movie} />)}</>

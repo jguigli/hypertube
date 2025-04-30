@@ -20,13 +20,13 @@ services:
     expose:
       - "8000"
     volumes:
-      - "${PWD}/backend:/app"
+      - hypertube_downloads:/app/downloads
     depends_on:
       database:
         condition: service_healthy
     env_file:
       .env
-    user: "${UID}:${GID}"
+    # user: "${UID}:${GID}"
     restart: unless-stopped
     networks:
       - app-network
@@ -96,3 +96,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  hypertube_downloads:
