@@ -451,10 +451,10 @@ async def download_and_convert(movie_id: int, user_id: int):
         if movie.is_download is False:
             await download_torrent(movie.magnet_link, movie.id, user_id)
             db.commit()
-        # if movie.is_convert is False:
-        #     await convert_to_hls(movie.file_path, movie.id)
-        #     movie.is_convert = True
-        #     db.commit()
+        if movie.is_convert is False:
+            await convert_to_hls(movie.file_path, movie.id)
+            movie.is_convert = True
+            db.commit()
     finally:
         redis_client.delete(f"download_and_convert:{movie.id}")
         db.close()

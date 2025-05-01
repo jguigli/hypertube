@@ -33,16 +33,14 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // Movies state
     const [movies, setMovies] = useState<Movie[]>([]);
 
-    // Ref to track if the component is mounted
-    const isMounted = useRef(false);
 
     // Fetch movies function
     const fetchMovies = useCallback(async (newPage: number = 1) => {
 
         if (isLoading) return; // Prevent multiple simultaneous requests
-      
-        setIsLoading(true);
-      
+
+        // setIsLoading(true);
+
         try {
             const token = getToken();
             const response = searchQuery
@@ -72,14 +70,14 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
             setPage(1);
             setMovies([]);
             setHasMore(true);
-    
+
             try {
                 await fetchMovies(1);
             } finally {
                 setIsLoading(false);
             }
         };
-    
+
         loadMovies();
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
