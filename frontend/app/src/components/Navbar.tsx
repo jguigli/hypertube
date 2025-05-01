@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { IconButton, InputBase, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MenuItem } from "@mui/material";
 import { Clear, Search } from "@mui/icons-material";
 import InputLabel from '@mui/material/InputLabel';
@@ -109,6 +109,7 @@ export function LanguageSelection() {
     const { i18n, t } = useTranslation();
     const { changeUserLanguage } = useAuth();
     const { isLoading } = useLoading();
+    const [language, setLanguage] = useState(i18n.language);
 
     const handleChange = (event: SelectChangeEvent) => {
         const lang = event.target.value;
@@ -122,23 +123,39 @@ export function LanguageSelection() {
         }
     };
 
+    useEffect(() => {
+        if (i18n.language === 'en' || i18n.language === 'fr') {
+            setLanguage(i18n.language);
+        }
+        else {
+            setLanguage('en');
+            i18n.changeLanguage('en');
+            changeUserLanguage('en');
+        }
+    }, [i18n.language]);
+
     return (
-        <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-            <InputLabel id="language-label" sx={{ paddingTop: 0.5 }}>
-                {t("Language")}
-            </InputLabel>
-            <Select
-                labelId="language-label"
-                id="language-select"
-                value={i18n.language}
-                label={t("Language")}
-                onChange={handleChange}
-                size="small"
-            >
-                <MenuItem value="en">{t("English")}</MenuItem>
-                <MenuItem value="fr">{t("Français")}</MenuItem>
-            </Select>
-        </FormControl>
+        <>
+            {
+                (language === 'en' || language === 'fr') &&
+                <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
+                    <InputLabel id="language-label" sx={{ paddingTop: 0.5 }}>
+                        {t("Language")}
+                    </InputLabel>
+                    <Select
+                        labelId="language-label"
+                        id="language-select"
+                        value={language}
+                        label={t("Language")}
+                        onChange={handleChange}
+                        size="small"
+                    >
+                        <MenuItem value="en">{t("English")}</MenuItem>
+                        <MenuItem value="fr">{t("Français")}</MenuItem>
+                    </Select>
+                </FormControl>
+            }
+        </>
     );
 }
 

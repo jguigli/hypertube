@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import (
-    Depends, Response, HTTPException, APIRouter, status, BackgroundTasks, Request
+    Depends, HTTPException, APIRouter, status, BackgroundTasks, Request
 )
-
+import asyncio
 from sqlalchemy.orm import Session
 import json
 from typing import List
@@ -43,9 +43,6 @@ from sqlalchemy import cast
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import Text
 from .download import download_torrent
-from pathlib import Path
-import io
-import zipfile
 from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
@@ -55,6 +52,9 @@ from api.comments.schemas import Comment
 
 
 router = APIRouter(tags=["Movies"])
+
+
+CHUNK_SIZE = 4 * 1024 * 1024  # 4 Mo
 
 
 @router.get('/movies/top', response_model=List[schemas.MovieDisplay])
@@ -413,8 +413,8 @@ async def get_movie_informations(
             detailed_movie['vote_count'],
         )
 
+
     if db_movie.is_download and not db_movie.is_convert:
-        import asyncio
         await asyncio.sleep(0.5)
         await manager_websocket.send_message(
             current_user.id,
@@ -458,6 +458,7 @@ async def download_and_convert(movie_id: int, user_id: int):
     finally:
         redis_client.delete(f"download_and_convert:{movie.id}")
         db.close()
+
 
 @router.get('/movies/{movie_id}/stream/{token}/{hls_file}')
 async def stream_movie_hls(
@@ -532,6 +533,7 @@ async def standard_stream_movie(
                     "Content-Range": f"bytes {start}-{end}/{file_size}",
                     "Accept-Ranges": "bytes",
                     "Content-Length": str(end - start + 1),
+                    "Cache-Control": "no-store"
                 }
             )
 
@@ -541,6 +543,7 @@ async def standard_stream_movie(
             headers={
                 "Content-Length": str(file_size),
                 "Accept-Ranges": "bytes",
+                "Cache-Control": "no-store"
             }
         )
     else:

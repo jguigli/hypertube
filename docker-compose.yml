@@ -20,13 +20,12 @@ services:
     expose:
       - "8000"
     volumes:
-      - "${PWD}/backend:/app"
+      - hypertube_downloads:/app/downloads
     depends_on:
       database:
         condition: service_healthy
     env_file:
       .env
-    user: "${UID}:${GID}"
     restart: unless-stopped
     networks:
       - app-network
@@ -87,7 +86,6 @@ services:
     env_file:
       - .env
     restart: unless-stopped
-    user: "${UID}:${GID}"
     volumes:
       - "${PWD}/jackett/config:/config/Jackett"
     networks:
@@ -96,3 +94,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  hypertube_downloads:

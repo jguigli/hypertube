@@ -1,12 +1,12 @@
 #/bin/sh
 
 
-# Create the virtual environment
-python3 -m venv /app/venv
+# # Create the virtual environment
+# python3 -m venv /app/venv
 
-# Install the dependencies
-/app/venv/bin/pip install --upgrade pip
-/app/venv/bin/pip install -r /app/requirements.txt
+# # Install the dependencies
+# /app/venv/bin/pip install --upgrade pip
+# /app/venv/bin/pip install -r /app/requirements.txt
 
 # Run the migrations and start the server using venv python
 sh -c "envsubst < /app/alembic.ini.template > /app/alembic.ini && \

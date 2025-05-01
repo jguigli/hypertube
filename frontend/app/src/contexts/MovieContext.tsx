@@ -1,11 +1,10 @@
-import { createContext, useState, useEffect, useContext, useCallback } from "react";
+import { createContext, useState, useEffect, useContext, useCallback, useRef } from "react";
 import Movie from "../types/Movie";
 import MovieService from "../services/MovieService";
 import { useAuth } from "./AuthContext";
 import { useSearch } from "./SearchContext";
 import { useFilterSort } from "./FilterSortContext";
 import { useLoading } from "./LoadingContext";
-
 
 interface MoviesContextType {
     movies: Movie[];
@@ -32,16 +31,18 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     const [hasMore, setHasMore] = useState(true);
 
     // Movies state
-    // This state holds the movies fetched from the API
     const [movies, setMovies] = useState<Movie[]>([]);
 
+    // Ref to track if the component is mounted
+    const isMounted = useRef(false);
 
     // Fetch movies function
-    // This function fetches movies from the API
-    // If a search query is provided, it fetches movies based on the search query
-    // If no search query is provided, it fetches popular movies
-    // The function is called when the component mounts and when the user changes the filter options,
     const fetchMovies = useCallback(async (newPage: number = 1) => {
+
+        if (isLoading) return; // Prevent multiple simultaneous requests
+      
+        setIsLoading(true);
+      
         try {
             const token = getToken();
             const response = searchQuery
@@ -53,7 +54,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
                     const newMovies = response.data.filter(
                         (movie: Movie) => !prevMovies.some((prevMovie) => prevMovie.id === movie.id)
                     );
-                    return newPage === 1 ? newMovies : [...prevMovies, ...newMovies];
+                    return newPage === 1 ? newMovies : [...prevMovies, ...newMovies]; // Réinitialiser les films si c'est la première page
                 });
                 setHasMore(response.data.length > 0);
             } else {
@@ -81,6 +82,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     
         loadMovies();
     }, [searchQuery, filterOptions, sortOptions, user.language]);
+
 
     return (
         <MoviesContext.Provider
