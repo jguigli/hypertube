@@ -40,6 +40,7 @@ export default function Watch() {
 
         socket.onmessage = (event) => {
             const data = event.data;
+            console.log("Received data from WebSocket:", data);
             if (data === "Movie is ready to standard streaming.") {
                 setMovieReady(true);
             } else if (data === "Movie is ready to HLS streaming.") {
@@ -101,22 +102,15 @@ export default function Watch() {
     } else {
         return (
             <Stack spacing={2} className="flex flex-col items-center justify-center w-full h-full">
-                {ismovieReady ? (
-                    <>
-                        <Typography variant="h4" className="text-white font-bold w-full">
-                            {movie?.title}
-                        </Typography>
-                        <CustomCard additionalClasses="w-full h-full">
-                            <div className="w-full h-full flex justify-center items-center max-h-[80vh]">
-                                <VideoJS video_ID={+video_ID} hlsReady={hlsReady}/>
-                            </div>
-                        </CustomCard>
-                        <>{movie && (<MoviePresentation movie={movie} />)}</>
-                    </>
-                ) : (
-                    <>{movie && (<MoviePresentation movie={movie} />)}</>
+                {movie && (
+                    <MoviePresentation
+                        movie={movie}
+                        isMovieReady={ismovieReady}
+                        videoID={+video_ID}
+                        hlsReady={hlsReady}
+                    />
                 )}
-                <StructureComments videoID={video_ID} comments={comments}/>
+                <StructureComments videoID={video_ID} comments={comments} />
             </Stack>
         );
     }

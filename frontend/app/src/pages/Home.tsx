@@ -10,18 +10,21 @@ import { useLoading } from "../contexts/LoadingContext";
 export default function Home() {
 
     const { t } = useTranslation();
-    const { movies, fetchMovies, setPage, hasMore } = useMovies();
+    const { movies, fetchMovies, setPage, hasMore, page } = useMovies();
     const { isLoading } = useLoading();
     const observerRef = useRef<HTMLDivElement | null>(null);
+
 
     // Infinite scroll observer
     useEffect(() => {
         if (!hasMore || isLoading) return;
+
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting) {
                     setPage((prev) => {
                         if (!isLoading && hasMore) {
+                            console.log("Fetching movies for infinite scroll...");
                             fetchMovies(prev + 1);
                             return prev + 1;
                         }
@@ -34,11 +37,20 @@ export default function Home() {
                 rootMargin: "400px"
             }
         );
+
         if (observerRef.current) observer.observe(observerRef.current);
         return () => {
             if (observerRef.current) observer.unobserve(observerRef.current);
         };
-    }, [isLoading, hasMore, fetchMovies, setPage]);
+    }, [movies, isLoading, hasMore, fetchMovies, setPage]);
+
+    // Debug console log
+    useEffect(() => {
+        console.log("Movies:", movies);
+        console.log("Has more movies:", hasMore);
+        console.log("Is loading:", isLoading);
+        console.log("Page:", page);
+    }, [movies, hasMore, isLoading, page]);
 
     return (
         <>
