@@ -113,7 +113,7 @@ export default class UserService {
     > {
         try {
             const response = await axios.get(
-                "/users/",
+                "/users",
                 {
                     headers: {
                         Authorization: `${token}`

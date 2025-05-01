@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import (
     Depends, HTTPException, APIRouter, status, BackgroundTasks, Request
 )
-
+import asyncio
 from sqlalchemy.orm import Session
 import json
 from typing import List
@@ -413,10 +413,9 @@ async def get_movie_informations(
             detailed_movie['vote_count'],
         )
 
-    if (
-        (db_movie.is_download and not db_movie.is_convert) or
-        (redis_client.exists(f"streamable:{movie_id}", 1))
-    ):
+
+    if db_movie.is_download and not db_movie.is_convert:
+        await asyncio.sleep(0.5)
         await manager_websocket.send_message(
             current_user.id,
             "Movie is ready to standard streaming."

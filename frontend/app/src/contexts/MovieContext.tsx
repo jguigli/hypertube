@@ -39,11 +39,10 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // Fetch movies function
     const fetchMovies = useCallback(async (newPage: number = 1) => {
 
-        console.log("Fetching movies...");
-
         if (isLoading) return; // Prevent multiple simultaneous requests
+      
         setIsLoading(true);
-
+      
         try {
             const token = getToken();
             const response = searchQuery
@@ -64,38 +63,26 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Failed to fetch movies:", error);
             setHasMore(false);
-        } finally {
-            setIsLoading(false);
         }
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
     useEffect(() => {
-        async function fetchMoviesOnMount() {
-            if (isMounted.current) {
-                setPage(1); // Reset page
-                setMovies([]); // Reset movie list
-                setHasMore(true); // Reset infinite scroll state
-                console.log("Fetching movies due to search, or filter change...");
-                await fetchMovies(1); // Fetch movies for page 1
-            } else {
-                isMounted.current = true;
-                setPage(1); // Initialize page
-                console.log("Fetching movies for the first time...");
-                await fetchMovies(1); // Fetch movies for page 1
+        const loadMovies = async () => {
+            setIsLoading(true);
+            setPage(1);
+            setMovies([]);
+            setHasMore(true);
+    
+            try {
+                await fetchMovies(1);
+            } finally {
+                setIsLoading(false);
             }
-        }
-        fetchMoviesOnMount();
-    }, [fetchMovies]);
-
-    useEffect(() => {
-        return () => {
-            isMounted.current = false; // Cleanup on unmount
-            setIsLoading(false); // Reset loading state
-            setMovies([]); // Reset movie list
-            setPage(1); // Reset page
-            setHasMore(true); // Reset infinite scroll state
         };
-    }, []);
+    
+        loadMovies();
+    }, [searchQuery, filterOptions, sortOptions, user.language]);
+
 
     return (
         <MoviesContext.Provider
