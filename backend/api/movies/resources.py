@@ -414,6 +414,8 @@ async def get_movie_informations(
         )
 
     if db_movie.is_download and not db_movie.is_convert:
+        import asyncio
+        await asyncio.sleep(0.5)
         await manager_websocket.send_message(
             current_user.id,
             "Movie is ready to standard streaming."
