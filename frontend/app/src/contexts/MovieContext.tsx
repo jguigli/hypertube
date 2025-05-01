@@ -42,10 +42,6 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
     // If no search query is provided, it fetches popular movies
     // The function is called when the component mounts and when the user changes the filter options,
     const fetchMovies = useCallback(async (newPage: number = 1) => {
-
-        if (isLoading) return; // Prevent multiple simultaneous requests
-        setIsLoading(true);
-
         try {
             const token = getToken();
             const response = searchQuery
@@ -66,16 +62,24 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Failed to fetch movies:", error);
             setHasMore(false);
-        } finally {
-            setIsLoading(false);
         }
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
     useEffect(() => {
-        setPage(1);
-        setMovies([]);
-        setHasMore(true);
-        fetchMovies(1);
+        const loadMovies = async () => {
+            setIsLoading(true);
+            setPage(1);
+            setMovies([]);
+            setHasMore(true);
+    
+            try {
+                await fetchMovies(1);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+    
+        loadMovies();
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
     return (
