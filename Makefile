@@ -58,6 +58,7 @@ fclean:
 	mv ./backend/default.jpg.tmp ./backend/profile_pictures/default.jpg
 	rm -rf ./backend/downloads/*
 	rm -rf ./backend/hls_movies/*
+	docker system prune -af
 
 
 re: fclean build_up

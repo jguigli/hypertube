@@ -9,6 +9,7 @@ import { useLoading } from "./LoadingContext";
 interface MoviesContextType {
     movies: Movie[];
     fetchMovies: (newPage?: number) => void;
+    fetchNextPage: () => void;
     page: number;
     setPage: React.Dispatch<React.SetStateAction<number>>;
     hasMore: boolean;
@@ -64,6 +65,35 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
         }
     }, [searchQuery, filterOptions, sortOptions, user.language]);
 
+    const fetchNextPage = useCallback(async () => {
+        if (isLoading || !hasMore) return;
+        const nextPage = page + 1;
+        setIsLoading(true);
+        try {
+            const token = getToken();
+            const response = searchQuery
+                ? await movieService.searchMovies(searchQuery, user.language, nextPage, filterOptions, sortOptions, token)
+                : await movieService.getPopularMovies(nextPage, user.language, filterOptions, sortOptions, token);
+
+            if (response.success) {
+                setMovies((prevMovies) => {
+                    const newMovies = response.data.filter(
+                        (movie: Movie) => !prevMovies.some((prevMovie) => prevMovie.id === movie.id)
+                    );
+                    return [...prevMovies, ...newMovies];
+                });
+                setPage(nextPage);
+                setHasMore(response.data.length > 0);
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            setHasMore(false);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [isLoading, hasMore, page, searchQuery, filterOptions, sortOptions, user.language]);
+
     useEffect(() => {
         const loadMovies = async () => {
             setIsLoading(true);
@@ -87,6 +117,7 @@ export function MoviesProvider({ children }: { children: React.ReactNode }) {
             value={{
                 movies,
                 fetchMovies,
+                fetchNextPage,
                 page,
                 setPage,
                 hasMore,
