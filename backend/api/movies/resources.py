@@ -413,7 +413,6 @@ async def get_movie_informations(
             detailed_movie['vote_count'],
         )
 
-
     if db_movie.is_download and not db_movie.is_convert:
         await asyncio.sleep(0.5)
         await manager_websocket.send_message(

@@ -35,7 +35,7 @@ export default function Home() {
         return () => {
             if (observerRef.current) observer.unobserve(observerRef.current);
         };
-    }, [movies, isLoading, hasMore, fetchNextPage]);
+    }, [isLoading, hasMore, fetchNextPage]); // Dépendances minimales
 
     return (
         <>
