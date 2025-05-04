@@ -41,3 +41,6 @@ JACKETT_API_KEY = environ["JACKETT_API_KEY"]
 
 # OpenSubtitles API key
 OPENSUBTITLES_API_KEY = environ["OPENSUBTITLES_API_KEY"]
+
+# Bonus : toggle HLS streaming
+ENABLE_HLS = environ.get("ENABLE_HLS", "false").lower() == "true"

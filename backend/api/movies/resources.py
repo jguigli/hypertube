@@ -47,7 +47,7 @@ from .hls import convert_to_hls, HLS_MOVIES_FOLDER
 from ..database import SessionLocal
 from ..websocket.websocket_manager import manager_websocket
 import requests
-from api.config import JACKETT_API_KEY, OPENSUBTITLES_API_KEY
+from api.config import JACKETT_API_KEY, OPENSUBTITLES_API_KEY, ENABLE_HLS
 from api.comments.schemas import Comment
 
 
@@ -413,7 +413,6 @@ async def get_movie_informations(
             detailed_movie['vote_count'],
         )
 
-
     if db_movie.is_download and not db_movie.is_convert:
         await asyncio.sleep(0.5)
         await manager_websocket.send_message(
@@ -451,7 +450,7 @@ async def download_and_convert(movie_id: int, user_id: int):
         if movie.is_download is False:
             await download_torrent(movie.magnet_link, movie.id, user_id)
             db.commit()
-        if movie.is_convert is False:
+        if movie.is_convert is False and ENABLE_HLS:
             await convert_to_hls(movie.file_path, movie.id)
             movie.is_convert = True
             db.commit()
