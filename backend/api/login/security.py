@@ -89,7 +89,9 @@ def get_current_user_streaming(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        print("Token:", token)
         token = token.replace("Bearer ", "")
+        token = token.replace("bearer ", "")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
         if user_id is None:
